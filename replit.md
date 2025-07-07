@@ -2,7 +2,7 @@
 
 ## Overview
 
-TelePrompter Pro is a modern web application built for professional teleprompter functionality. It features a clean, intuitive interface for importing scripts (text/Word documents) and displaying them in a customizable teleprompter view with real-time controls for speed, text size, and display preferences.
+TelePrompter Pro is a modern web application built for professional teleprompter functionality. It features a clean, intuitive interface for importing scripts (text/Word documents) and displaying them in a customizable teleprompter view with real-time controls for speed, text size, and display preferences. The application successfully supports Bluetooth keyboard controls for hands-free operation and horizontal text flipping functionality.
 
 ## System Architecture
 
@@ -92,6 +92,13 @@ Two main entities:
 ```
 Changelog:
 - July 07, 2025. Initial setup
+- July 07, 2025. Core teleprompter application completed and tested successfully:
+  * File upload system (.txt, .docx) working
+  * Teleprompter display with smooth scrolling
+  * Bluetooth keyboard controls functional (Space, Arrow keys, +/-, F, Esc)
+  * Horizontal text flipping feature operational
+  * Settings panel with customizable font size, scroll speed, line height
+  * TypeScript errors resolved
 ```
 
 ## User Preferences

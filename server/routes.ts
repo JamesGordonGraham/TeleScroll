@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
 import { storage } from "./storage";
@@ -6,10 +6,14 @@ import { insertTeleprompterSettingsSchema, insertScriptSchema } from "@shared/sc
 import mammoth from "mammoth";
 import { z } from "zod";
 
+interface MulterRequest extends Request {
+  file?: any;
+}
+
 const upload = multer({ 
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: any, file: any, cb: any) => {
     if (file.mimetype === 'text/plain' || 
         file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
       cb(null, true);
@@ -126,7 +130,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File upload endpoint
-  app.post("/api/upload", upload.single('file'), async (req, res) => {
+  app.post("/api/upload", upload.single('file'), async (req: MulterRequest, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });

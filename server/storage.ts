@@ -33,8 +33,17 @@ export class MemStorage implements IStorage {
 
   async createTeleprompterSettings(insertSettings: InsertTeleprompterSettings): Promise<TeleprompterSettings> {
     const id = this.currentSettingsId++;
-    const settings: TeleprompterSettings = { ...insertSettings, id };
-    this.settings.set(id, settings);
+    const settings: TeleprompterSettings = { 
+      id,
+      userId: insertSettings.userId,
+      fontSize: insertSettings.fontSize ?? 32,
+      lineHeight: insertSettings.lineHeight ?? 1.6,
+      scrollSpeed: insertSettings.scrollSpeed ?? 1.0,
+      smoothScrolling: insertSettings.smoothScrolling ?? true,
+      autoFullscreen: insertSettings.autoFullscreen ?? false,
+      hideCursor: insertSettings.hideCursor ?? true,
+    };
+    this.settings.set(settings.userId, settings);
     return settings;
   }
 
@@ -44,7 +53,7 @@ export class MemStorage implements IStorage {
       throw new Error('Settings not found');
     }
     const updated: TeleprompterSettings = { ...existing, ...updateData };
-    this.settings.set(existing.id, updated);
+    this.settings.set(existing.userId, updated);
     return updated;
   }
 
