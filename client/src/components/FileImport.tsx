@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { CloudUpload, Trash2, Play, FileText } from 'lucide-react';
+import { CloudUpload, Trash2, Play, FileText, Bookmark } from 'lucide-react';
 import { parseFile, validateFile } from '@/lib/file-parser';
 import { useToast } from '@/hooks/use-toast';
 
@@ -18,6 +18,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
   const [isDragOver, setIsDragOver] = useState(false);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleFileUpload = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
@@ -88,6 +89,28 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
     onContentChange('');
   };
 
+  const handleAddMarker = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const cursorPosition = textarea.selectionStart;
+    const markerSymbol = '■'; // Violet square marker (will be styled with CSS)
+    
+    const newContent = content.slice(0, cursorPosition) + markerSymbol + content.slice(cursorPosition);
+    onContentChange(newContent);
+    
+    // Move cursor after the marker
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(cursorPosition + 1, cursorPosition + 1);
+    }, 0);
+
+    toast({
+      title: "Marker added",
+      description: "Violet marker inserted at cursor position",
+    });
+  };
+
   return (
     <section className="max-w-5xl mx-auto px-6 sm:px-8 lg:px-10 py-12">
       <div className="text-center mb-12 animate-slide-up">
@@ -120,6 +143,17 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
               </Button>
 
               <Button
+                className="bg-gradient-to-r from-violet-500 to-violet-600 hover:from-violet-600 hover:to-violet-700 text-white px-4 py-2 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddMarker();
+                }}
+              >
+                <Bookmark className="h-4 w-4 mr-2" />
+                Add Marker
+              </Button>
+
+              <Button
                 variant="outline"
                 size="sm"
                 onClick={handleClearText}
@@ -138,6 +172,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
             </div>
           </div>
           <Textarea
+            ref={textareaRef}
             value={content}
             onChange={(e) => onContentChange(e.target.value)}
             onPaste={(e) => {

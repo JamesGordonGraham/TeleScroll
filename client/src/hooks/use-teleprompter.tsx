@@ -133,40 +133,57 @@ export function useTeleprompter() {
   }, []);
 
   const nextMarker = useCallback((element?: HTMLElement | null) => {
-    setState(prev => {
-      const nextIndex = prev.markers.findIndex(pos => pos > prev.currentPosition);
-      if (nextIndex !== -1) {
-        const targetPosition = prev.markers[nextIndex];
-        if (element) {
-          element.scrollTop = targetPosition;
-        }
-        return {
-          ...prev,
-          currentPosition: targetPosition,
-          currentMarkerIndex: nextIndex
-        };
-      }
-      return prev;
-    });
+    if (!element) return;
+    
+    const content = element.textContent || '';
+    const markerPositions = [];
+    let index = 0;
+    
+    // Find all marker positions in the content
+    while (index < content.length) {
+      const markerIndex = content.indexOf('■', index);
+      if (markerIndex === -1) break;
+      markerPositions.push(markerIndex);
+      index = markerIndex + 1;
+    }
+    
+    // Find the next marker after current scroll position
+    const currentScrollRatio = element.scrollTop / (element.scrollHeight - element.clientHeight);
+    const currentCharPosition = Math.floor(currentScrollRatio * content.length);
+    
+    const nextMarkerIndex = markerPositions.find(pos => pos > currentCharPosition);
+    if (nextMarkerIndex !== undefined) {
+      const targetScrollRatio = nextMarkerIndex / content.length;
+      const targetScrollTop = targetScrollRatio * (element.scrollHeight - element.clientHeight);
+      element.scrollTop = targetScrollTop;
+    }
   }, []);
 
   const previousMarker = useCallback((element?: HTMLElement | null) => {
-    setState(prev => {
-      const markers = [...prev.markers].reverse();
-      const prevIndex = markers.findIndex(pos => pos < prev.currentPosition);
-      if (prevIndex !== -1) {
-        const targetPosition = markers[prevIndex];
-        if (element) {
-          element.scrollTop = targetPosition;
-        }
-        return {
-          ...prev,
-          currentPosition: targetPosition,
-          currentMarkerIndex: prev.markers.indexOf(targetPosition)
-        };
-      }
-      return prev;
-    });
+    if (!element) return;
+    
+    const content = element.textContent || '';
+    const markerPositions = [];
+    let index = 0;
+    
+    // Find all marker positions in the content
+    while (index < content.length) {
+      const markerIndex = content.indexOf('■', index);
+      if (markerIndex === -1) break;
+      markerPositions.push(markerIndex);
+      index = markerIndex + 1;
+    }
+    
+    // Find the previous marker before current scroll position
+    const currentScrollRatio = element.scrollTop / (element.scrollHeight - element.clientHeight);
+    const currentCharPosition = Math.floor(currentScrollRatio * content.length);
+    
+    const prevMarkerIndex = markerPositions.reverse().find(pos => pos < currentCharPosition);
+    if (prevMarkerIndex !== undefined) {
+      const targetScrollRatio = prevMarkerIndex / content.length;
+      const targetScrollTop = targetScrollRatio * (element.scrollHeight - element.clientHeight);
+      element.scrollTop = targetScrollTop;
+    }
   }, []);
 
   useEffect(() => {

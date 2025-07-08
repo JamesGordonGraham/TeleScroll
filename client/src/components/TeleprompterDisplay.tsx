@@ -107,12 +107,16 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
               }}
             >
               {content.split('\n').map((line, index) => (
-                <p key={index} className="mb-4 relative">
-                  {/* Marker indicator */}
-                  {state.markers.some(marker => Math.abs(marker - (scrollContainerRef.current?.scrollTop || 0)) < 100) && (
-                    <span className="absolute -left-8 top-0 w-3 h-3 bg-blue-400 rounded-full opacity-80 animate-pulse"></span>
-                  )}
-                  {line || '\u00A0'}
+                <p key={index} className="mb-4 relative teleprompter-content">
+                  {/* Render line with violet square markers */}
+                  {line.split('■').map((segment, segmentIndex) => (
+                    <span key={segmentIndex}>
+                      {segment}
+                      {segmentIndex < line.split('■').length - 1 && (
+                        <span className="inline-block w-3 h-3 bg-violet-500 rounded-sm mx-1 align-middle"></span>
+                      )}
+                    </span>
+                  )) || '\u00A0'}
                 </p>
               ))}
             </div>
