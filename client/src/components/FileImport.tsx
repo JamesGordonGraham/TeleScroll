@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { CloudUpload, Trash2, Play } from 'lucide-react';
+import { CloudUpload, Trash2, Play, FileText, Clipboard } from 'lucide-react';
 import { parseFile, validateFile } from '@/lib/file-parser';
 import { useToast } from '@/hooks/use-toast';
 
@@ -14,6 +14,7 @@ interface FileImportProps {
 export function FileImport({ onStartTeleprompter }: FileImportProps) {
   const [content, setContent] = useState('Welcome to TelePrompter Pro! This is a sample script to demonstrate the teleprompter functionality. You can edit this text or import your own file.\n\nYour teleprompter will display text in large, readable fonts with smooth scrolling. Use the keyboard controls to adjust speed, pause, and navigate through your script.\n\nThe application supports various text formatting and provides a distraction-free reading experience perfect for presentations, speeches, and video recordings.');
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -51,14 +52,36 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
     }
   }, [toast]);
 
+  const handlePaste = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text.trim()) {
+        setContent(text);
+        toast({
+          title: "Text pasted successfully",
+          description: "Content has been added to the script editor",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Paste failed",
+        description: "Unable to access clipboard. Try pasting directly in the text editor below.",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: handleFileUpload,
+    onDragEnter: () => setIsDragOver(true),
+    onDragLeave: () => setIsDragOver(false),
     accept: {
       'text/plain': ['.txt'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
     },
     maxFiles: 1,
     disabled: isUploading,
+    noClick: true, // We'll handle clicks manually for better UX
   });
 
   const handleStartTeleprompter = () => {
@@ -84,31 +107,64 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
         <p className="text-xl text-gray-600 font-light">Upload a file or start typing to begin your teleprompter session</p>
       </div>
 
-      {/* File Upload Zone */}
+      {/* Enhanced File Upload & Paste Zone */}
       <div
         {...getRootProps()}
-        className={`apple-card rounded-3xl p-12 text-center mb-8 file-drop-zone cursor-pointer ${
-          isDragActive ? 'drag-over' : ''
-        } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`apple-card rounded-3xl p-12 text-center mb-8 file-drop-zone transition-all duration-300 ${
+          isDragActive || isDragOver ? 'drag-over scale-[1.02] border-2 border-dashed border-blue-400' : ''
+        } ${isUploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       >
         <input {...getInputProps()} ref={fileInputRef} />
-        <div className="p-6 rounded-3xl gradient-bg-accent mx-auto w-fit mb-6">
-          <CloudUpload className="h-12 w-12 text-white" />
+        
+        {/* Icon Container */}
+        <div className="flex justify-center space-x-4 mb-6">
+          <div className="p-4 rounded-3xl gradient-bg-accent">
+            <CloudUpload className="h-10 w-10 text-white" />
+          </div>
+          <div className="p-4 rounded-3xl bg-gradient-to-r from-green-500 to-emerald-600">
+            <FileText className="h-10 w-10 text-white" />
+          </div>
+          <div className="p-4 rounded-3xl bg-gradient-to-r from-purple-500 to-pink-600">
+            <Clipboard className="h-10 w-10 text-white" />
+          </div>
         </div>
+
         <h3 className="text-2xl font-semibold text-gray-900 mb-3">
-          {isDragActive ? 'Drop your file here' : 'Drag and drop your file here'}
+          {isDragActive ? 'Drop your file here' : 'Import Your Content'}
         </h3>
-        <p className="text-gray-600 mb-8 text-lg">Supports .txt, .docx files up to 10MB</p>
-        <Button
-          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300"
-          disabled={isUploading}
-          onClick={(e) => {
-            e.stopPropagation();
-            fileInputRef.current?.click();
-          }}
-        >
-          {isUploading ? 'Uploading...' : 'Choose File'}
-        </Button>
+        <p className="text-gray-600 mb-8 text-lg">
+          Drag & drop files (.txt, .docx), paste text, or choose a file
+        </p>
+        
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <Button
+            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300"
+            disabled={isUploading}
+            onClick={(e) => {
+              e.stopPropagation();
+              fileInputRef.current?.click();
+            }}
+          >
+            <CloudUpload className="h-5 w-5 mr-2" />
+            {isUploading ? 'Uploading...' : 'Choose File'}
+          </Button>
+          
+          <div className="text-gray-400 font-medium">or</div>
+          
+          <Button
+            variant="outline"
+            className="btn-apple rounded-2xl px-8 py-4 font-semibold text-lg border-2 hover:bg-gray-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePaste();
+            }}
+            disabled={isUploading}
+          >
+            <Clipboard className="h-5 w-5 mr-2" />
+            Paste Text
+          </Button>
+        </div>
       </div>
 
       {/* Text Editor */}
