@@ -56,8 +56,8 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
     },
     onGoToBottom: () => goToBottom(scrollContainerRef.current),
     onAddMarker: addMarker,
-    onNextMarker: () => nextMarker(scrollContainerRef.current),
-    onPreviousMarker: () => previousMarker(scrollContainerRef.current),
+    onNextMarker: () => nextMarker(scrollContainerRef.current, content),
+    onPreviousMarker: () => previousMarker(scrollContainerRef.current, content),
   });
 
   useEffect(() => {
