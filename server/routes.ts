@@ -5,7 +5,7 @@ import { storage } from "./storage";
 import { insertTeleprompterSettingsSchema, insertScriptSchema } from "@shared/schema";
 import mammoth from "mammoth";
 import { z } from "zod";
-import pdf from "pdf-parse";
+// import pdf from "pdf-parse";
 import { JSDOM } from "jsdom";
 import MarkdownIt from "markdown-it";
 
@@ -23,18 +23,17 @@ const upload = multer({
       'application/msword',
       'application/rtf',
       'text/rtf',
-      'application/pdf',
       'text/html',
       'text/markdown'
     ];
     
-    const allowedExtensions = ['.txt', '.doc', '.docx', '.rtf', '.pdf', '.html', '.htm', '.md'];
+    const allowedExtensions = ['.txt', '.doc', '.docx', '.rtf', '.html', '.htm', '.md'];
     const fileExtension = '.' + file.originalname.split('.').pop()?.toLowerCase();
     
     if (allowedTypes.includes(file.mimetype) || allowedExtensions.includes(fileExtension)) {
       cb(null, true);
     } else {
-      cb(new Error('Supported formats: .txt, .doc, .docx, .rtf, .pdf, .html, .htm, .md'));
+      cb(new Error('Supported formats: .txt, .doc, .docx, .rtf, .html, .htm, .md'));
     }
   }
 });
@@ -178,8 +177,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       // PDF files
       else if (req.file.mimetype === 'application/pdf' || fileExtension === '.pdf') {
-        const pdfData = await pdf(req.file.buffer);
-        content = pdfData.text;
+        // PDF support temporarily disabled due to library issue
+        return res.status(400).json({ message: "PDF support is currently unavailable. Please use .txt, .docx, .html, or .md files instead." });
       }
       // HTML files
       else if (req.file.mimetype === 'text/html' || fileExtension === '.html' || fileExtension === '.htm') {
