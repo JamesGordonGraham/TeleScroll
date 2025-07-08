@@ -100,7 +100,7 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
         </h3>
         <p className="text-gray-600 mb-8 text-lg">Supports .txt, .docx files up to 10MB</p>
         <Button
-          className="gradient-bg-primary text-white px-8 py-4 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300"
+          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300"
           disabled={isUploading}
           onClick={(e) => {
             e.stopPropagation();
@@ -128,7 +128,7 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
               </Button>
               <Button 
                 onClick={handleStartTeleprompter}
-                className="gradient-bg-primary text-white px-6 py-2 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-2 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <Play className="h-4 w-4 mr-2" />
                 Start Teleprompter
