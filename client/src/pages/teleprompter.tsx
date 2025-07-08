@@ -38,32 +38,34 @@ export default function TeleprompterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {mode === 'import' && (
         <>
           {/* Header */}
-          <header className="bg-white shadow-sm border-b border-gray-200">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between items-center h-16">
+          <header className="apple-card mx-4 mt-4 rounded-2xl">
+            <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
+              <div className="flex justify-between items-center h-20">
                 <div className="flex items-center space-x-4">
-                  <ScrollText className="h-8 w-8 text-blue-600" />
-                  <h1 className="text-xl font-semibold text-gray-900">TelePrompter Pro</h1>
+                  <div className="p-3 rounded-2xl gradient-bg-primary">
+                    <ScrollText className="h-6 w-6 text-white" />
+                  </div>
+                  <h1 className="text-2xl font-bold gradient-text">TelePrompter Pro</h1>
                 </div>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3">
                   <Button
                     variant="ghost"
                     onClick={() => setShowShortcuts(true)}
-                    className="text-gray-500 hover:text-gray-700"
+                    className="btn-apple rounded-2xl px-4 py-2 text-gray-600 hover:text-gray-800"
                   >
                     <Keyboard className="h-4 w-4" />
-                    <span className="ml-2 text-sm">Shortcuts</span>
+                    <span className="ml-2 text-sm font-medium">Shortcuts</span>
                   </Button>
                   <Button
                     variant="ghost"
                     onClick={() => setShowSettings(true)}
-                    className="text-gray-500 hover:text-gray-700"
+                    className="btn-apple rounded-2xl p-3"
                   >
-                    <Settings className="h-4 w-4" />
+                    <Settings className="h-5 w-5 text-gray-600" />
                   </Button>
                 </div>
               </div>
@@ -71,7 +73,7 @@ export default function TeleprompterPage() {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1">
+          <main className="flex-1 animate-fade-in">
             <FileImport onStartTeleprompter={handleStartTeleprompter} />
           </main>
         </>

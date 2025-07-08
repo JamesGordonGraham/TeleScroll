@@ -24,19 +24,19 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-2xl apple-card rounded-3xl border-0">
         <DialogHeader>
-          <DialogTitle>Keyboard Shortcuts</DialogTitle>
+          <DialogTitle className="text-2xl font-bold gradient-text text-center mb-6">Keyboard Shortcuts</DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 gap-4">
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">Teleprompter Controls</h4>
-            <div className="space-y-2">
+        <div className="grid grid-cols-1 gap-8">
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold gradient-text-accent">Teleprompter Controls</h4>
+            <div className="space-y-3">
               {teleprompterShortcuts.map((shortcut, index) => (
-                <div key={index} className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
-                  <span className="text-gray-700">{shortcut.action}</span>
-                  <kbd className="bg-white px-3 py-1 rounded border text-sm font-mono">
+                <div key={index} className="flex justify-between items-center py-4 px-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl">
+                  <span className="text-gray-800 font-medium">{shortcut.action}</span>
+                  <kbd className="bg-white shadow-md px-4 py-2 rounded-xl border-2 border-gray-100 text-sm font-mono font-semibold">
                     {shortcut.key}
                   </kbd>
                 </div>
@@ -44,13 +44,13 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
             </div>
           </div>
 
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">General</h4>
-            <div className="space-y-2">
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold gradient-text">General</h4>
+            <div className="space-y-3">
               {generalShortcuts.map((shortcut, index) => (
-                <div key={index} className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
-                  <span className="text-gray-700">{shortcut.action}</span>
-                  <kbd className="bg-white px-3 py-1 rounded border text-sm font-mono">
+                <div key={index} className="flex justify-between items-center py-4 px-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl">
+                  <span className="text-gray-800 font-medium">{shortcut.action}</span>
+                  <kbd className="bg-white shadow-md px-4 py-2 rounded-xl border-2 border-gray-100 text-sm font-mono font-semibold">
                     {shortcut.key}
                   </kbd>
                 </div>
@@ -59,12 +59,12 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
           </div>
         </div>
 
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+        <div className="mt-8 p-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-3xl text-white">
           <div className="flex items-start">
-            <Info className="h-5 w-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
-            <div className="text-sm text-blue-800">
-              <p className="font-medium mb-1">Bluetooth Keyboard Support</p>
-              <p>All keyboard shortcuts work with Bluetooth keyboards. Make sure your device is paired and connected.</p>
+            <Info className="h-6 w-6 text-white mt-0.5 mr-4 flex-shrink-0" />
+            <div>
+              <p className="font-semibold mb-2 text-lg">Bluetooth Keyboard Support</p>
+              <p className="text-blue-100">All keyboard shortcuts work seamlessly with Bluetooth keyboards. Make sure your device is paired and connected for the best teleprompter experience.</p>
             </div>
           </div>
         </div>

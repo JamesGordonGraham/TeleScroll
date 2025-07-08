@@ -104,6 +104,11 @@ Changelog:
   * Drizzle ORM database layer implemented
   * Data persistence for settings and scripts across sessions
   * Migrated from in-memory to database storage
+- July 08, 2025. Apple-style UI redesign completed:
+  * Modern gradient design with Inter font
+  * Glass morphism effects and rounded corners
+  * Gradient text titles and Apple-style cards
+  * Enhanced teleprompter controls with better visual hierarchy
 ```
 
 ## User Preferences

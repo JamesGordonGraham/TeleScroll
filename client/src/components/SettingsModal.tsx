@@ -53,15 +53,15 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto apple-card rounded-3xl border-0">
         <DialogHeader>
-          <DialogTitle>Settings</DialogTitle>
+          <DialogTitle className="text-2xl font-bold gradient-text text-center mb-4">Settings</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* Text Settings */}
-          <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Text Display</h4>
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6">
+            <h4 className="text-lg font-semibold gradient-text-accent mb-4">Text Display</h4>
             <div className="space-y-4">
               <div>
                 <Label className="text-sm text-gray-700 mb-2">Font Size</Label>
@@ -96,8 +96,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </div>
 
           {/* Scrolling Settings */}
-          <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Scrolling</h4>
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6">
+            <h4 className="text-lg font-semibold gradient-text mb-4">Scrolling</h4>
             <div className="space-y-4">
               <div>
                 <Label className="text-sm text-gray-700 mb-2">Default Speed</Label>
@@ -128,8 +128,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </div>
 
           {/* Display Settings */}
-          <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Display</h4>
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-6">
+            <h4 className="text-lg font-semibold gradient-text-accent mb-4">Display</h4>
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
                 <Switch
@@ -155,8 +155,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </div>
 
           {/* Keyboard Settings */}
-          <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Keyboard Shortcuts</h4>
+          <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl p-6">
+            <h4 className="text-lg font-semibold gradient-text mb-4">Keyboard Shortcuts</h4>
             <div className="space-y-2 text-sm text-gray-600">
               <div className="flex justify-between">
                 <span>Play/Pause</span>
@@ -188,17 +188,19 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </div>
         </div>
 
-        <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
+        <div className="flex justify-end space-x-4 mt-10 pt-6 border-t border-gray-100">
           <Button
             variant="outline"
             onClick={resetSettings}
             disabled={isUpdatingSettings}
+            className="btn-apple rounded-2xl px-6 py-3 font-medium"
           >
             Reset to Default
           </Button>
           <Button
             onClick={onClose}
             disabled={isUpdatingSettings}
+            className="gradient-bg-primary text-white rounded-2xl px-8 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
           >
             {isUpdatingSettings ? 'Saving...' : 'Save Settings'}
           </Button>

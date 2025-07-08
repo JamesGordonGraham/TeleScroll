@@ -101,58 +101,58 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
         </div>
 
         {/* Floating Control Panel */}
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur rounded-full px-6 py-3 shadow-lg">
-          <div className="flex items-center space-x-4">
+        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 control-panel rounded-3xl px-8 py-4">
+          <div className="flex items-center space-x-6">
             {/* Play/Pause */}
             <Button
               onClick={togglePlay}
-              className="w-12 h-12 rounded-full"
+              className="w-14 h-14 rounded-full gradient-bg-primary text-white shadow-xl hover:shadow-2xl transition-all duration-300"
               size="sm"
             >
-              {state.isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+              {state.isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
             </Button>
 
             {/* Speed Controls */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3 bg-white/30 rounded-2xl px-4 py-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleSpeedDecrease}
-                className="text-gray-600 hover:text-gray-800"
+                className="text-gray-700 hover:text-gray-900 p-2 rounded-xl"
               >
                 <Minus className="h-4 w-4" />
               </Button>
-              <span className="text-sm font-medium text-gray-700 min-w-[60px] text-center">
+              <span className="text-sm font-semibold text-gray-800 min-w-[60px] text-center bg-white/50 rounded-lg px-3 py-1">
                 {settings.scrollSpeed.toFixed(1)}x
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleSpeedIncrease}
-                className="text-gray-600 hover:text-gray-800"
+                className="text-gray-700 hover:text-gray-900 p-2 rounded-xl"
               >
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
 
             {/* Text Size Controls */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3 bg-white/30 rounded-2xl px-4 py-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleTextSizeDecrease}
-                className="text-gray-600 hover:text-gray-800"
+                className="text-gray-700 hover:text-gray-900 p-2 rounded-xl"
               >
                 <ZoomOut className="h-4 w-4" />
               </Button>
-              <span className="text-sm font-medium text-gray-700 min-w-[50px] text-center">
+              <span className="text-sm font-semibold text-gray-800 min-w-[50px] text-center bg-white/50 rounded-lg px-3 py-1">
                 {settings.fontSize}px
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleTextSizeIncrease}
-                className="text-gray-600 hover:text-gray-800"
+                className="text-gray-700 hover:text-gray-900 p-2 rounded-xl"
               >
                 <ZoomIn className="h-4 w-4" />
               </Button>
@@ -163,9 +163,13 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
               variant="ghost"
               size="sm"
               onClick={toggleFlip}
-              className={`text-gray-600 hover:text-gray-800 ${state.isFlipped ? 'bg-gray-200' : ''}`}
+              className={`p-3 rounded-2xl transition-all duration-200 ${
+                state.isFlipped 
+                  ? 'bg-purple-500 text-white shadow-lg' 
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-white/30'
+              }`}
             >
-              <ArrowLeftRight className="h-4 w-4" />
+              <ArrowLeftRight className="h-5 w-5" />
             </Button>
 
             {/* Settings */}
@@ -173,9 +177,9 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
               variant="ghost"
               size="sm"
               onClick={onShowSettings}
-              className="text-gray-600 hover:text-gray-800"
+              className="text-gray-700 hover:text-gray-900 hover:bg-white/30 p-3 rounded-2xl"
             >
-              <Settings className="h-4 w-4" />
+              <Settings className="h-5 w-5" />
             </Button>
 
             {/* Exit */}
@@ -183,9 +187,9 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
               variant="ghost"
               size="sm"
               onClick={onExit}
-              className="text-gray-600 hover:text-red-600 ml-2"
+              className="text-gray-700 hover:text-red-500 hover:bg-red-50 p-3 rounded-2xl ml-2"
             >
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5" />
             </Button>
           </div>
         </div>
