@@ -81,7 +81,7 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
       'application/msword': ['.doc'],
       'application/rtf': ['.rtf'],
       'text/rtf': ['.rtf'],
-      'application/pdf': ['.pdf'],
+
       'text/html': ['.html', '.htm'],
       'text/markdown': ['.md'],
     },
@@ -139,6 +139,18 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePaste();
+                }}
+                className="btn-apple rounded-2xl px-4 py-2 text-gray-600 hover:text-blue-600 border-0"
+              >
+                <Clipboard className="h-4 w-4 mr-2" />
+                Paste
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleClearText}
                 className="btn-apple rounded-2xl px-4 py-2 text-gray-500 hover:text-red-500 border-0"
               >
@@ -157,7 +169,17 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
           <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Type or paste your script here... (You can also drag & drop .txt, .doc, .docx, .rtf, .pdf, .html, .htm, .md files)"
+            onPaste={(e) => {
+              // Allow normal paste behavior - the textarea handles it automatically
+              // But also show a success message
+              setTimeout(() => {
+                toast({
+                  title: "Text pasted",
+                  description: "Content has been pasted into the script editor",
+                });
+              }, 100);
+            }}
+            placeholder="Type or paste your script here... (You can also drag & drop .txt, .doc, .docx, .rtf, .html, .htm, .md files)"
             className="h-[600px] resize-none rounded-2xl border-gray-200 focus:border-purple-400 focus:ring-purple-400 text-lg leading-relaxed bg-gray-50/50"
             style={{ aspectRatio: '1/1.414' }}
           />
