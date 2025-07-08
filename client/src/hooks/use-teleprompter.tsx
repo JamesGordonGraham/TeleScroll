@@ -133,10 +133,7 @@ export function useTeleprompter() {
   }, []);
 
   const nextMarker = useCallback((element?: HTMLElement | null, content?: string) => {
-    if (!element || !content) {
-      console.log('nextMarker: Missing element or content');
-      return;
-    }
+    if (!element || !content) return;
     
     const markerPositions = [];
     let index = 0;
@@ -149,36 +146,23 @@ export function useTeleprompter() {
       index = markerIndex + 1;
     }
     
-    console.log('nextMarker: Found markers at positions:', markerPositions);
-    
-    if (markerPositions.length === 0) {
-      console.log('nextMarker: No markers found');
-      return;
-    }
+    if (markerPositions.length === 0) return;
     
     // Calculate current position based on scroll
     const currentScrollRatio = element.scrollTop / (element.scrollHeight - element.clientHeight);
     const currentCharPosition = Math.floor(currentScrollRatio * content.length);
-    
-    console.log('nextMarker: Current position:', currentCharPosition);
     
     // Find the next marker
     const nextMarkerIndex = markerPositions.find(pos => pos > currentCharPosition);
     if (nextMarkerIndex !== undefined) {
       const targetScrollRatio = nextMarkerIndex / content.length;
       const targetScrollTop = targetScrollRatio * (element.scrollHeight - element.clientHeight);
-      console.log('nextMarker: Scrolling to position:', targetScrollTop);
       element.scrollTop = Math.max(0, Math.min(targetScrollTop, element.scrollHeight - element.clientHeight));
-    } else {
-      console.log('nextMarker: No next marker found');
     }
   }, []);
 
   const previousMarker = useCallback((element?: HTMLElement | null, content?: string) => {
-    if (!element || !content) {
-      console.log('previousMarker: Missing element or content');
-      return;
-    }
+    if (!element || !content) return;
     
     const markerPositions = [];
     let index = 0;
@@ -191,28 +175,18 @@ export function useTeleprompter() {
       index = markerIndex + 1;
     }
     
-    console.log('previousMarker: Found markers at positions:', markerPositions);
-    
-    if (markerPositions.length === 0) {
-      console.log('previousMarker: No markers found');
-      return;
-    }
+    if (markerPositions.length === 0) return;
     
     // Calculate current position based on scroll
     const currentScrollRatio = element.scrollTop / (element.scrollHeight - element.clientHeight);
     const currentCharPosition = Math.floor(currentScrollRatio * content.length);
-    
-    console.log('previousMarker: Current position:', currentCharPosition);
     
     // Find the previous marker
     const prevMarkerIndex = markerPositions.reverse().find(pos => pos < currentCharPosition);
     if (prevMarkerIndex !== undefined) {
       const targetScrollRatio = prevMarkerIndex / content.length;
       const targetScrollTop = targetScrollRatio * (element.scrollHeight - element.clientHeight);
-      console.log('previousMarker: Scrolling to position:', targetScrollTop);
       element.scrollTop = Math.max(0, Math.min(targetScrollTop, element.scrollHeight - element.clientHeight));
-    } else {
-      console.log('previousMarker: No previous marker found');
     }
   }, []);
 

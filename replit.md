@@ -120,6 +120,12 @@ Changelog:
   * Fixed text persistence issue - content now properly preserved when exiting teleprompter
   * Removed redundant paste button while maintaining Ctrl+V functionality
   * Improved state management with parent component handling content state
+- July 08, 2025. Violet marker system implementation completed:
+  * Added 'Add Marker' button with violet gradient styling beside 'Choose File' button
+  * Violet square markers (■) inserted at cursor position in Script Editor
+  * Updated keyboard navigation: N key = Next Marker, P key = Previous Marker
+  * Markers display as violet squares in both Script Editor and Teleprompter display
+  * Text-based marker navigation system working with content positioning
 ```
 
 ## User Preferences
