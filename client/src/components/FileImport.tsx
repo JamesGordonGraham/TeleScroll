@@ -107,65 +107,37 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
         <p className="text-xl text-gray-600 font-light">Upload a file or start typing to begin your teleprompter session</p>
       </div>
 
-      {/* Enhanced File Upload & Paste Zone */}
+      {/* Script Editor */}
       <div
         {...getRootProps()}
-        className={`apple-card rounded-3xl p-12 text-center mb-8 file-drop-zone transition-all duration-300 ${
+        className={`apple-card rounded-3xl border-0 shadow-2xl shadow-black/5 mb-8 transition-all duration-300 ${
           isDragActive || isDragOver ? 'drag-over scale-[1.02] border-2 border-dashed border-blue-400' : ''
-        } ${isUploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        }`}
       >
         <input {...getInputProps()} ref={fileInputRef} />
-        
-        {/* Icon Container */}
-        <div className="flex justify-center space-x-4 mb-6">
-          <div className="p-4 rounded-3xl bg-white/20 backdrop-blur-sm">
-            <CloudUpload className="h-10 w-10 text-white" />
-          </div>
-          <div className="p-4 rounded-3xl bg-gray-300/30 backdrop-blur-sm">
-            <FileText className="h-10 w-10 text-gray-600" />
-          </div>
-          <div className="p-4 rounded-3xl bg-white/20 backdrop-blur-sm">
-            <Clipboard className="h-10 w-10 text-white" />
-          </div>
-        </div>
-
-        <h3 className="text-2xl font-semibold text-gray-900 mb-3">
-          {isDragActive ? 'Drop your file here' : 'Import Your Content'}
-        </h3>
-        <p className="text-gray-600 mb-8 text-lg">
-          Drag & drop files (.txt, .docx), paste text, or choose a file
-        </p>
-        
-        {/* Action Button */}
-        <div className="flex justify-center">
-          <Button
-            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300"
-            disabled={isUploading}
-            onClick={(e) => {
-              e.stopPropagation();
-              fileInputRef.current?.click();
-            }}
-          >
-            <CloudUpload className="h-5 w-5 mr-2" />
-            {isUploading ? 'Uploading...' : 'Choose File'}
-          </Button>
-        </div>
-      </div>
-
-      {/* Text Editor */}
-      <Card className="apple-card rounded-3xl border-0 shadow-2xl shadow-black/5">
         <CardContent className="p-8">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-2xl font-semibold gradient-text-accent">Paste Text & Script Editor</h3>
+            <h3 className="text-2xl font-semibold gradient-text-accent">Script Editor</h3>
             <div className="flex space-x-3">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handlePaste}
-                className="btn-apple rounded-2xl px-4 py-2 text-gray-600 hover:text-purple-600 border-0 mr-2"
+                className="btn-apple rounded-2xl px-4 py-2 text-gray-600 hover:text-purple-600 border-0"
               >
                 <Clipboard className="h-4 w-4 mr-2" />
                 Paste
+              </Button>
+              <Button
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
+                disabled={isUploading}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  fileInputRef.current?.click();
+                }}
+              >
+                <CloudUpload className="h-4 w-4 mr-2" />
+                {isUploading ? 'Uploading...' : 'Choose File'}
               </Button>
               <Button
                 variant="outline"
@@ -188,11 +160,11 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
           <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Type or paste your script here..."
+            placeholder="Type or paste your script here... (You can also drag & drop .txt or .docx files)"
             className="min-h-80 resize-none rounded-2xl border-gray-200 focus:border-purple-400 focus:ring-purple-400 text-lg leading-relaxed bg-gray-50/50"
           />
         </CardContent>
-      </Card>
+      </div>
     </section>
   );
 }
