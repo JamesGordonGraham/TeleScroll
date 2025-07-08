@@ -136,8 +136,8 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
           Drag & drop files (.txt, .docx), paste text, or choose a file
         </p>
         
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        {/* Action Button */}
+        <div className="flex justify-center">
           <Button
             className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300"
             disabled={isUploading}
@@ -149,21 +149,6 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
             <CloudUpload className="h-5 w-5 mr-2" />
             {isUploading ? 'Uploading...' : 'Choose File'}
           </Button>
-          
-          <div className="text-gray-400 font-medium">or</div>
-          
-          <Button
-            variant="outline"
-            className="btn-apple rounded-2xl px-8 py-4 font-semibold text-lg border-2 hover:bg-gray-50"
-            onClick={(e) => {
-              e.stopPropagation();
-              handlePaste();
-            }}
-            disabled={isUploading}
-          >
-            <Clipboard className="h-5 w-5 mr-2" />
-            Paste Text
-          </Button>
         </div>
       </div>
 
@@ -171,8 +156,17 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
       <Card className="apple-card rounded-3xl border-0 shadow-2xl shadow-black/5">
         <CardContent className="p-8">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-2xl font-semibold gradient-text-accent">Script Editor</h3>
+            <h3 className="text-2xl font-semibold gradient-text-accent">Paste Text & Script Editor</h3>
             <div className="flex space-x-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePaste}
+                className="btn-apple rounded-2xl px-4 py-2 text-gray-600 hover:text-purple-600 border-0 mr-2"
+              >
+                <Clipboard className="h-4 w-4 mr-2" />
+                Paste
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
