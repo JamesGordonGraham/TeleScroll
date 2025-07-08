@@ -53,7 +53,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto apple-card rounded-3xl border-0">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto apple-card rounded-3xl border-0">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold gradient-text text-center mb-4">Settings</DialogTitle>
         </DialogHeader>
@@ -157,32 +157,90 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           {/* Keyboard Settings */}
           <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl p-6">
             <h4 className="text-lg font-semibold gradient-text mb-4">Keyboard Shortcuts</h4>
-            <div className="space-y-2 text-sm text-gray-600">
-              <div className="flex justify-between">
-                <span>Play/Pause</span>
-                <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">Space</kbd>
-              </div>
-              <div className="flex justify-between">
-                <span>Speed Up/Down</span>
-                <div className="space-x-1">
-                  <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">↑</kbd>
-                  <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">↓</kbd>
+            <div className="grid grid-cols-1 gap-3 text-sm text-gray-600">
+              {/* Playback Controls */}
+              <div className="space-y-2">
+                <h5 className="font-medium text-gray-800 text-xs uppercase tracking-wide">Playback</h5>
+                <div className="flex justify-between">
+                  <span>Play/Pause</span>
+                  <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">Space</kbd>
+                </div>
+                <div className="flex justify-between">
+                  <span>Speed Up/Down</span>
+                  <div className="space-x-1">
+                    <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">↑</kbd>
+                    <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">↓</kbd>
+                  </div>
                 </div>
               </div>
-              <div className="flex justify-between">
-                <span>Text Size</span>
-                <div className="space-x-1">
-                  <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">+</kbd>
-                  <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">-</kbd>
+              
+              {/* Text Controls */}
+              <div className="space-y-2">
+                <h5 className="font-medium text-gray-800 text-xs uppercase tracking-wide">Text</h5>
+                <div className="flex justify-between">
+                  <span>Text Size +/-</span>
+                  <div className="space-x-1">
+                    <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">+</kbd>
+                    <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">-</kbd>
+                  </div>
+                </div>
+                <div className="flex justify-between">
+                  <span>Flip Text</span>
+                  <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">F</kbd>
                 </div>
               </div>
-              <div className="flex justify-between">
-                <span>Flip Text</span>
-                <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">F</kbd>
+              
+              {/* Navigation */}
+              <div className="space-y-2">
+                <h5 className="font-medium text-gray-800 text-xs uppercase tracking-wide">Navigation</h5>
+                <div className="flex justify-between">
+                  <span>Go to Top</span>
+                  <div className="space-x-1">
+                    <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">H</kbd>
+                    <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">Home</kbd>
+                  </div>
+                </div>
+                <div className="flex justify-between">
+                  <span>Go to Bottom</span>
+                  <div className="space-x-1">
+                    <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">B</kbd>
+                    <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">End</kbd>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span>Exit</span>
-                <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">Esc</kbd>
+              
+              {/* Markers */}
+              <div className="space-y-2">
+                <h5 className="font-medium text-gray-800 text-xs uppercase tracking-wide">Markers</h5>
+                <div className="flex justify-between">
+                  <span>Add Marker</span>
+                  <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">M</kbd>
+                </div>
+                <div className="flex justify-between">
+                  <span>Next Marker</span>
+                  <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">N</kbd>
+                </div>
+                <div className="flex justify-between">
+                  <span>Previous Marker</span>
+                  <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">P</kbd>
+                </div>
+              </div>
+              
+              {/* System */}
+              <div className="space-y-2">
+                <h5 className="font-medium text-gray-800 text-xs uppercase tracking-wide">System</h5>
+                <div className="flex justify-between">
+                  <span>Settings</span>
+                  <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">Ctrl + ,</kbd>
+                </div>
+                <div className="flex justify-between">
+                  <span>Fullscreen</span>
+                  <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">F11</kbd>
+                </div>
+                <div className="flex justify-between">
+                  <span>Exit</span>
+                  <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">Esc</kbd>
+                </div>
               </div>
             </div>
           </div>
