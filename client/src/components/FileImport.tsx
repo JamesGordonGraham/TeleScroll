@@ -120,15 +120,6 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
             <h3 className="text-2xl font-semibold gradient-text-accent">Script Editor</h3>
             <div className="flex space-x-3">
               <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePaste}
-                className="btn-apple rounded-2xl px-4 py-2 text-gray-600 hover:text-purple-600 border-0"
-              >
-                <Clipboard className="h-4 w-4 mr-2" />
-                Paste
-              </Button>
-              <Button
                 className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
                 disabled={isUploading}
                 onClick={(e) => {
