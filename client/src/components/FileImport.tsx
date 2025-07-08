@@ -118,13 +118,13 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
         
         {/* Icon Container */}
         <div className="flex justify-center space-x-4 mb-6">
-          <div className="p-4 rounded-3xl gradient-bg-accent">
+          <div className="p-4 rounded-3xl bg-white/20 backdrop-blur-sm">
             <CloudUpload className="h-10 w-10 text-white" />
           </div>
-          <div className="p-4 rounded-3xl bg-gradient-to-r from-green-500 to-emerald-600">
+          <div className="p-4 rounded-3xl bg-white/20 backdrop-blur-sm">
             <FileText className="h-10 w-10 text-white" />
           </div>
-          <div className="p-4 rounded-3xl bg-gradient-to-r from-purple-500 to-pink-600">
+          <div className="p-4 rounded-3xl bg-white/20 backdrop-blur-sm">
             <Clipboard className="h-10 w-10 text-white" />
           </div>
         </div>
