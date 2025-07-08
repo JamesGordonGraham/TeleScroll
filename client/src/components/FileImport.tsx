@@ -92,7 +92,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
     <section className="max-w-5xl mx-auto px-6 sm:px-8 lg:px-10 py-12">
       <div className="text-center mb-12 animate-slide-up">
         <h2 className="text-4xl font-bold gradient-text mb-6">Import Your Script</h2>
-        <p className="text-xl text-gray-600 font-light">Upload a file, cut and paste or start typing to begin your teleprompter session</p>
+        <p className="text-xl text-gray-600 font-light">Upload a file, cut and paste, use voice or start typing to begin your teleprompter session</p>
       </div>
 
       {/* Script Editor */}
