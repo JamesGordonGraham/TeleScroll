@@ -29,7 +29,7 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl apple-card rounded-3xl border-0">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto apple-card rounded-3xl border-0">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold gradient-text text-center mb-6">Keyboard Shortcuts</DialogTitle>
         </DialogHeader>
