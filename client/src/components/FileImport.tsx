@@ -161,7 +161,8 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Type or paste your script here... (You can also drag & drop .txt or .docx files)"
-            className="min-h-96 resize-none rounded-2xl border-gray-200 focus:border-purple-400 focus:ring-purple-400 text-lg leading-relaxed bg-gray-50/50"
+            className="h-[600px] resize-none rounded-2xl border-gray-200 focus:border-purple-400 focus:ring-purple-400 text-lg leading-relaxed bg-gray-50/50"
+            style={{ aspectRatio: '1/1.414' }}
           />
         </CardContent>
       </div>
