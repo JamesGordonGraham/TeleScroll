@@ -8,7 +8,7 @@ import { ScrollText, Keyboard, Settings } from 'lucide-react';
 
 export default function TeleprompterPage() {
   const [mode, setMode] = useState<'import' | 'teleprompter'>('import');
-  const [currentContent, setCurrentContent] = useState('');
+  const [currentContent, setCurrentContent] = useState('Welcome to TelePrompter Pro! This is a sample script to demonstrate the teleprompter functionality. You can edit this text or import your own file.\n\nYour teleprompter will display text in large, readable fonts with smooth scrolling. Use the keyboard controls to adjust speed, pause, and navigate through your script.\n\nThe application supports various text formatting and provides a distraction-free reading experience perfect for presentations, speeches, and video recordings.');
   const [showSettings, setShowSettings] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
@@ -74,7 +74,11 @@ export default function TeleprompterPage() {
 
           {/* Main Content */}
           <main className="flex-1 animate-fade-in">
-            <FileImport onStartTeleprompter={handleStartTeleprompter} />
+            <FileImport 
+              onStartTeleprompter={handleStartTeleprompter} 
+              content={currentContent}
+              onContentChange={setCurrentContent}
+            />
           </main>
         </>
       )}

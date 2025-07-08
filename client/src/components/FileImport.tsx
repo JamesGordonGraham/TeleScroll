@@ -3,16 +3,17 @@ import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { CloudUpload, Trash2, Play, FileText, Clipboard } from 'lucide-react';
+import { CloudUpload, Trash2, Play, FileText } from 'lucide-react';
 import { parseFile, validateFile } from '@/lib/file-parser';
 import { useToast } from '@/hooks/use-toast';
 
 interface FileImportProps {
   onStartTeleprompter: (content: string) => void;
+  content: string;
+  onContentChange: (content: string) => void;
 }
 
-export function FileImport({ onStartTeleprompter }: FileImportProps) {
-  const [content, setContent] = useState('Welcome to TelePrompter Pro! This is a sample script to demonstrate the teleprompter functionality. You can edit this text or import your own file.\n\nYour teleprompter will display text in large, readable fonts with smooth scrolling. Use the keyboard controls to adjust speed, pause, and navigate through your script.\n\nThe application supports various text formatting and provides a distraction-free reading experience perfect for presentations, speeches, and video recordings.');
+export function FileImport({ onStartTeleprompter, content, onContentChange }: FileImportProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const { toast } = useToast();
@@ -36,7 +37,7 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
     setIsUploading(true);
     try {
       const result = await parseFile(file);
-      setContent(result.content);
+      onContentChange(result.content);
       toast({
         title: "File uploaded successfully",
         description: `Loaded content from ${result.filename}`,
@@ -50,26 +51,7 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
     } finally {
       setIsUploading(false);
     }
-  }, [toast]);
-
-  const handlePaste = useCallback(async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      if (text.trim()) {
-        setContent(text);
-        toast({
-          title: "Text pasted successfully",
-          description: "Content has been added to the script editor",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Paste failed",
-        description: "Unable to access clipboard. Try pasting directly in the text editor below.",
-        variant: "destructive",
-      });
-    }
-  }, [toast]);
+  }, [toast, onContentChange]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: handleFileUpload,
@@ -103,7 +85,7 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
   };
 
   const handleClearText = () => {
-    setContent('');
+    onContentChange('');
   };
 
   return (
@@ -136,18 +118,7 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
                 <CloudUpload className="h-4 w-4 mr-2" />
                 {isUploading ? 'Uploading...' : 'Choose File'}
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePaste();
-                }}
-                className="btn-apple rounded-2xl px-4 py-2 text-gray-600 hover:text-blue-600 border-0"
-              >
-                <Clipboard className="h-4 w-4 mr-2" />
-                Paste
-              </Button>
+
               <Button
                 variant="outline"
                 size="sm"
@@ -168,7 +139,7 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
           </div>
           <Textarea
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) => onContentChange(e.target.value)}
             onPaste={(e) => {
               // Allow normal paste behavior - the textarea handles it automatically
               // But also show a success message
