@@ -121,8 +121,8 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
           <div className="p-4 rounded-3xl bg-white/20 backdrop-blur-sm">
             <CloudUpload className="h-10 w-10 text-white" />
           </div>
-          <div className="p-4 rounded-3xl bg-white/20 backdrop-blur-sm">
-            <FileText className="h-10 w-10 text-white" />
+          <div className="p-4 rounded-3xl bg-gray-300/30 backdrop-blur-sm">
+            <FileText className="h-10 w-10 text-gray-600" />
           </div>
           <div className="p-4 rounded-3xl bg-white/20 backdrop-blur-sm">
             <Clipboard className="h-10 w-10 text-white" />
