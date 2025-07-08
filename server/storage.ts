@@ -1,4 +1,6 @@
 import { teleprompterSettings, scripts, type TeleprompterSettings, type InsertTeleprompterSettings, type Script, type InsertScript } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // Settings
@@ -87,4 +89,66 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  async getTeleprompterSettings(userId: string): Promise<TeleprompterSettings | undefined> {
+    const [settings] = await db.select().from(teleprompterSettings).where(eq(teleprompterSettings.userId, userId));
+    return settings || undefined;
+  }
+
+  async createTeleprompterSettings(insertSettings: InsertTeleprompterSettings): Promise<TeleprompterSettings> {
+    const [settings] = await db
+      .insert(teleprompterSettings)
+      .values(insertSettings)
+      .returning();
+    return settings;
+  }
+
+  async updateTeleprompterSettings(userId: string, updateData: Partial<InsertTeleprompterSettings>): Promise<TeleprompterSettings> {
+    const [settings] = await db
+      .update(teleprompterSettings)
+      .set(updateData)
+      .where(eq(teleprompterSettings.userId, userId))
+      .returning();
+    
+    if (!settings) {
+      throw new Error('Settings not found');
+    }
+    return settings;
+  }
+
+  async getScripts(userId: string): Promise<Script[]> {
+    return await db.select().from(scripts).where(eq(scripts.userId, userId));
+  }
+
+  async getScript(id: number): Promise<Script | undefined> {
+    const [script] = await db.select().from(scripts).where(eq(scripts.id, id));
+    return script || undefined;
+  }
+
+  async createScript(insertScript: InsertScript): Promise<Script> {
+    const [script] = await db
+      .insert(scripts)
+      .values(insertScript)
+      .returning();
+    return script;
+  }
+
+  async updateScript(id: number, updateData: Partial<InsertScript>): Promise<Script> {
+    const [script] = await db
+      .update(scripts)
+      .set(updateData)
+      .where(eq(scripts.id, id))
+      .returning();
+    
+    if (!script) {
+      throw new Error('Script not found');
+    }
+    return script;
+  }
+
+  async deleteScript(id: number): Promise<void> {
+    await db.delete(scripts).where(eq(scripts.id, id));
+  }
+}
+
+export const storage = new DatabaseStorage();

@@ -77,7 +77,7 @@ Two main entities:
 
 ### Key Design Decisions
 
-**Storage Strategy**: Implemented interface-based storage abstraction to support both in-memory (development) and PostgreSQL (production) storage, enabling easier testing and development.
+**Storage Strategy**: Implemented interface-based storage abstraction with PostgreSQL database using Drizzle ORM. The application now persists user settings and scripts across sessions, providing a professional-grade data layer.
 
 **File Processing**: Chose mammoth for Word document parsing due to its reliability and ease of use, while maintaining support for plain text files for maximum compatibility.
 
@@ -99,6 +99,11 @@ Changelog:
   * Horizontal text flipping feature operational
   * Settings panel with customizable font size, scroll speed, line height
   * TypeScript errors resolved
+- July 08, 2025. Database integration completed:
+  * PostgreSQL database provisioned and configured
+  * Drizzle ORM database layer implemented
+  * Data persistence for settings and scripts across sessions
+  * Migrated from in-memory to database storage
 ```
 
 ## User Preferences
