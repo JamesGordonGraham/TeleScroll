@@ -5,6 +5,9 @@ import { storage } from "./storage";
 import { insertTeleprompterSettingsSchema, insertScriptSchema } from "@shared/schema";
 import mammoth from "mammoth";
 import { z } from "zod";
+import pdf from "pdf-parse";
+import { JSDOM } from "jsdom";
+import MarkdownIt from "markdown-it";
 
 interface MulterRequest extends Request {
   file?: any;
@@ -14,11 +17,24 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter: (req: any, file: any, cb: any) => {
-    if (file.mimetype === 'text/plain' || 
-        file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    const allowedTypes = [
+      'text/plain',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/msword',
+      'application/rtf',
+      'text/rtf',
+      'application/pdf',
+      'text/html',
+      'text/markdown'
+    ];
+    
+    const allowedExtensions = ['.txt', '.doc', '.docx', '.rtf', '.pdf', '.html', '.htm', '.md'];
+    const fileExtension = '.' + file.originalname.split('.').pop()?.toLowerCase();
+    
+    if (allowedTypes.includes(file.mimetype) || allowedExtensions.includes(fileExtension)) {
       cb(null, true);
     } else {
-      cb(new Error('Only .txt and .docx files are allowed'));
+      cb(new Error('Supported formats: .txt, .doc, .docx, .rtf, .pdf, .html, .htm, .md'));
     }
   }
 });
@@ -137,17 +153,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       let content = '';
-      
-      if (req.file.mimetype === 'text/plain') {
-        content = req.file.buffer.toString('utf8');
-      } else if (req.file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      const filename = req.file.originalname;
+      const fileExtension = '.' + filename.split('.').pop()?.toLowerCase();
+
+      // Text files
+      if (req.file.mimetype === 'text/plain' || fileExtension === '.txt') {
+        content = req.file.buffer.toString('utf-8');
+      }
+      // Word documents (.docx)
+      else if (req.file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || fileExtension === '.docx') {
         const result = await mammoth.extractRawText({ buffer: req.file.buffer });
         content = result.value;
-      } else {
-        return res.status(400).json({ message: "Unsupported file type" });
+      }
+      // Legacy Word documents (.doc) - basic text extraction
+      else if (req.file.mimetype === 'application/msword' || fileExtension === '.doc') {
+        // Simple text extraction for .doc files (binary format is complex)
+        content = req.file.buffer.toString('utf-8').replace(/[^\x20-\x7E\n\r]/g, ' ').replace(/\s+/g, ' ').trim();
+      }
+      // RTF files
+      else if (req.file.mimetype === 'application/rtf' || req.file.mimetype === 'text/rtf' || fileExtension === '.rtf') {
+        // Basic RTF parsing - strip RTF commands
+        const rtfContent = req.file.buffer.toString('utf-8');
+        content = rtfContent.replace(/\\[a-z0-9]+\s?/gi, '').replace(/[{}]/g, '').replace(/\s+/g, ' ').trim();
+      }
+      // PDF files
+      else if (req.file.mimetype === 'application/pdf' || fileExtension === '.pdf') {
+        const pdfData = await pdf(req.file.buffer);
+        content = pdfData.text;
+      }
+      // HTML files
+      else if (req.file.mimetype === 'text/html' || fileExtension === '.html' || fileExtension === '.htm') {
+        const htmlContent = req.file.buffer.toString('utf-8');
+        const dom = new JSDOM(htmlContent);
+        content = dom.window.document.body?.textContent || dom.window.document.textContent || '';
+      }
+      // Markdown files
+      else if (req.file.mimetype === 'text/markdown' || fileExtension === '.md') {
+        const markdownContent = req.file.buffer.toString('utf-8');
+        const md = new MarkdownIt();
+        const htmlResult = md.render(markdownContent);
+        const dom = new JSDOM(htmlResult);
+        content = dom.window.document.body?.textContent || markdownContent;
+      }
+      else {
+        return res.status(400).json({ message: "Unsupported file format" });
       }
 
-      res.json({ content, filename: req.file.originalname });
+      // Clean up the content
+      content = content.trim().replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+      res.json({ content, filename });
     } catch (error) {
       console.error('File upload error:', error);
       res.status(500).json({ message: "Failed to process file" });

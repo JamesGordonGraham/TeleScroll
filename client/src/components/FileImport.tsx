@@ -78,6 +78,12 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
     accept: {
       'text/plain': ['.txt'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/msword': ['.doc'],
+      'application/rtf': ['.rtf'],
+      'text/rtf': ['.rtf'],
+      'application/pdf': ['.pdf'],
+      'text/html': ['.html', '.htm'],
+      'text/markdown': ['.md'],
     },
     maxFiles: 1,
     disabled: isUploading,
@@ -151,7 +157,7 @@ export function FileImport({ onStartTeleprompter }: FileImportProps) {
           <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Type or paste your script here... (You can also drag & drop .txt or .docx files)"
+            placeholder="Type or paste your script here... (You can also drag & drop .txt, .doc, .docx, .rtf, .pdf, .html, .htm, .md files)"
             className="h-[600px] resize-none rounded-2xl border-gray-200 focus:border-purple-400 focus:ring-purple-400 text-lg leading-relaxed bg-gray-50/50"
             style={{ aspectRatio: '1/1.414' }}
           />

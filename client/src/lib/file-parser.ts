@@ -22,14 +22,28 @@ export const parseFile = async (file: File): Promise<ParsedFile> => {
 
 export const validateFile = (file: File): string | null => {
   const maxSize = 10 * 1024 * 1024; // 10MB
-  const allowedTypes = ['text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+  const allowedExtensions = ['.txt', '.doc', '.docx', '.rtf', '.pdf', '.html', '.htm', '.md'];
+  const allowedTypes = [
+    'text/plain',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/msword',
+    'application/rtf',
+    'text/rtf',
+    'application/pdf',
+    'text/html',
+    'text/markdown'
+  ];
 
   if (file.size > maxSize) {
     return 'File size must be less than 10MB';
   }
 
-  if (!allowedTypes.includes(file.mimetype) && !file.name.endsWith('.txt') && !file.name.endsWith('.docx')) {
-    return 'Only .txt and .docx files are supported';
+  const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+  const isValidExtension = allowedExtensions.includes(fileExtension);
+  const isValidType = allowedTypes.includes(file.type);
+
+  if (!isValidExtension && !isValidType) {
+    return 'Supported formats: .txt, .doc, .docx, .rtf, .pdf, .html, .htm, .md';
   }
 
   return null;
