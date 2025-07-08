@@ -14,8 +14,8 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
     { action: 'Increase Text Size', key: '+' },
     { action: 'Decrease Text Size', key: '-' },
     { action: 'Flip Text Horizontally', key: 'F' },
-    { action: 'Go to Top', key: 'H' },
-    { action: 'Go to Bottom', key: 'B' },
+    { action: 'Go to Top', key: 'H or Home' },
+    { action: 'Go to Bottom', key: 'B or End' },
     { action: 'Add Marker', key: 'M' },
     { action: 'Next Marker', key: 'N' },
     { action: 'Previous Marker', key: 'P' },
@@ -25,6 +25,7 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
   const generalShortcuts = [
     { action: 'Open Settings', key: 'Ctrl + ,' },
     { action: 'Toggle Fullscreen', key: 'F11' },
+    { action: 'View Shortcuts', key: 'Keyboard button' },
   ];
 
   return (

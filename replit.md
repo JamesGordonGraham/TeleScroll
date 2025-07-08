@@ -115,6 +115,8 @@ Changelog:
   * Navigation between markers with 'Next Marker' (N key) and 'Previous Marker' (P key)
   * Visual marker indicators with blue dots in teleprompter display
   * Enhanced import interface with paste functionality in script editor
+  * Updated keyboard shortcuts documentation with all available shortcuts
+  * Improved navigation with dual key support (H/Home, B/End keys)
 ```
 
 ## User Preferences

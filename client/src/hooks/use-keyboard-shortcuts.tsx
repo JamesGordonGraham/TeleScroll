@@ -36,6 +36,8 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
         'F11',
         'KeyH',
         'KeyB',
+        'Home',
+        'End',
         'KeyM',
         'KeyN',
         'KeyP'
@@ -81,9 +83,11 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
           }
           break;
         case 'KeyH':
+        case 'Home':
           handlers.onGoToTop?.();
           break;
         case 'KeyB':
+        case 'End':
           handlers.onGoToBottom?.();
           break;
         case 'KeyM':
