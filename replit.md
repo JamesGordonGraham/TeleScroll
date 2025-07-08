@@ -117,6 +117,9 @@ Changelog:
   * Enhanced import interface with paste functionality in script editor
   * Updated keyboard shortcuts documentation with all available shortcuts
   * Improved navigation with dual key support (H/Home, B/End keys)
+  * Fixed text persistence issue - content now properly preserved when exiting teleprompter
+  * Removed redundant paste button while maintaining Ctrl+V functionality
+  * Improved state management with parent component handling content state
 ```
 
 ## User Preferences
