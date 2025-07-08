@@ -184,8 +184,8 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
               onClick={toggleFlip}
               className={`p-3 rounded-2xl transition-all duration-200 ${
                 state.isFlipped 
-                  ? 'bg-purple-500 text-white shadow-lg' 
-                  : 'text-gray-700 hover:text-gray-900 hover:bg-white/30'
+                  ? 'bg-blue-500 text-white shadow-lg' 
+                  : 'text-white hover:text-blue-200 hover:bg-white/20 bg-black/30'
               }`}
             >
               <ArrowLeftRight className="h-5 w-5" />
@@ -196,7 +196,7 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
               variant="ghost"
               size="sm"
               onClick={onShowSettings}
-              className="text-gray-700 hover:text-gray-900 hover:bg-white/30 p-3 rounded-2xl"
+              className="text-white hover:text-blue-200 hover:bg-white/20 bg-black/30 p-3 rounded-2xl"
             >
               <Settings className="h-5 w-5" />
             </Button>
@@ -206,7 +206,7 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
               variant="ghost"
               size="sm"
               onClick={onExit}
-              className="text-gray-700 hover:text-red-500 hover:bg-red-50 p-3 rounded-2xl ml-2"
+              className="text-white hover:text-red-300 hover:bg-red-500/20 bg-black/30 p-3 rounded-2xl ml-2"
             >
               <X className="h-5 w-5" />
             </Button>
