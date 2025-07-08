@@ -8,6 +8,8 @@ interface TeleprompterState {
   isFlipped: boolean;
   currentPosition: number;
   isFullscreen: boolean;
+  markers: number[];
+  currentMarkerIndex: number;
 }
 
 export function useTeleprompter() {
@@ -17,6 +19,8 @@ export function useTeleprompter() {
     isFlipped: false,
     currentPosition: 0,
     isFullscreen: false,
+    markers: [],
+    currentMarkerIndex: -1,
   });
 
   const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -108,6 +112,63 @@ export function useTeleprompter() {
     setState(prev => ({ ...prev, currentPosition: 0 }));
   }, []);
 
+  const goToTop = useCallback(() => {
+    setState(prev => ({ ...prev, currentPosition: 0 }));
+  }, []);
+
+  const goToBottom = useCallback((element?: HTMLElement | null) => {
+    if (element) {
+      element.scrollTop = element.scrollHeight;
+      setState(prev => ({ ...prev, currentPosition: element.scrollHeight }));
+    } else {
+      setState(prev => ({ ...prev, currentPosition: 100000 })); // Large number to go to bottom
+    }
+  }, []);
+
+  const addMarker = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      markers: [...prev.markers, prev.currentPosition].sort((a, b) => a - b)
+    }));
+  }, []);
+
+  const nextMarker = useCallback((element?: HTMLElement | null) => {
+    setState(prev => {
+      const nextIndex = prev.markers.findIndex(pos => pos > prev.currentPosition);
+      if (nextIndex !== -1) {
+        const targetPosition = prev.markers[nextIndex];
+        if (element) {
+          element.scrollTop = targetPosition;
+        }
+        return {
+          ...prev,
+          currentPosition: targetPosition,
+          currentMarkerIndex: nextIndex
+        };
+      }
+      return prev;
+    });
+  }, []);
+
+  const previousMarker = useCallback((element?: HTMLElement | null) => {
+    setState(prev => {
+      const markers = [...prev.markers].reverse();
+      const prevIndex = markers.findIndex(pos => pos < prev.currentPosition);
+      if (prevIndex !== -1) {
+        const targetPosition = markers[prevIndex];
+        if (element) {
+          element.scrollTop = targetPosition;
+        }
+        return {
+          ...prev,
+          currentPosition: targetPosition,
+          currentMarkerIndex: prev.markers.indexOf(targetPosition)
+        };
+      }
+      return prev;
+    });
+  }, []);
+
   useEffect(() => {
     return () => {
       if (scrollIntervalRef.current) {
@@ -129,6 +190,11 @@ export function useTeleprompter() {
     startScrolling,
     stopScrolling,
     resetPosition,
+    goToTop,
+    goToBottom,
+    addMarker,
+    nextMarker,
+    previousMarker,
     updateSettings: updateSettingsMutation.mutate,
     isUpdatingSettings: updateSettingsMutation.isPending,
   };

@@ -10,6 +10,11 @@ interface KeyboardShortcutHandlers {
   onExit?: () => void;
   onSettings?: () => void;
   onFullscreen?: () => void;
+  onGoToTop?: () => void;
+  onGoToBottom?: () => void;
+  onAddMarker?: () => void;
+  onNextMarker?: () => void;
+  onPreviousMarker?: () => void;
 }
 
 export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled: boolean = true) {
@@ -28,7 +33,12 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
         'NumpadSubtract',
         'KeyF',
         'Escape',
-        'F11'
+        'F11',
+        'Home',
+        'End',
+        'KeyM',
+        'KeyN',
+        'KeyP'
       ].includes(event.code);
 
       if (isOurShortcut) {
@@ -69,6 +79,21 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
           if (event.ctrlKey || event.metaKey) {
             handlers.onSettings?.();
           }
+          break;
+        case 'Home':
+          handlers.onGoToTop?.();
+          break;
+        case 'End':
+          handlers.onGoToBottom?.();
+          break;
+        case 'KeyM':
+          handlers.onAddMarker?.();
+          break;
+        case 'KeyN':
+          handlers.onNextMarker?.();
+          break;
+        case 'KeyP':
+          handlers.onPreviousMarker?.();
           break;
       }
     };

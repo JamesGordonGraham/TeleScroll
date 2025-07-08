@@ -109,6 +109,12 @@ Changelog:
   * Glass morphism effects and rounded corners
   * Gradient text titles and Apple-style cards
   * Enhanced teleprompter controls with better visual hierarchy
+- July 08, 2025. Enhanced keyboard shortcuts and navigation:
+  * Added 'Go to Top' (Home key) and 'Go to Bottom' (End key)
+  * Implemented marker system with 'Add Marker' (M key)
+  * Navigation between markers with 'Next Marker' (N key) and 'Previous Marker' (P key)
+  * Visual marker indicators with blue dots in teleprompter display
+  * Enhanced import interface with paste functionality in script editor
 ```
 
 ## User Preferences

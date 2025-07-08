@@ -32,6 +32,11 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
     startScrolling,
     stopScrolling,
     resetPosition,
+    goToTop,
+    goToBottom,
+    addMarker,
+    nextMarker,
+    previousMarker,
   } = useTeleprompter();
 
   useKeyboardShortcuts({
@@ -43,6 +48,16 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
     onFlip: toggleFlip,
     onExit: onExit,
     onSettings: onShowSettings,
+    onGoToTop: () => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = 0;
+        goToTop();
+      }
+    },
+    onGoToBottom: () => goToBottom(scrollContainerRef.current),
+    onAddMarker: addMarker,
+    onNextMarker: () => nextMarker(scrollContainerRef.current),
+    onPreviousMarker: () => previousMarker(scrollContainerRef.current),
   });
 
   useEffect(() => {
@@ -92,7 +107,11 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
               }}
             >
               {content.split('\n').map((line, index) => (
-                <p key={index} className="mb-4">
+                <p key={index} className="mb-4 relative">
+                  {/* Marker indicator */}
+                  {state.markers.some(marker => Math.abs(marker - (scrollContainerRef.current?.scrollTop || 0)) < 100) && (
+                    <span className="absolute -left-8 top-0 w-3 h-3 bg-blue-400 rounded-full opacity-80 animate-pulse"></span>
+                  )}
                   {line || '\u00A0'}
                 </p>
               ))}

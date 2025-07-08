@@ -14,6 +14,11 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
     { action: 'Increase Text Size', key: '+' },
     { action: 'Decrease Text Size', key: '-' },
     { action: 'Flip Text Horizontally', key: 'F' },
+    { action: 'Go to Top', key: 'Home' },
+    { action: 'Go to Bottom', key: 'End' },
+    { action: 'Add Marker', key: 'M' },
+    { action: 'Next Marker', key: 'N' },
+    { action: 'Previous Marker', key: 'P' },
     { action: 'Exit Teleprompter', key: 'Esc' },
   ];
 
