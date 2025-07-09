@@ -1,8 +1,8 @@
-# TelePrompter Pro - Replit Project Guide
+# Vibe Prompting - Replit Project Guide
 
 ## Overview
 
-TelePrompter Pro is a modern web application built for professional teleprompter functionality. It features a clean, intuitive interface for importing scripts (text/Word documents) and displaying them in a customizable teleprompter view with real-time controls for speed, text size, and display preferences. The application successfully supports Bluetooth keyboard controls for hands-free operation and horizontal text flipping functionality.
+Vibe Prompting is a modern web application built for professional teleprompter functionality. It features a clean, intuitive interface for importing scripts (text/Word documents) and displaying them in a customizable teleprompter view with real-time controls for speed, text size, and display preferences. The application successfully supports Bluetooth keyboard controls for hands-free operation and horizontal text flipping functionality.
 
 ## System Architecture
 
@@ -126,6 +126,11 @@ Changelog:
   * Updated keyboard navigation: N key = Next Marker, P key = Previous Marker
   * Markers display as violet squares in both Script Editor and Teleprompter display
   * Text-based marker navigation system working with content positioning
+- July 08, 2025. Rebranded to Vibe Prompting:
+  * Updated application name from TelePrompter Pro to Vibe Prompting
+  * Integrated new Vibe Prompting logo with blue gradient design
+  * Updated page title, headers, and welcome message
+  * Refreshed branding throughout the application interface
 ```
 
 ## User Preferences
