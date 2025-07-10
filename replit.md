@@ -1,8 +1,8 @@
-# Vibe Teleprompter - Replit Project Guide
+# Teleprompter - Replit Project Guide
 
 ## Overview
 
-Vibe Teleprompter is a modern web application built for professional teleprompter functionality. It features a clean, Apple-style interface with pastel colors and minimalist design using Inter font. The app provides an intuitive interface for importing scripts (text/Word documents) and displaying them in a customizable teleprompter view with real-time controls for speed, text size, and display preferences. The application successfully supports Bluetooth keyboard controls for hands-free operation and horizontal text flipping functionality.
+Teleprompter is a modern web application built for professional teleprompter functionality. It features a clean, Apple-style interface with light blue pastel gradient background and minimalist design using Inter font. The app provides an intuitive interface for importing scripts (text/Word documents) and displaying them in a white Script Editor box with real-time controls for speed, text size, and display preferences. The application successfully supports Bluetooth keyboard controls for hands-free operation and horizontal text flipping functionality.
 
 ## System Architecture
 
@@ -139,6 +139,12 @@ Changelog:
   * Enhanced glass morphism effects and backdrop blur
   * Improved button styling with Apple-style rounded corners
   * Updated gradient text styling with enhanced visual appeal
+- July 10, 2025. Final design refinements:
+  * Changed app name from "Vibe Teleprompter" to "Teleprompter"
+  * Applied light blue pastel vertical gradient background (#dbeafe to #93c5fd)
+  * Kept Script Editor box pure white for optimal contrast
+  * Updated "Teleprompter" text with blue vertical gradient matching logo
+  * Maintained logo design as requested by user
 ```
 
 ## User Preferences

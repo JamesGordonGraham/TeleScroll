@@ -8,7 +8,7 @@ import { ScrollText, Keyboard, Settings } from 'lucide-react';
 
 export default function TeleprompterPage() {
   const [mode, setMode] = useState<'import' | 'teleprompter'>('import');
-  const [currentContent, setCurrentContent] = useState('Welcome to Vibe Teleprompter! This is a sample script to demonstrate the teleprompter functionality. You can edit this text or import your own file.\n\nYour teleprompter will display text in large, readable fonts with smooth scrolling. Use the keyboard controls to adjust speed, pause, and navigate through your script.\n\nThe application supports various text formatting and provides a distraction-free reading experience perfect for presentations, speeches, and video recordings.');
+  const [currentContent, setCurrentContent] = useState('Welcome to Teleprompter! This is a sample script to demonstrate the teleprompter functionality. You can edit this text or import your own file.\n\nYour teleprompter will display text in large, readable fonts with smooth scrolling. Use the keyboard controls to adjust speed, pause, and navigate through your script.\n\nThe application supports various text formatting and provides a distraction-free reading experience perfect for presentations, speeches, and video recordings.');
   const [showSettings, setShowSettings] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
@@ -51,7 +51,7 @@ export default function TeleprompterPage() {
                     alt="Vibe Teleprompter Logo" 
                     className="h-16 w-auto object-contain"
                   />
-                  <h1 className="text-3xl font-bold gradient-text">Vibe Teleprompter</h1>
+                  <h1 className="text-3xl font-bold gradient-text">Teleprompter</h1>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Button

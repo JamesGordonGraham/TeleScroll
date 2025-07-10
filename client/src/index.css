@@ -71,10 +71,12 @@
   }
 
   body {
-    @apply antialiased bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-foreground;
+    @apply antialiased text-foreground;
+    background: linear-gradient(to bottom, #dbeafe, #bfdbfe, #93c5fd);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-weight: 400;
     letter-spacing: -0.01em;
+    min-height: 100vh;
   }
 
   .dark body {
@@ -85,7 +87,11 @@
 /* Apple-style gradient utilities */
 @layer utilities {
   .gradient-text {
-    @apply bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 bg-clip-text text-transparent font-semibold;
+    background: linear-gradient(to bottom, #2563eb, #1d4ed8, #1e40af);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 600;
   }
   
   .gradient-text-accent {
@@ -111,7 +117,7 @@
   }
   
   .apple-card {
-    @apply bg-white/80 backdrop-blur-2xl border border-white/30 shadow-2xl shadow-blue-500/5 rounded-3xl;
+    @apply bg-white backdrop-blur-2xl border border-white/30 shadow-2xl shadow-blue-500/10 rounded-3xl;
   }
   
   .dark .apple-card {
