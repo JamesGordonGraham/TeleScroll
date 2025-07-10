@@ -145,6 +145,10 @@ Changelog:
   * Kept Script Editor box pure white for optimal contrast
   * Updated "Teleprompter" text with blue vertical gradient matching logo
   * Maintained logo design as requested by user
+- July 10, 2025. Updated to cyan color scheme:
+  * Applied cyan vertical gradient background from nearly white to RGB(3, 146, 212)
+  * Changed "Teleprompter" text color to #0392d4 (matching cyan theme)
+  * Maintained white Script Editor box for optimal readability
 ```
 
 ## User Preferences
