@@ -1,8 +1,8 @@
-# Vibe Prompting - Replit Project Guide
+# Vibe Teleprompter - Replit Project Guide
 
 ## Overview
 
-Vibe Prompting is a modern web application built for professional teleprompter functionality. It features a clean, intuitive interface for importing scripts (text/Word documents) and displaying them in a customizable teleprompter view with real-time controls for speed, text size, and display preferences. The application successfully supports Bluetooth keyboard controls for hands-free operation and horizontal text flipping functionality.
+Vibe Teleprompter is a modern web application built for professional teleprompter functionality. It features a clean, Apple-style interface with pastel colors and minimalist design using Inter font. The app provides an intuitive interface for importing scripts (text/Word documents) and displaying them in a customizable teleprompter view with real-time controls for speed, text size, and display preferences. The application successfully supports Bluetooth keyboard controls for hands-free operation and horizontal text flipping functionality.
 
 ## System Architecture
 
@@ -131,6 +131,14 @@ Changelog:
   * Integrated new Vibe Prompting logo with blue gradient design
   * Updated page title, headers, and welcome message
   * Refreshed branding throughout the application interface
+- July 10, 2025. Rebranded to Vibe Teleprompter with Apple-style UI:
+  * Updated application name from Vibe Prompting to Vibe Teleprompter
+  * Integrated updated logo design with enhanced blue gradient
+  * Implemented Apple-style UI with pastel colors and round corners
+  * Added Inter font integration for minimalist, professional look
+  * Enhanced glass morphism effects and backdrop blur
+  * Improved button styling with Apple-style rounded corners
+  * Updated gradient text styling with enhanced visual appeal
 ```
 
 ## User Preferences
