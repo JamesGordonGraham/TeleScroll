@@ -123,45 +123,45 @@ export function useTeleprompter() {
       lastTime = currentTime;
       
       // Get current speed settings for instant real-time updates
-      const currentSpeed = Math.max(0.5, Math.min(5.0, settings.scrollSpeed));
-      const basePixelsPerSecond = 30; // Optimized for responsive speed changes
+      const currentSpeed = Math.max(0.1, Math.min(3.0, settings.scrollSpeed));
+      const basePixelsPerSecond = 50; // Increased for more noticeable speed changes
       const pixelsPerSecond = basePixelsPerSecond * currentSpeed;
       
       // Layer 1: Calculate ideal target position with immediate speed response
       targetPosition += pixelsPerSecond * deltaTime;
       
-      // 8-layer smoothing system with optimized factors for real-time response
-      // Layer 2: Ultra-fast response (0.15)
+      // 8-layer smoothing system with faster response for better speed control
+      // Layer 2: Fast response (0.25)
       const diff1 = targetPosition - smoothPosition1;
-      smoothPosition1 += diff1 * 0.15;
+      smoothPosition1 += diff1 * 0.25;
       
-      // Layer 3: Fast response (0.20)
+      // Layer 3: Fast response (0.30)
       const diff2 = smoothPosition1 - smoothPosition2;
-      smoothPosition2 += diff2 * 0.20;
+      smoothPosition2 += diff2 * 0.30;
       
-      // Layer 4: Medium-fast response (0.25)
+      // Layer 4: Medium-fast response (0.35)
       const diff3 = smoothPosition2 - smoothPosition3;
-      smoothPosition3 += diff3 * 0.25;
+      smoothPosition3 += diff3 * 0.35;
       
-      // Layer 5: Medium response (0.30)
+      // Layer 5: Medium response (0.40)
       const diff4 = smoothPosition3 - smoothPosition4;
-      smoothPosition4 += diff4 * 0.30;
+      smoothPosition4 += diff4 * 0.40;
       
-      // Layer 6: Medium-smooth response (0.35)
+      // Layer 6: Medium-smooth response (0.45)
       const diff5 = smoothPosition4 - smoothPosition5;
-      smoothPosition5 += diff5 * 0.35;
+      smoothPosition5 += diff5 * 0.45;
       
-      // Layer 7: Smooth response (0.40)
+      // Layer 7: Smooth response (0.50)
       const diff6 = smoothPosition5 - smoothPosition6;
-      smoothPosition6 += diff6 * 0.40;
+      smoothPosition6 += diff6 * 0.50;
       
-      // Layer 8: Ultra-smooth response (0.45)
+      // Layer 8: Final smooth response (0.55)
       const diff7 = smoothPosition6 - smoothPosition7;
-      smoothPosition7 += diff7 * 0.45;
+      smoothPosition7 += diff7 * 0.55;
       
-      // Layer 9: Final ultra-smooth output (0.50)
+      // Layer 9: Final ultra-smooth output (0.60)
       const diff8 = smoothPosition7 - smoothPosition8;
-      smoothPosition8 += diff8 * 0.50;
+      smoothPosition8 += diff8 * 0.60;
       
       // Apply the final 8-layer ultra-smooth position
       element.scrollTop = smoothPosition8;
