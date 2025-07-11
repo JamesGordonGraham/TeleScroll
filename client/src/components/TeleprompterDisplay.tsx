@@ -101,8 +101,7 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
           ref={scrollContainerRef}
           className="flex-1 overflow-hidden relative"
           style={{ 
-            cursor: settings.hideCursor ? 'none' : 'auto',
-            scrollBehavior: settings.smoothScrolling ? 'smooth' : 'auto'
+            cursor: settings.hideCursor ? 'none' : 'auto'
           }}
         >
           <div 

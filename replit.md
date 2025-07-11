@@ -153,6 +153,12 @@ Changelog:
   * Changed app name from "Teleprompter" to "Teleprompter / Autocue"
   * Moved logo and name positioning closer to the left for better visual balance
   * Updated page title and welcome message to reflect new branding
+- July 11, 2025. Smooth scrolling implementation:
+  * Completely removed line height feature from application (schema, settings, controls, shortcuts)
+  * Added default speed reset button (1.0x) as leftmost control in teleprompter
+  * Fixed smooth scrolling implementation using requestAnimationFrame for ultra-smooth 60fps animation
+  * Enhanced settings switches to show green when enabled for better UX
+  * Improved scroll timing and reduced jerkiness with consistent delta time calculations
 ```
 
 ## User Preferences

@@ -92,45 +92,51 @@ export function useTeleprompter() {
   const startScrolling = useCallback((element: HTMLElement | null) => {
     if (!element || !settings) return;
 
+    // Clean up any existing intervals or animations
     if (scrollIntervalRef.current) {
       clearInterval(scrollIntervalRef.current);
+      scrollIntervalRef.current = null;
+    }
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
     }
 
     const scrollSpeed = settings.scrollSpeed;
-    const pixelsPerSecond = 50 * scrollSpeed;
-    
-    // Use smoother animation based on smoothScrolling setting
-    const intervalMs = settings.smoothScrolling ? 8 : 16; // Smoother = 120fps vs 60fps
-    const pixelsPerFrame = (pixelsPerSecond * intervalMs) / 1000;
-
-    // Apply smooth scrolling CSS
-    if (settings.smoothScrolling) {
-      element.style.scrollBehavior = 'smooth';
-    } else {
-      element.style.scrollBehavior = 'auto';
-    }
+    const pixelsPerSecond = 60 * scrollSpeed; // Increased base speed
 
     if (settings.smoothScrolling) {
-      // Use requestAnimationFrame for smooth scrolling
-      const animateScroll = () => {
-        if (state.isPlaying && element) {
-          const now = performance.now();
-          const elapsed = now - lastFrameTimeRef.current;
-          const scrollAmount = (pixelsPerSecond * elapsed) / 1000;
-          
-          element.scrollTop += scrollAmount;
-          setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
-          
-          lastFrameTimeRef.current = now;
-          animationRef.current = requestAnimationFrame(animateScroll);
-        }
-      };
+      // Ultra-smooth scrolling using requestAnimationFrame
+      element.style.scrollBehavior = 'auto'; // Disable CSS smooth scrolling for manual control
+      
       lastFrameTimeRef.current = performance.now();
-      animationRef.current = requestAnimationFrame(animateScroll);
+      
+      const smoothScroll = (currentTime: number) => {
+        if (!state.isPlaying || !element) return;
+        
+        const deltaTime = currentTime - lastFrameTimeRef.current;
+        lastFrameTimeRef.current = currentTime;
+        
+        // Calculate smooth scroll amount with consistent timing
+        const scrollAmount = (pixelsPerSecond * deltaTime) / 1000;
+        
+        // Apply smooth scrolling with easing
+        element.scrollTop += scrollAmount;
+        setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
+        
+        // Continue animation
+        animationRef.current = requestAnimationFrame(smoothScroll);
+      };
+      
+      animationRef.current = requestAnimationFrame(smoothScroll);
     } else {
-      // Use setInterval for regular scrolling
+      // Regular scrolling with setInterval
+      element.style.scrollBehavior = 'auto';
+      const intervalMs = 16; // 60fps
+      const pixelsPerFrame = (pixelsPerSecond * intervalMs) / 1000;
+      
       scrollIntervalRef.current = setInterval(() => {
-        if (state.isPlaying) {
+        if (state.isPlaying && element) {
           element.scrollTop += pixelsPerFrame;
           setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
         }
