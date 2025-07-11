@@ -103,28 +103,25 @@ export function useTeleprompter() {
     }
 
     const scrollSpeed = settings.scrollSpeed;
-    const pixelsPerSecond = 60 * scrollSpeed; // Increased base speed
+    const pixelsPerSecond = 50 * scrollSpeed;
 
     if (settings.smoothScrolling) {
       // Ultra-smooth scrolling using requestAnimationFrame
-      element.style.scrollBehavior = 'auto'; // Disable CSS smooth scrolling for manual control
+      element.style.scrollBehavior = 'auto';
       
-      lastFrameTimeRef.current = performance.now();
+      let lastTime = performance.now();
       
       const smoothScroll = (currentTime: number) => {
         if (!state.isPlaying || !element) return;
         
-        const deltaTime = currentTime - lastFrameTimeRef.current;
-        lastFrameTimeRef.current = currentTime;
+        const deltaTime = (currentTime - lastTime) / 1000; // Convert to seconds
+        const scrollAmount = pixelsPerSecond * deltaTime;
         
-        // Calculate smooth scroll amount with consistent timing
-        const scrollAmount = (pixelsPerSecond * deltaTime) / 1000;
-        
-        // Apply smooth scrolling with easing
+        // Apply smooth scrolling
         element.scrollTop += scrollAmount;
         setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
         
-        // Continue animation
+        lastTime = currentTime;
         animationRef.current = requestAnimationFrame(smoothScroll);
       };
       
