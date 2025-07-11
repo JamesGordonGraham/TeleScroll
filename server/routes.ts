@@ -50,7 +50,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         settings = await storage.createTeleprompterSettings({
           userId,
           fontSize: 32,
-          lineHeight: 1.6,
+          textWidth: 80,
           scrollSpeed: 1.0,
           smoothScrolling: true,
           autoFullscreen: false,
