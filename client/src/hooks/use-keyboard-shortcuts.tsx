@@ -10,7 +10,6 @@ interface KeyboardShortcutHandlers {
   onTextWidthDown?: () => void;
   onFlip?: () => void;
   onExit?: () => void;
-  onSettings?: () => void;
   onFullscreen?: () => void;
   onGoToTop?: () => void;
   onGoToBottom?: () => void;

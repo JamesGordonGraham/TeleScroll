@@ -4,7 +4,7 @@ import { FileImport } from '@/components/FileImport';
 import { TeleprompterDisplay } from '@/components/TeleprompterDisplay';
 import { SettingsModal } from '@/components/SettingsModal';
 import { KeyboardShortcutsModal } from '@/components/KeyboardShortcutsModal';
-import { ScrollText, Keyboard, Settings } from 'lucide-react';
+import { ScrollText, Keyboard } from 'lucide-react';
 
 export default function TeleprompterPage() {
   const [mode, setMode] = useState<'import' | 'teleprompter'>('import');
@@ -62,13 +62,6 @@ export default function TeleprompterPage() {
                     <Keyboard className="h-4 w-4" />
                     <span className="ml-2 text-sm font-medium">Shortcuts</span>
                   </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() => setShowSettings(true)}
-                    className="btn-apple rounded-2xl p-3"
-                  >
-                    <Settings className="h-5 w-5 text-gray-600" />
-                  </Button>
                 </div>
               </div>
             </div>
@@ -89,7 +82,6 @@ export default function TeleprompterPage() {
         <TeleprompterDisplay
           content={currentContent}
           onExit={handleExitTeleprompter}
-          onShowSettings={() => setShowSettings(true)}
         />
       )}
 

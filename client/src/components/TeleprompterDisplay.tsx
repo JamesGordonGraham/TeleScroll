@@ -6,7 +6,7 @@ import {
   Minus, 
   Plus, 
   ArrowLeftRight, 
-  Settings, 
+ 
   X,
   ZoomIn,
   ZoomOut,
@@ -19,10 +19,9 @@ import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 interface TeleprompterDisplayProps {
   content: string;
   onExit: () => void;
-  onShowSettings: () => void;
 }
 
-export function TeleprompterDisplay({ content, onExit, onShowSettings }: TeleprompterDisplayProps) {
+export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const {
     state,
@@ -53,7 +52,6 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
     onTextWidthDown: () => adjustTextWidth(-5),
     onFlip: toggleFlip,
     onExit: onExit,
-    onSettings: onShowSettings,
     onGoToTop: () => {
       if (scrollContainerRef.current) {
         scrollContainerRef.current.scrollTop = 0;
@@ -230,15 +228,7 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
               <ArrowLeftRight className="h-5 w-5" />
             </Button>
 
-            {/* Settings */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onShowSettings}
-              className="text-white hover:text-blue-200 hover:bg-white/20 bg-black/30 p-3 rounded-2xl"
-            >
-              <Settings className="h-5 w-5" />
-            </Button>
+
 
             {/* Exit */}
             <Button
