@@ -76,7 +76,7 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
     } else {
       stopScrolling();
     }
-  }, [state.isPlaying, startScrolling, stopScrolling]);
+  }, [state.isPlaying, settings.scrollSpeed, startScrolling, stopScrolling]);
 
   useEffect(() => {
     resetPosition();

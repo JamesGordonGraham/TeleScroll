@@ -102,7 +102,7 @@ export function useTeleprompter() {
       animationRef.current = null;
     }
 
-    // Ultra-ultra-ultra smooth scrolling with multiple interpolation layers
+    // 8-layer interpolation system for maximum smoothness
     element.style.scrollBehavior = 'auto';
     
     let lastTime = performance.now();
@@ -112,43 +112,59 @@ export function useTeleprompter() {
     let smoothPosition3 = element.scrollTop;
     let smoothPosition4 = element.scrollTop;
     let smoothPosition5 = element.scrollTop;
+    let smoothPosition6 = element.scrollTop;
+    let smoothPosition7 = element.scrollTop;
+    let smoothPosition8 = element.scrollTop;
     
     const ultraSmoothScroll = (currentTime: number) => {
       if (!state.isPlaying || !element) return;
       
-      const deltaTime = (currentTime - lastTime) / 1000;
+      const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.016); // Cap at 16ms for stability
       lastTime = currentTime;
       
-      // Get current speed settings for real-time updates
+      // Get current speed settings for instant real-time updates
       const currentSpeed = Math.max(0.5, Math.min(5.0, settings.scrollSpeed));
-      const basePixelsPerSecond = 25; // Further reduced for maximum smoothness
+      const basePixelsPerSecond = 30; // Optimized for responsive speed changes
       const pixelsPerSecond = basePixelsPerSecond * currentSpeed;
       
-      // Layer 1: Calculate ideal target position
+      // Layer 1: Calculate ideal target position with immediate speed response
       targetPosition += pixelsPerSecond * deltaTime;
       
-      // Layer 2: First level of smoothing (very gentle)
+      // 8-layer smoothing system with optimized factors for real-time response
+      // Layer 2: Ultra-fast response (0.15)
       const diff1 = targetPosition - smoothPosition1;
-      smoothPosition1 += diff1 * 0.08;
+      smoothPosition1 += diff1 * 0.15;
       
-      // Layer 3: Second level of smoothing (gentle)
+      // Layer 3: Fast response (0.20)
       const diff2 = smoothPosition1 - smoothPosition2;
-      smoothPosition2 += diff2 * 0.12;
+      smoothPosition2 += diff2 * 0.20;
       
-      // Layer 4: Third level of smoothing (medium)
+      // Layer 4: Medium-fast response (0.25)
       const diff3 = smoothPosition2 - smoothPosition3;
-      smoothPosition3 += diff3 * 0.18;
+      smoothPosition3 += diff3 * 0.25;
       
-      // Layer 5: Fourth level of smoothing (responsive)
+      // Layer 5: Medium response (0.30)
       const diff4 = smoothPosition3 - smoothPosition4;
-      smoothPosition4 += diff4 * 0.25;
+      smoothPosition4 += diff4 * 0.30;
       
-      // Layer 6: Final ultra-smooth output
+      // Layer 6: Medium-smooth response (0.35)
       const diff5 = smoothPosition4 - smoothPosition5;
       smoothPosition5 += diff5 * 0.35;
       
-      // Apply the final massively ultra-smooth position
-      element.scrollTop = smoothPosition5;
+      // Layer 7: Smooth response (0.40)
+      const diff6 = smoothPosition5 - smoothPosition6;
+      smoothPosition6 += diff6 * 0.40;
+      
+      // Layer 8: Ultra-smooth response (0.45)
+      const diff7 = smoothPosition6 - smoothPosition7;
+      smoothPosition7 += diff7 * 0.45;
+      
+      // Layer 9: Final ultra-smooth output (0.50)
+      const diff8 = smoothPosition7 - smoothPosition8;
+      smoothPosition8 += diff8 * 0.50;
+      
+      // Apply the final 8-layer ultra-smooth position
+      element.scrollTop = smoothPosition8;
       setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
       
       animationRef.current = requestAnimationFrame(ultraSmoothScroll);
