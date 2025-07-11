@@ -106,14 +106,14 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <Slider
                   value={[settings.scrollSpeed]}
                   onValueChange={handleScrollSpeedChange}
-                  min={0.1}
-                  max={3.0}
+                  min={0.5}
+                  max={3.5}
                   step={0.1}
                   className="w-full mt-2"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>0.1x</span>
-                  <span>3.0x</span>
+                  <span>0.5x</span>
+                  <span>3.5x</span>
                 </div>
               </div>
               <div className="flex items-center space-x-2">

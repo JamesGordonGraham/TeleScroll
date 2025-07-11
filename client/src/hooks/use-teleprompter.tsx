@@ -102,26 +102,34 @@ export function useTeleprompter() {
       animationRef.current = null;
     }
 
-    const scrollSpeed = settings.scrollSpeed;
-    const pixelsPerSecond = 50 * scrollSpeed;
+    const scrollSpeed = Math.max(0.5, settings.scrollSpeed); // Ensure minimum speed
+    const basePixelsPerSecond = 40; // Adjusted base speed
+    const pixelsPerSecond = basePixelsPerSecond * scrollSpeed;
 
     if (settings.smoothScrolling) {
-      // Ultra-smooth scrolling using requestAnimationFrame
+      // Fixed smooth scrolling implementation
       element.style.scrollBehavior = 'auto';
       
+      let accumulator = 0;
       let lastTime = performance.now();
       
       const smoothScroll = (currentTime: number) => {
         if (!state.isPlaying || !element) return;
         
-        const deltaTime = (currentTime - lastTime) / 1000; // Convert to seconds
-        const scrollAmount = pixelsPerSecond * deltaTime;
-        
-        // Apply smooth scrolling
-        element.scrollTop += scrollAmount;
-        setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
-        
+        const deltaTime = (currentTime - lastTime) / 1000;
         lastTime = currentTime;
+        
+        // Accumulate scroll amount for smoother movement
+        accumulator += pixelsPerSecond * deltaTime;
+        
+        // Only scroll when we have at least 1 pixel to move
+        if (accumulator >= 1) {
+          const scrollAmount = Math.floor(accumulator);
+          element.scrollTop += scrollAmount;
+          accumulator -= scrollAmount;
+          setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
+        }
+        
         animationRef.current = requestAnimationFrame(smoothScroll);
       };
       
@@ -130,7 +138,7 @@ export function useTeleprompter() {
       // Regular scrolling with setInterval
       element.style.scrollBehavior = 'auto';
       const intervalMs = 16; // 60fps
-      const pixelsPerFrame = (pixelsPerSecond * intervalMs) / 1000;
+      const pixelsPerFrame = Math.max(0.1, (pixelsPerSecond * intervalMs) / 1000);
       
       scrollIntervalRef.current = setInterval(() => {
         if (state.isPlaying && element) {
