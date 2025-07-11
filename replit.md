@@ -149,6 +149,10 @@ Changelog:
   * Applied cyan vertical gradient background from nearly white to RGB(3, 146, 212)
   * Changed "Teleprompter" text color to #0392d4 (matching cyan theme)
   * Maintained white Script Editor box for optimal readability
+- July 11, 2025. Final branding update:
+  * Changed app name from "Teleprompter" to "Teleprompter / Autocue"
+  * Moved logo and name positioning closer to the left for better visual balance
+  * Updated page title and welcome message to reflect new branding
 ```
 
 ## User Preferences

@@ -8,7 +8,7 @@ import { ScrollText, Keyboard, Settings } from 'lucide-react';
 
 export default function TeleprompterPage() {
   const [mode, setMode] = useState<'import' | 'teleprompter'>('import');
-  const [currentContent, setCurrentContent] = useState('Welcome to Teleprompter! This is a sample script to demonstrate the teleprompter functionality. You can edit this text or import your own file.\n\nYour teleprompter will display text in large, readable fonts with smooth scrolling. Use the keyboard controls to adjust speed, pause, and navigate through your script.\n\nThe application supports various text formatting and provides a distraction-free reading experience perfect for presentations, speeches, and video recordings.');
+  const [currentContent, setCurrentContent] = useState('Welcome to Teleprompter / Autocue! This is a sample script to demonstrate the teleprompter functionality. You can edit this text or import your own file.\n\nYour teleprompter will display text in large, readable fonts with smooth scrolling. Use the keyboard controls to adjust speed, pause, and navigate through your script.\n\nThe application supports various text formatting and provides a distraction-free reading experience perfect for presentations, speeches, and video recordings.');
   const [showSettings, setShowSettings] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
@@ -43,15 +43,15 @@ export default function TeleprompterPage() {
         <>
           {/* Header */}
           <header className="apple-card mx-4 mt-4 rounded-2xl">
-            <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between items-center h-20">
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3">
                   <img 
                     src="/vibe-teleprompter-logo.png" 
-                    alt="Vibe Teleprompter Logo" 
+                    alt="Teleprompter / Autocue Logo" 
                     className="h-16 w-auto object-contain"
                   />
-                  <h1 className="text-3xl font-bold gradient-text">Teleprompter</h1>
+                  <h1 className="text-3xl font-bold gradient-text">Teleprompter / Autocue</h1>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Button
