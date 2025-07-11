@@ -133,38 +133,38 @@ export function useTeleprompter() {
       // Layer 1: Calculate ideal target position with immediate speed response
       targetPosition += pixelsPerSecond * deltaTime;
       
-      // 8-layer smoothing system with ultra-smooth factors to eliminate jerkiness
-      // Layer 2: Gentle response (0.20)
+      // 8-layer ultra-smooth interpolation system with gentler factors for jerk-free movement
+      // Layer 2: Ultra-gentle response (0.12)
       const diff1 = targetPosition - smoothPosition1;
-      smoothPosition1 += diff1 * 0.20;
+      smoothPosition1 += diff1 * 0.12;
       
-      // Layer 3: Gentle response (0.25)
+      // Layer 3: Very gentle response (0.16)
       const diff2 = smoothPosition1 - smoothPosition2;
-      smoothPosition2 += diff2 * 0.25;
+      smoothPosition2 += diff2 * 0.16;
       
-      // Layer 4: Medium-gentle response (0.30)
+      // Layer 4: Gentle response (0.20)
       const diff3 = smoothPosition2 - smoothPosition3;
-      smoothPosition3 += diff3 * 0.30;
+      smoothPosition3 += diff3 * 0.20;
       
-      // Layer 5: Medium response (0.35)
+      // Layer 5: Medium-gentle response (0.24)
       const diff4 = smoothPosition3 - smoothPosition4;
-      smoothPosition4 += diff4 * 0.35;
+      smoothPosition4 += diff4 * 0.24;
       
-      // Layer 6: Medium-smooth response (0.40)
+      // Layer 6: Medium response (0.28)
       const diff5 = smoothPosition4 - smoothPosition5;
-      smoothPosition5 += diff5 * 0.40;
+      smoothPosition5 += diff5 * 0.28;
       
-      // Layer 7: Smooth response (0.45)
+      // Layer 7: Medium-smooth response (0.32)
       const diff6 = smoothPosition5 - smoothPosition6;
-      smoothPosition6 += diff6 * 0.45;
+      smoothPosition6 += diff6 * 0.32;
       
-      // Layer 8: Very smooth response (0.50)
+      // Layer 8: Smooth response (0.36)
       const diff7 = smoothPosition6 - smoothPosition7;
-      smoothPosition7 += diff7 * 0.50;
+      smoothPosition7 += diff7 * 0.36;
       
-      // Layer 9: Final ultra-smooth output (0.55)
+      // Layer 9: Final ultra-smooth output (0.40)
       const diff8 = smoothPosition7 - smoothPosition8;
-      smoothPosition8 += diff8 * 0.55;
+      smoothPosition8 += diff8 * 0.40;
       
       // Apply the final 8-layer ultra-smooth position
       element.scrollTop = smoothPosition8;
