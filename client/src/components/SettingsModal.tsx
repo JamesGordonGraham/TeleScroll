@@ -107,13 +107,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   value={[settings.scrollSpeed]}
                   onValueChange={handleScrollSpeedChange}
                   min={0.5}
-                  max={3.5}
+                  max={5.0}
                   step={0.1}
                   className="w-full mt-2"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
                   <span>0.5x</span>
-                  <span>3.5x</span>
+                  <span>5.0x</span>
                 </div>
               </div>
               <div className="flex items-center space-x-2">

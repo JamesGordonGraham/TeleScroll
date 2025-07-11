@@ -161,10 +161,11 @@ Changelog:
   * Improved scroll timing and reduced jerkiness with consistent delta time calculations
 - July 11, 2025. Final teleprompter refinements:
   * Removed settings button from both main page and teleprompter controls to eliminate conflicts
-  * Updated speed range from 0.1x-3.0x to 0.5x-3.5x in all controls and keyboard shortcuts
-  * Implemented ultra-smooth scrolling mode with interpolation for perfectly smooth movement
+  * Updated speed range from 0.1x-3.0x to 0.5x-5.0x in all controls and keyboard shortcuts
+  * Implemented massively ultra-smooth scrolling with 6-layer interpolation system
+  * Real-time speed updates within animation loop for instant response
   * Streamlined floating control panel with essential controls only
-  * Fixed all speed controls to enforce new range limits
+  * Fixed all speed controls to enforce new 0.5x-5.0x range limits
 ```
 
 ## User Preferences

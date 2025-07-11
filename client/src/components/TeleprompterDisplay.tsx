@@ -45,7 +45,7 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
   useKeyboardShortcuts({
     onPlayPause: togglePlay,
     onSpeedUp: () => {
-      const newSpeed = Math.min(3.5, settings.scrollSpeed + 0.1);
+      const newSpeed = Math.min(5.0, settings.scrollSpeed + 0.1);
       updateSettings({ scrollSpeed: newSpeed });
     },
     onSpeedDown: () => {
@@ -90,7 +90,7 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
     updateSettings({ scrollSpeed: newSpeed });
   };
   const handleSpeedIncrease = () => {
-    const newSpeed = Math.min(3.5, settings.scrollSpeed + 0.1);
+    const newSpeed = Math.min(5.0, settings.scrollSpeed + 0.1);
     updateSettings({ scrollSpeed: newSpeed });
   };
   const handleTextSizeDecrease = () => adjustTextSize(-2);

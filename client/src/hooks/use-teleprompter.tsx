@@ -120,7 +120,7 @@ export function useTeleprompter() {
       lastTime = currentTime;
       
       // Get current speed settings for real-time updates
-      const currentSpeed = Math.max(0.5, Math.min(3.5, settings.scrollSpeed));
+      const currentSpeed = Math.max(0.5, Math.min(5.0, settings.scrollSpeed));
       const basePixelsPerSecond = 25; // Further reduced for maximum smoothness
       const pixelsPerSecond = basePixelsPerSecond * currentSpeed;
       
