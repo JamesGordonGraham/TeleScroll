@@ -31,7 +31,6 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
     toggleFlip,
     adjustSpeed,
     adjustTextSize,
-    adjustLineHeight,
     adjustTextWidth,
     startScrolling,
     stopScrolling,
@@ -49,8 +48,6 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
     onSpeedDown: () => adjustSpeed(-0.1),
     onTextSizeUp: () => adjustTextSize(2),
     onTextSizeDown: () => adjustTextSize(-2),
-    onLineHeightUp: () => adjustLineHeight(0.1),
-    onLineHeightDown: () => adjustLineHeight(-0.1),
     onTextWidthUp: () => adjustTextWidth(5),
     onTextWidthDown: () => adjustTextWidth(-5),
     onFlip: toggleFlip,
@@ -87,8 +84,6 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
   const handleSpeedIncrease = () => adjustSpeed(0.1);
   const handleTextSizeDecrease = () => adjustTextSize(-2);
   const handleTextSizeIncrease = () => adjustTextSize(2);
-  const handleLineHeightDecrease = () => adjustLineHeight(-0.1);
-  const handleLineHeightIncrease = () => adjustLineHeight(0.1);
   const handleTextWidthDecrease = () => adjustTextWidth(-5);
   const handleTextWidthIncrease = () => adjustTextWidth(5);
 
@@ -108,7 +103,7 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
           <div 
             className={`text-white text-center px-8 py-16 ${state.isFlipped ? 'scale-x-[-1]' : ''}`}
             style={{
-              lineHeight: settings.lineHeight,
+              lineHeight: 1.6,
               letterSpacing: '0.02em',
             }}
           >

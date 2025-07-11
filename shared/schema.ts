@@ -6,7 +6,6 @@ export const teleprompterSettings = pgTable("teleprompter_settings", {
   id: serial("id").primaryKey(),
   userId: text("user_id").notNull(),
   fontSize: integer("font_size").notNull().default(32),
-  lineHeight: real("line_height").notNull().default(1.6),
   textWidth: integer("text_width").notNull().default(80),
   scrollSpeed: real("scroll_speed").notNull().default(1.0),
   smoothScrolling: boolean("smooth_scrolling").notNull().default(true),

@@ -61,12 +61,6 @@ export function useTeleprompter() {
     updateSettingsMutation.mutate({ fontSize: newSize });
   }, [settings, updateSettingsMutation]);
 
-  const adjustLineHeight = useCallback((delta: number) => {
-    if (!settings) return;
-    const newLineHeight = Math.max(1.0, Math.min(3.0, settings.lineHeight + delta));
-    updateSettingsMutation.mutate({ lineHeight: newLineHeight });
-  }, [settings, updateSettingsMutation]);
-
   const adjustTextWidth = useCallback((delta: number) => {
     if (!settings) return;
     const newTextWidth = Math.max(25, Math.min(100, settings.textWidth + delta));
@@ -218,7 +212,6 @@ export function useTeleprompter() {
     toggleFlip,
     adjustSpeed,
     adjustTextSize,
-    adjustLineHeight,
     adjustTextWidth,
     enterFullscreen,
     exitFullscreen,

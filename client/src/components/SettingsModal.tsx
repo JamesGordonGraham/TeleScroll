@@ -20,10 +20,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     updateSettings({ fontSize: value[0] });
   };
 
-  const handleLineHeightChange = (value: string) => {
-    updateSettings({ lineHeight: parseFloat(value) });
-  };
-
   const handleTextWidthChange = (value: number[]) => {
     updateSettings({ textWidth: value[0] });
   };
@@ -47,7 +43,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const resetSettings = () => {
     updateSettings({
       fontSize: 32,
-      lineHeight: 1.6,
       textWidth: 80,
       scrollSpeed: 1.0,
       smoothScrolling: true,
@@ -83,20 +78,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   <span>104px</span>
                 </div>
               </div>
-              <div>
-                <Label className="text-sm text-gray-700 mb-2">Line Height</Label>
-                <Select value={settings.lineHeight.toString()} onValueChange={handleLineHeightChange}>
-                  <SelectTrigger className="w-full mt-2">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1.4">Compact (1.4)</SelectItem>
-                    <SelectItem value="1.6">Normal (1.6)</SelectItem>
-                    <SelectItem value="1.8">Relaxed (1.8)</SelectItem>
-                    <SelectItem value="2.0">Loose (2.0)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+
               <div>
                 <Label className="text-sm text-gray-700 mb-2">Text Width</Label>
                 <Slider

@@ -39,7 +39,6 @@ export class MemStorage implements IStorage {
       id,
       userId: insertSettings.userId,
       fontSize: insertSettings.fontSize ?? 32,
-      lineHeight: insertSettings.lineHeight ?? 1.6,
       textWidth: insertSettings.textWidth ?? 80,
       scrollSpeed: insertSettings.scrollSpeed ?? 1.0,
       smoothScrolling: insertSettings.smoothScrolling ?? true,
