@@ -172,6 +172,8 @@ Changelog:
   * Moved Shortcuts button from front page to teleprompter floating panel
   * Streamlined floating control panel with essential controls only
   * Fixed all speed controls to enforce 0.1x-3.0x range limits
+  * Fixed floating panel controls API integration with correct parameter order
+  * All teleprompter controls now fully functional with database persistence
 ```
 
 ## User Preferences
