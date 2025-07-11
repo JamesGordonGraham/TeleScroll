@@ -6,6 +6,8 @@ interface KeyboardShortcutHandlers {
   onSpeedDown?: () => void;
   onTextSizeUp?: () => void;
   onTextSizeDown?: () => void;
+  onLineHeightUp?: () => void;
+  onLineHeightDown?: () => void;
   onFlip?: () => void;
   onExit?: () => void;
   onSettings?: () => void;
@@ -27,6 +29,8 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
         'Space',
         'ArrowUp',
         'ArrowDown',
+        'ArrowLeft',
+        'ArrowRight',
         'Equal',
         'Minus',
         'NumpadAdd',
@@ -53,10 +57,28 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
           handlers.onPlayPause?.();
           break;
         case 'ArrowUp':
-          handlers.onSpeedUp?.();
+          if (event.shiftKey) {
+            handlers.onLineHeightUp?.();
+          } else {
+            handlers.onSpeedUp?.();
+          }
           break;
         case 'ArrowDown':
-          handlers.onSpeedDown?.();
+          if (event.shiftKey) {
+            handlers.onLineHeightDown?.();
+          } else {
+            handlers.onSpeedDown?.();
+          }
+          break;
+        case 'ArrowLeft':
+          if (event.shiftKey) {
+            handlers.onLineHeightDown?.();
+          }
+          break;
+        case 'ArrowRight':
+          if (event.shiftKey) {
+            handlers.onLineHeightUp?.();
+          }
           break;
         case 'Equal':
         case 'NumpadAdd':

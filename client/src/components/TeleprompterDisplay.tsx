@@ -9,7 +9,8 @@ import {
   Settings, 
   X,
   ZoomIn,
-  ZoomOut
+  ZoomOut,
+  AlignJustify
 } from 'lucide-react';
 import { useTeleprompter } from '@/hooks/use-teleprompter';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
@@ -29,6 +30,7 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
     toggleFlip,
     adjustSpeed,
     adjustTextSize,
+    adjustLineHeight,
     startScrolling,
     stopScrolling,
     resetPosition,
@@ -45,6 +47,8 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
     onSpeedDown: () => adjustSpeed(-0.1),
     onTextSizeUp: () => adjustTextSize(2),
     onTextSizeDown: () => adjustTextSize(-2),
+    onLineHeightUp: () => adjustLineHeight(0.1),
+    onLineHeightDown: () => adjustLineHeight(-0.1),
     onFlip: toggleFlip,
     onExit: onExit,
     onSettings: onShowSettings,
@@ -79,6 +83,8 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
   const handleSpeedIncrease = () => adjustSpeed(0.1);
   const handleTextSizeDecrease = () => adjustTextSize(-2);
   const handleTextSizeIncrease = () => adjustTextSize(2);
+  const handleLineHeightDecrease = () => adjustLineHeight(-0.1);
+  const handleLineHeightIncrease = () => adjustLineHeight(0.1);
 
   if (!settings) {
     return <div className="fixed inset-0 bg-black flex items-center justify-center text-white">Loading...</div>;
@@ -178,6 +184,29 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
                 className="text-gray-700 hover:text-gray-900 p-2 rounded-xl"
               >
                 <ZoomIn className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Line Height Controls */}
+            <div className="flex items-center space-x-3 bg-white/30 rounded-2xl px-4 py-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLineHeightDecrease}
+                className="text-gray-700 hover:text-gray-900 p-2 rounded-xl"
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <span className="text-sm font-semibold text-gray-800 min-w-[50px] text-center bg-white/50 rounded-lg px-2 py-1">
+                {settings.lineHeight.toFixed(1)}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLineHeightIncrease}
+                className="text-gray-700 hover:text-gray-900 p-2 rounded-xl"
+              >
+                <Plus className="h-4 w-4" />
               </Button>
             </div>
 
