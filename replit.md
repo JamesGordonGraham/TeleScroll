@@ -162,10 +162,10 @@ Changelog:
 - July 11, 2025. Final teleprompter refinements:
   * Removed settings button from both main page and teleprompter controls to eliminate conflicts
   * Reverted speed range to 0.1x-3.0x for better responsiveness and control
-  * Implemented 12-layer interpolation system for ultra-smooth scrolling
+  * Implemented 16-layer interpolation system for ultra-smooth scrolling
   * Real-time speed updates with instant response (no delays)
   * Optimized animation loop with delta time capping for stability
-  * Ultra-smooth interpolation with extremely gentle smoothing factors (0.05-0.16) to eliminate all jerkiness
+  * Ultra-smooth interpolation with extremely gentle smoothing factors (0.03-0.105) to eliminate all jerkiness
   * Exponential speed scaling: current speed represents 1.5x, with dramatic increases toward 3.0x
   * Base 160 pixels/second with exponential scaling for significant speed differences
   * 0.1x-1.0x range now twice as fast as previous implementation
