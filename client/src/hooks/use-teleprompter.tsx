@@ -124,10 +124,10 @@ export function useTeleprompter() {
       
       // Get current speed settings for instant real-time updates
       const currentSpeed = Math.max(0.1, Math.min(3.0, settings.scrollSpeed));
-      // Exponential scaling: current 120 pixels/sec should be 1.5x, so base is 80
-      // At 3.0x, this will be 240 pixels/sec (3x faster than current)
-      const basePixelsPerSecond = 80;
-      const scaledSpeed = Math.pow(currentSpeed, 1.3); // Exponential scaling for more dramatic differences
+      // Doubled the base speed: 0.1x-1.0x range now twice as fast as before
+      // Current baseline (1.0x) = 160 pixels/sec, 3.0x will be significantly faster
+      const basePixelsPerSecond = 160;
+      const scaledSpeed = Math.pow(currentSpeed, 1.3); // Exponential scaling for dramatic differences
       const pixelsPerSecond = basePixelsPerSecond * scaledSpeed;
       
       // Layer 1: Calculate ideal target position with immediate speed response
