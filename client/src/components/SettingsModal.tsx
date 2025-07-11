@@ -121,6 +121,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   id="smooth-scrolling"
                   checked={settings.smoothScrolling}
                   onCheckedChange={handleSmoothScrollingChange}
+                  className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
                 />
                 <Label htmlFor="smooth-scrolling" className="text-sm text-gray-700">
                   Smooth scrolling
@@ -138,6 +139,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   id="auto-fullscreen"
                   checked={settings.autoFullscreen}
                   onCheckedChange={handleAutoFullscreenChange}
+                  className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
                 />
                 <Label htmlFor="auto-fullscreen" className="text-sm text-gray-700">
                   Auto fullscreen on start
@@ -148,6 +150,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   id="hide-cursor"
                   checked={settings.hideCursor}
                   onCheckedChange={handleHideCursorChange}
+                  className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
                 />
                 <Label htmlFor="hide-cursor" className="text-sm text-gray-700">
                   Hide cursor in teleprompter mode

@@ -24,6 +24,8 @@ export function useTeleprompter() {
   });
 
   const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const animationRef = useRef<number | null>(null);
+  const lastFrameTimeRef = useRef<number>(0);
 
   // Get settings
   const { data: settings, isLoading: settingsLoading } = useQuery<TeleprompterSettings>({
@@ -96,21 +98,54 @@ export function useTeleprompter() {
 
     const scrollSpeed = settings.scrollSpeed;
     const pixelsPerSecond = 50 * scrollSpeed;
-    const intervalMs = 16; // ~60fps
+    
+    // Use smoother animation based on smoothScrolling setting
+    const intervalMs = settings.smoothScrolling ? 8 : 16; // Smoother = 120fps vs 60fps
     const pixelsPerFrame = (pixelsPerSecond * intervalMs) / 1000;
 
-    scrollIntervalRef.current = setInterval(() => {
-      if (state.isPlaying) {
-        element.scrollTop += pixelsPerFrame;
-        setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
-      }
-    }, intervalMs);
+    // Apply smooth scrolling CSS
+    if (settings.smoothScrolling) {
+      element.style.scrollBehavior = 'smooth';
+    } else {
+      element.style.scrollBehavior = 'auto';
+    }
+
+    if (settings.smoothScrolling) {
+      // Use requestAnimationFrame for smooth scrolling
+      const animateScroll = () => {
+        if (state.isPlaying && element) {
+          const now = performance.now();
+          const elapsed = now - lastFrameTimeRef.current;
+          const scrollAmount = (pixelsPerSecond * elapsed) / 1000;
+          
+          element.scrollTop += scrollAmount;
+          setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
+          
+          lastFrameTimeRef.current = now;
+          animationRef.current = requestAnimationFrame(animateScroll);
+        }
+      };
+      lastFrameTimeRef.current = performance.now();
+      animationRef.current = requestAnimationFrame(animateScroll);
+    } else {
+      // Use setInterval for regular scrolling
+      scrollIntervalRef.current = setInterval(() => {
+        if (state.isPlaying) {
+          element.scrollTop += pixelsPerFrame;
+          setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
+        }
+      }, intervalMs);
+    }
   }, [settings, state.isPlaying]);
 
   const stopScrolling = useCallback(() => {
     if (scrollIntervalRef.current) {
       clearInterval(scrollIntervalRef.current);
       scrollIntervalRef.current = null;
+    }
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
     }
   }, []);
 
@@ -200,6 +235,9 @@ export function useTeleprompter() {
     return () => {
       if (scrollIntervalRef.current) {
         clearInterval(scrollIntervalRef.current);
+      }
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
       }
     };
   }, []);

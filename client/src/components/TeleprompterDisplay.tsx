@@ -100,7 +100,10 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
         <div 
           ref={scrollContainerRef}
           className="flex-1 overflow-hidden relative"
-          style={{ cursor: settings.hideCursor ? 'none' : 'auto' }}
+          style={{ 
+            cursor: settings.hideCursor ? 'none' : 'auto',
+            scrollBehavior: settings.smoothScrolling ? 'smooth' : 'auto'
+          }}
         >
           <div 
             className={`text-white text-center px-8 py-16 ${state.isFlipped ? 'scale-x-[-1]' : ''}`}
