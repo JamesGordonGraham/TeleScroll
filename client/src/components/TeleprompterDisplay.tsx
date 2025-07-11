@@ -15,6 +15,9 @@ import {
 } from 'lucide-react';
 import { useTeleprompter } from '@/hooks/use-teleprompter';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import type { TeleprompterSettings } from '@shared/schema';
 
 interface TeleprompterDisplayProps {
   content: string;
@@ -24,9 +27,28 @@ interface TeleprompterDisplayProps {
 export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProps) {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
+  
+  // Fetch settings
+  const { data: settings, isLoading } = useQuery<TeleprompterSettings>({
+    queryKey: ['/api/settings'],
+  });
+
+  // Update settings mutation
+  const updateSettingsMutation = useMutation({
+    mutationFn: (data: Partial<TeleprompterSettings>) => 
+      apiRequest(`/api/settings`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
+    },
+  });
+
   const {
     state,
-    settings,
     togglePlay,
     toggleFlip,
     adjustSpeed,
@@ -40,23 +62,30 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
     addMarker,
     nextMarker,
     previousMarker,
-    updateSettings,
   } = useTeleprompter();
+
+  const updateSettings = (data: Partial<TeleprompterSettings>) => {
+    updateSettingsMutation.mutate(data);
+  };
 
   useKeyboardShortcuts({
     onPlayPause: togglePlay,
     onSpeedUp: () => {
-      const newSpeed = Math.min(3.0, settings.scrollSpeed + 0.1);
-      updateSettings({ scrollSpeed: newSpeed });
+      if (settings) {
+        const newSpeed = Math.min(3.0, settings.scrollSpeed + 0.1);
+        updateSettings({ scrollSpeed: newSpeed });
+      }
     },
     onSpeedDown: () => {
-      const newSpeed = Math.max(0.1, settings.scrollSpeed - 0.1);
-      updateSettings({ scrollSpeed: newSpeed });
+      if (settings) {
+        const newSpeed = Math.max(0.1, settings.scrollSpeed - 0.1);
+        updateSettings({ scrollSpeed: newSpeed });
+      }
     },
-    onTextSizeUp: () => adjustTextSize(2),
-    onTextSizeDown: () => adjustTextSize(-2),
-    onTextWidthUp: () => adjustTextWidth(5),
-    onTextWidthDown: () => adjustTextWidth(-5),
+    onTextSizeUp: handleTextSizeIncrease,
+    onTextSizeDown: handleTextSizeDecrease,
+    onTextWidthUp: handleTextWidthIncrease,
+    onTextWidthDown: handleTextWidthDecrease,
     onFlip: toggleFlip,
     onExit: onExit,
     onGoToTop: () => {
@@ -72,12 +101,12 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
   });
 
   useEffect(() => {
-    if (state.isPlaying) {
+    if (state.isPlaying && settings) {
       startScrolling(scrollContainerRef.current);
     } else {
       stopScrolling();
     }
-  }, [state.isPlaying, settings.scrollSpeed, startScrolling, stopScrolling]);
+  }, [state.isPlaying, settings?.scrollSpeed, startScrolling, stopScrolling]);
 
   useEffect(() => {
     resetPosition();
@@ -87,20 +116,44 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
   }, [content, resetPosition]);
 
   const handleSpeedDecrease = () => {
-    const newSpeed = Math.max(0.1, settings.scrollSpeed - 0.1);
-    updateSettings({ scrollSpeed: newSpeed });
+    if (settings) {
+      const newSpeed = Math.max(0.1, settings.scrollSpeed - 0.1);
+      updateSettings({ scrollSpeed: newSpeed });
+    }
   };
   const handleSpeedIncrease = () => {
-    const newSpeed = Math.min(3.0, settings.scrollSpeed + 0.1);
-    updateSettings({ scrollSpeed: newSpeed });
+    if (settings) {
+      const newSpeed = Math.min(3.0, settings.scrollSpeed + 0.1);
+      updateSettings({ scrollSpeed: newSpeed });
+    }
   };
-  const handleTextSizeDecrease = () => adjustTextSize(-2);
-  const handleTextSizeIncrease = () => adjustTextSize(2);
-  const handleTextWidthDecrease = () => adjustTextWidth(-5);
-  const handleTextWidthIncrease = () => adjustTextWidth(5);
+  const handleTextSizeDecrease = () => {
+    if (settings) {
+      const newSize = Math.max(12, settings.fontSize - 2);
+      updateSettings({ fontSize: newSize });
+    }
+  };
+  const handleTextSizeIncrease = () => {
+    if (settings) {
+      const newSize = Math.min(200, settings.fontSize + 2);
+      updateSettings({ fontSize: newSize });
+    }
+  };
+  const handleTextWidthDecrease = () => {
+    if (settings) {
+      const newWidth = Math.max(40, settings.textWidth - 5);
+      updateSettings({ textWidth: newWidth });
+    }
+  };
+  const handleTextWidthIncrease = () => {
+    if (settings) {
+      const newWidth = Math.min(100, settings.textWidth + 5);
+      updateSettings({ textWidth: newWidth });
+    }
+  };
 
 
-  if (!settings) {
+  if (isLoading || !settings) {
     return <div className="fixed inset-0 bg-black flex items-center justify-center text-white">Loading...</div>;
   }
 
