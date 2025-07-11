@@ -57,7 +57,7 @@ export function useTeleprompter() {
 
   const adjustTextSize = useCallback((delta: number) => {
     if (!settings) return;
-    const newSize = Math.max(16, Math.min(72, settings.fontSize + delta));
+    const newSize = Math.max(16, Math.min(104, settings.fontSize + delta));
     updateSettingsMutation.mutate({ fontSize: newSize });
   }, [settings, updateSettingsMutation]);
 

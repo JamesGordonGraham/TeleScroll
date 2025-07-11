@@ -74,13 +74,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   value={[settings.fontSize]}
                   onValueChange={handleFontSizeChange}
                   min={16}
-                  max={72}
+                  max={104}
                   step={1}
                   className="w-full mt-2"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
                   <span>16px</span>
-                  <span>72px</span>
+                  <span>104px</span>
                 </div>
               </div>
               <div>
