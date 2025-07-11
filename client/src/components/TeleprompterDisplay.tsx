@@ -40,6 +40,7 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
     addMarker,
     nextMarker,
     previousMarker,
+    updateSettings,
   } = useTeleprompter();
 
   useKeyboardShortcuts({
@@ -86,6 +87,7 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
   const handleTextSizeIncrease = () => adjustTextSize(2);
   const handleTextWidthDecrease = () => adjustTextWidth(-5);
   const handleTextWidthIncrease = () => adjustTextWidth(5);
+  const handleSpeedReset = () => updateSettings({ scrollSpeed: 1.0 });
 
   if (!settings) {
     return <div className="fixed inset-0 bg-black flex items-center justify-center text-white">Loading...</div>;
@@ -134,6 +136,15 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
         {/* Floating Control Panel */}
         <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 control-panel rounded-3xl px-8 py-4">
           <div className="flex items-center space-x-6">
+            {/* Default Speed Reset Button */}
+            <Button
+              onClick={handleSpeedReset}
+              className="bg-white/30 hover:bg-white/50 text-gray-700 hover:text-gray-900 rounded-2xl px-4 py-2 transition-all duration-200 text-sm font-semibold"
+              size="sm"
+            >
+              1.0x
+            </Button>
+
             {/* Play/Pause */}
             <Button
               onClick={togglePlay}
