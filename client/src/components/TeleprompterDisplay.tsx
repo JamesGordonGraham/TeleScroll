@@ -6,12 +6,12 @@ import {
   Minus, 
   Plus, 
   ArrowLeftRight, 
- 
   X,
   ZoomIn,
   ZoomOut,
   AlignJustify,
-  MoveHorizontal
+  MoveHorizontal,
+  Keyboard
 } from 'lucide-react';
 import { useTeleprompter } from '@/hooks/use-teleprompter';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
@@ -22,6 +22,7 @@ interface TeleprompterDisplayProps {
 }
 
 export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProps) {
+  const [showShortcuts, setShowShortcuts] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const {
     state,
@@ -240,7 +241,15 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
               <ArrowLeftRight className="h-5 w-5" />
             </Button>
 
-
+            {/* Shortcuts */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowShortcuts(true)}
+              className="text-white hover:text-blue-200 hover:bg-white/20 bg-black/30 p-3 rounded-2xl"
+            >
+              <Keyboard className="h-5 w-5" />
+            </Button>
 
             {/* Exit */}
             <Button
@@ -254,6 +263,79 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
           </div>
         </div>
       </div>
+
+      {/* Keyboard Shortcuts Modal */}
+      {showShortcuts && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowShortcuts(false)}>
+          <div className="bg-white rounded-2xl p-6 max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-xl font-bold mb-4">Keyboard Shortcuts</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Play/Pause:</span>
+                <kbd className="bg-gray-100 px-2 py-1 rounded">Space</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Speed Up:</span>
+                <kbd className="bg-gray-100 px-2 py-1 rounded">+</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Speed Down:</span>
+                <kbd className="bg-gray-100 px-2 py-1 rounded">-</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Text Size Up:</span>
+                <kbd className="bg-gray-100 px-2 py-1 rounded">Shift + +</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Text Size Down:</span>
+                <kbd className="bg-gray-100 px-2 py-1 rounded">Shift + -</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Text Width Up:</span>
+                <kbd className="bg-gray-100 px-2 py-1 rounded">Ctrl + +</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Text Width Down:</span>
+                <kbd className="bg-gray-100 px-2 py-1 rounded">Ctrl + -</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Flip Text:</span>
+                <kbd className="bg-gray-100 px-2 py-1 rounded">F</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Go to Top:</span>
+                <kbd className="bg-gray-100 px-2 py-1 rounded">Home / H</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Go to Bottom:</span>
+                <kbd className="bg-gray-100 px-2 py-1 rounded">End / B</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Add Marker:</span>
+                <kbd className="bg-gray-100 px-2 py-1 rounded">M</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Next Marker:</span>
+                <kbd className="bg-gray-100 px-2 py-1 rounded">N</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Previous Marker:</span>
+                <kbd className="bg-gray-100 px-2 py-1 rounded">P</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Exit:</span>
+                <kbd className="bg-gray-100 px-2 py-1 rounded">Esc</kbd>
+              </div>
+            </div>
+            <Button 
+              onClick={() => setShowShortcuts(false)}
+              className="w-full mt-4 bg-cyan-500 hover:bg-cyan-600 text-white"
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

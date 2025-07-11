@@ -53,16 +53,7 @@ export default function TeleprompterPage() {
                   />
                   <h1 className="text-3xl font-bold gradient-text">Teleprompter / Autocue</h1>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Button
-                    variant="ghost"
-                    onClick={() => setShowShortcuts(true)}
-                    className="btn-apple rounded-2xl px-4 py-2 text-gray-600 hover:text-gray-800"
-                  >
-                    <Keyboard className="h-4 w-4" />
-                    <span className="ml-2 text-sm font-medium">Shortcuts</span>
-                  </Button>
-                </div>
+
               </div>
             </div>
           </header>

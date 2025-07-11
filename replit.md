@@ -169,6 +169,7 @@ Changelog:
   * Exponential speed scaling: current speed represents 1.5x, with dramatic increases toward 3.0x
   * Base 160 pixels/second with exponential scaling for significant speed differences
   * 0.1x-1.0x range now twice as fast as previous implementation
+  * Moved Shortcuts button from front page to teleprompter floating panel
   * Streamlined floating control panel with essential controls only
   * Fixed all speed controls to enforce 0.1x-3.0x range limits
 ```
