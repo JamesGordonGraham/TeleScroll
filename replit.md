@@ -165,8 +165,8 @@ Changelog:
   * Implemented 8-layer interpolation system for ultra-smooth scrolling
   * Real-time speed updates with instant response (no delays)
   * Optimized animation loop with delta time capping for stability
-  * Enhanced responsiveness with faster smoothing factors (0.25-0.60)
-  * Increased base pixels per second (50) for more noticeable speed changes
+  * Enhanced responsiveness with faster smoothing factors (0.35-0.70)
+  * Significantly increased base pixels per second (120) for very fast, noticeable speed changes
   * Streamlined floating control panel with essential controls only
   * Fixed all speed controls to enforce 0.1x-3.0x range limits
 ```
