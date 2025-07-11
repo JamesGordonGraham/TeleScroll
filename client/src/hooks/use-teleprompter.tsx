@@ -69,7 +69,7 @@ export function useTeleprompter() {
 
   const adjustTextWidth = useCallback((delta: number) => {
     if (!settings) return;
-    const newTextWidth = Math.max(50, Math.min(100, settings.textWidth + delta));
+    const newTextWidth = Math.max(25, Math.min(100, settings.textWidth + delta));
     updateSettingsMutation.mutate({ textWidth: newTextWidth });
   }, [settings, updateSettingsMutation]);
 

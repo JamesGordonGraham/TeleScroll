@@ -102,13 +102,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <Slider
                   value={[settings.textWidth]}
                   onValueChange={handleTextWidthChange}
-                  min={50}
+                  min={25}
                   max={100}
                   step={5}
                   className="w-full mt-2"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>50%</span>
+                  <span>25%</span>
                   <span>100%</span>
                 </div>
               </div>
