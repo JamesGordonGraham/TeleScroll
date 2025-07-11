@@ -10,7 +10,8 @@ import {
   X,
   ZoomIn,
   ZoomOut,
-  AlignJustify
+  AlignJustify,
+  MoveHorizontal
 } from 'lucide-react';
 import { useTeleprompter } from '@/hooks/use-teleprompter';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
@@ -31,6 +32,7 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
     adjustSpeed,
     adjustTextSize,
     adjustLineHeight,
+    adjustTextWidth,
     startScrolling,
     stopScrolling,
     resetPosition,
@@ -49,6 +51,8 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
     onTextSizeDown: () => adjustTextSize(-2),
     onLineHeightUp: () => adjustLineHeight(0.1),
     onLineHeightDown: () => adjustLineHeight(-0.1),
+    onTextWidthUp: () => adjustTextWidth(5),
+    onTextWidthDown: () => adjustTextWidth(-5),
     onFlip: toggleFlip,
     onExit: onExit,
     onSettings: onShowSettings,
@@ -85,6 +89,8 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
   const handleTextSizeIncrease = () => adjustTextSize(2);
   const handleLineHeightDecrease = () => adjustLineHeight(-0.1);
   const handleLineHeightIncrease = () => adjustLineHeight(0.1);
+  const handleTextWidthDecrease = () => adjustTextWidth(-5);
+  const handleTextWidthIncrease = () => adjustTextWidth(5);
 
   if (!settings) {
     return <div className="fixed inset-0 bg-black flex items-center justify-center text-white">Loading...</div>;
@@ -107,9 +113,10 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
             }}
           >
             <div 
-              className="max-w-4xl mx-auto leading-relaxed"
+              className="mx-auto leading-relaxed"
               style={{ 
                 fontSize: `${settings.fontSize}px`,
+                maxWidth: `${settings.textWidth}%`,
               }}
             >
               {content.split('\n').map((line, index) => (
@@ -187,23 +194,23 @@ export function TeleprompterDisplay({ content, onExit, onShowSettings }: Telepro
               </Button>
             </div>
 
-            {/* Line Height Controls */}
+            {/* Text Width Controls */}
             <div className="flex items-center space-x-3 bg-white/30 rounded-2xl px-4 py-2">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleLineHeightDecrease}
+                onClick={handleTextWidthDecrease}
                 className="text-gray-700 hover:text-gray-900 p-2 rounded-xl"
               >
                 <Minus className="h-4 w-4" />
               </Button>
               <span className="text-sm font-semibold text-gray-800 min-w-[50px] text-center bg-white/50 rounded-lg px-2 py-1">
-                {settings.lineHeight.toFixed(1)}
+                {settings.textWidth}%
               </span>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleLineHeightIncrease}
+                onClick={handleTextWidthIncrease}
                 className="text-gray-700 hover:text-gray-900 p-2 rounded-xl"
               >
                 <Plus className="h-4 w-4" />

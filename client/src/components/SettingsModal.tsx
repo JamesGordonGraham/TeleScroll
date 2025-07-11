@@ -24,6 +24,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     updateSettings({ lineHeight: parseFloat(value) });
   };
 
+  const handleTextWidthChange = (value: number[]) => {
+    updateSettings({ textWidth: value[0] });
+  };
+
   const handleScrollSpeedChange = (value: number[]) => {
     updateSettings({ scrollSpeed: value[0] });
   };
@@ -44,6 +48,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     updateSettings({
       fontSize: 32,
       lineHeight: 1.6,
+      textWidth: 80,
       scrollSpeed: 1.0,
       smoothScrolling: true,
       autoFullscreen: false,
@@ -91,6 +96,21 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     <SelectItem value="2.0">Loose (2.0)</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div>
+                <Label className="text-sm text-gray-700 mb-2">Text Width</Label>
+                <Slider
+                  value={[settings.textWidth]}
+                  onValueChange={handleTextWidthChange}
+                  min={50}
+                  max={100}
+                  step={5}
+                  className="w-full mt-2"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>50%</span>
+                  <span>100%</span>
+                </div>
               </div>
             </div>
           </div>

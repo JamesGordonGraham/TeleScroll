@@ -67,6 +67,12 @@ export function useTeleprompter() {
     updateSettingsMutation.mutate({ lineHeight: newLineHeight });
   }, [settings, updateSettingsMutation]);
 
+  const adjustTextWidth = useCallback((delta: number) => {
+    if (!settings) return;
+    const newTextWidth = Math.max(50, Math.min(100, settings.textWidth + delta));
+    updateSettingsMutation.mutate({ textWidth: newTextWidth });
+  }, [settings, updateSettingsMutation]);
+
   const enterFullscreen = useCallback(async () => {
     try {
       await document.documentElement.requestFullscreen();
@@ -213,6 +219,7 @@ export function useTeleprompter() {
     adjustSpeed,
     adjustTextSize,
     adjustLineHeight,
+    adjustTextWidth,
     enterFullscreen,
     exitFullscreen,
     startScrolling,

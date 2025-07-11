@@ -8,6 +8,8 @@ interface KeyboardShortcutHandlers {
   onTextSizeDown?: () => void;
   onLineHeightUp?: () => void;
   onLineHeightDown?: () => void;
+  onTextWidthUp?: () => void;
+  onTextWidthDown?: () => void;
   onFlip?: () => void;
   onExit?: () => void;
   onSettings?: () => void;
@@ -72,12 +74,12 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
           break;
         case 'ArrowLeft':
           if (event.shiftKey) {
-            handlers.onLineHeightDown?.();
+            handlers.onTextWidthDown?.();
           }
           break;
         case 'ArrowRight':
           if (event.shiftKey) {
-            handlers.onLineHeightUp?.();
+            handlers.onTextWidthUp?.();
           }
           break;
         case 'Equal':
