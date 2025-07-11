@@ -102,51 +102,38 @@ export function useTeleprompter() {
       animationRef.current = null;
     }
 
-    const scrollSpeed = Math.max(0.5, settings.scrollSpeed); // Ensure minimum speed
-    const basePixelsPerSecond = 40; // Adjusted base speed
+    const scrollSpeed = Math.max(0.5, Math.min(3.5, settings.scrollSpeed)); // Ensure speed is within range
+    const basePixelsPerSecond = 35; // Optimized base speed for ultra-smooth scrolling
     const pixelsPerSecond = basePixelsPerSecond * scrollSpeed;
 
-    if (settings.smoothScrolling) {
-      // Fixed smooth scrolling implementation
-      element.style.scrollBehavior = 'auto';
+    // Always use ultra-smooth scrolling mode
+    element.style.scrollBehavior = 'auto';
+    
+    let lastTime = performance.now();
+    let smoothPosition = element.scrollTop;
+    
+    const ultraSmoothScroll = (currentTime: number) => {
+      if (!state.isPlaying || !element) return;
       
-      let accumulator = 0;
-      let lastTime = performance.now();
+      const deltaTime = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
       
-      const smoothScroll = (currentTime: number) => {
-        if (!state.isPlaying || !element) return;
-        
-        const deltaTime = (currentTime - lastTime) / 1000;
-        lastTime = currentTime;
-        
-        // Accumulate scroll amount for smoother movement
-        accumulator += pixelsPerSecond * deltaTime;
-        
-        // Only scroll when we have at least 1 pixel to move
-        if (accumulator >= 1) {
-          const scrollAmount = Math.floor(accumulator);
-          element.scrollTop += scrollAmount;
-          accumulator -= scrollAmount;
-          setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
-        }
-        
-        animationRef.current = requestAnimationFrame(smoothScroll);
-      };
+      // Calculate target position with ultra-smooth progression
+      smoothPosition += pixelsPerSecond * deltaTime;
       
-      animationRef.current = requestAnimationFrame(smoothScroll);
-    } else {
-      // Regular scrolling with setInterval
-      element.style.scrollBehavior = 'auto';
-      const intervalMs = 16; // 60fps
-      const pixelsPerFrame = Math.max(0.1, (pixelsPerSecond * intervalMs) / 1000);
+      // Apply smooth interpolation for ultra-smooth movement
+      const currentPosition = element.scrollTop;
+      const targetDifference = smoothPosition - currentPosition;
+      const smoothingFactor = 0.8; // Higher value = more responsive, lower = smoother
       
-      scrollIntervalRef.current = setInterval(() => {
-        if (state.isPlaying && element) {
-          element.scrollTop += pixelsPerFrame;
-          setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
-        }
-      }, intervalMs);
-    }
+      // Apply the smooth movement
+      element.scrollTop += targetDifference * smoothingFactor;
+      setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
+      
+      animationRef.current = requestAnimationFrame(ultraSmoothScroll);
+    };
+    
+    animationRef.current = requestAnimationFrame(ultraSmoothScroll);
   }, [settings, state.isPlaying]);
 
   const stopScrolling = useCallback(() => {

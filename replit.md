@@ -159,6 +159,12 @@ Changelog:
   * Fixed smooth scrolling implementation using requestAnimationFrame for ultra-smooth 60fps animation
   * Enhanced settings switches to show green when enabled for better UX
   * Improved scroll timing and reduced jerkiness with consistent delta time calculations
+- July 11, 2025. Final teleprompter refinements:
+  * Removed settings button from both main page and teleprompter controls to eliminate conflicts
+  * Updated speed range from 0.1x-3.0x to 0.5x-3.5x in all controls and keyboard shortcuts
+  * Implemented ultra-smooth scrolling mode with interpolation for perfectly smooth movement
+  * Streamlined floating control panel with essential controls only
+  * Fixed all speed controls to enforce new range limits
 ```
 
 ## User Preferences
