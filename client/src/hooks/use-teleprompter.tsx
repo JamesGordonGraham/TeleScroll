@@ -115,6 +115,10 @@ export function useTeleprompter() {
     let smoothPosition6 = element.scrollTop;
     let smoothPosition7 = element.scrollTop;
     let smoothPosition8 = element.scrollTop;
+    let smoothPosition9 = element.scrollTop;
+    let smoothPosition10 = element.scrollTop;
+    let smoothPosition11 = element.scrollTop;
+    let smoothPosition12 = element.scrollTop;
     
     const ultraSmoothScroll = (currentTime: number) => {
       if (!state.isPlaying || !element) return;
@@ -133,41 +137,57 @@ export function useTeleprompter() {
       // Layer 1: Calculate ideal target position with immediate speed response
       targetPosition += pixelsPerSecond * deltaTime;
       
-      // 8-layer ultra-smooth interpolation system with gentler factors for jerk-free movement
-      // Layer 2: Ultra-gentle response (0.12)
+      // 12-layer ultra-smooth interpolation system with extremely gentle factors
+      // Layer 2: Ultra-gentle response (0.08)
       const diff1 = targetPosition - smoothPosition1;
-      smoothPosition1 += diff1 * 0.12;
+      smoothPosition1 += diff1 * 0.08;
       
-      // Layer 3: Very gentle response (0.16)
+      // Layer 3: Ultra-gentle response (0.10)
       const diff2 = smoothPosition1 - smoothPosition2;
-      smoothPosition2 += diff2 * 0.16;
+      smoothPosition2 += diff2 * 0.10;
       
-      // Layer 4: Gentle response (0.20)
+      // Layer 4: Very gentle response (0.12)
       const diff3 = smoothPosition2 - smoothPosition3;
-      smoothPosition3 += diff3 * 0.20;
+      smoothPosition3 += diff3 * 0.12;
       
-      // Layer 5: Medium-gentle response (0.24)
+      // Layer 5: Very gentle response (0.14)
       const diff4 = smoothPosition3 - smoothPosition4;
-      smoothPosition4 += diff4 * 0.24;
+      smoothPosition4 += diff4 * 0.14;
       
-      // Layer 6: Medium response (0.28)
+      // Layer 6: Gentle response (0.16)
       const diff5 = smoothPosition4 - smoothPosition5;
-      smoothPosition5 += diff5 * 0.28;
+      smoothPosition5 += diff5 * 0.16;
       
-      // Layer 7: Medium-smooth response (0.32)
+      // Layer 7: Gentle response (0.18)
       const diff6 = smoothPosition5 - smoothPosition6;
-      smoothPosition6 += diff6 * 0.32;
+      smoothPosition6 += diff6 * 0.18;
       
-      // Layer 8: Smooth response (0.36)
+      // Layer 8: Medium-gentle response (0.20)
       const diff7 = smoothPosition6 - smoothPosition7;
-      smoothPosition7 += diff7 * 0.36;
+      smoothPosition7 += diff7 * 0.20;
       
-      // Layer 9: Final ultra-smooth output (0.40)
+      // Layer 9: Medium-gentle response (0.22)
       const diff8 = smoothPosition7 - smoothPosition8;
-      smoothPosition8 += diff8 * 0.40;
+      smoothPosition8 += diff8 * 0.22;
       
-      // Apply the final 8-layer ultra-smooth position
-      element.scrollTop = smoothPosition8;
+      // Layer 10: Medium response (0.24)
+      const diff9 = smoothPosition8 - smoothPosition9;
+      smoothPosition9 += diff9 * 0.24;
+      
+      // Layer 11: Medium response (0.26)
+      const diff10 = smoothPosition9 - smoothPosition10;
+      smoothPosition10 += diff10 * 0.26;
+      
+      // Layer 12: Medium-smooth response (0.28)
+      const diff11 = smoothPosition10 - smoothPosition11;
+      smoothPosition11 += diff11 * 0.28;
+      
+      // Layer 13: Final ultra-smooth output (0.30)
+      const diff12 = smoothPosition11 - smoothPosition12;
+      smoothPosition12 += diff12 * 0.30;
+      
+      // Apply the final 12-layer ultra-smooth position
+      element.scrollTop = smoothPosition12;
       setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
       
       animationRef.current = requestAnimationFrame(ultraSmoothScroll);
