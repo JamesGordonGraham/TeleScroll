@@ -68,53 +68,7 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
     updateSettingsMutation.mutate(data);
   };
 
-  useKeyboardShortcuts({
-    onPlayPause: togglePlay,
-    onSpeedUp: () => {
-      if (settings) {
-        const newSpeed = Math.min(3.0, settings.scrollSpeed + 0.1);
-        updateSettings({ scrollSpeed: newSpeed });
-      }
-    },
-    onSpeedDown: () => {
-      if (settings) {
-        const newSpeed = Math.max(0.1, settings.scrollSpeed - 0.1);
-        updateSettings({ scrollSpeed: newSpeed });
-      }
-    },
-    onTextSizeUp: handleTextSizeIncrease,
-    onTextSizeDown: handleTextSizeDecrease,
-    onTextWidthUp: handleTextWidthIncrease,
-    onTextWidthDown: handleTextWidthDecrease,
-    onFlip: toggleFlip,
-    onExit: onExit,
-    onGoToTop: () => {
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTop = 0;
-        goToTop();
-      }
-    },
-    onGoToBottom: () => goToBottom(scrollContainerRef.current),
-    onAddMarker: addMarker,
-    onNextMarker: () => nextMarker(scrollContainerRef.current, content),
-    onPreviousMarker: () => previousMarker(scrollContainerRef.current, content),
-  });
-
-  useEffect(() => {
-    if (state.isPlaying && settings) {
-      startScrolling(scrollContainerRef.current);
-    } else {
-      stopScrolling();
-    }
-  }, [state.isPlaying, settings?.scrollSpeed, startScrolling, stopScrolling]);
-
-  useEffect(() => {
-    resetPosition();
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = 0;
-    }
-  }, [content, resetPosition]);
-
+  // Define handler functions first
   const handleSpeedDecrease = () => {
     if (settings) {
       const newSpeed = Math.max(0.1, settings.scrollSpeed - 0.1);
@@ -151,6 +105,43 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
       updateSettings({ textWidth: newWidth });
     }
   };
+
+  useKeyboardShortcuts({
+    onPlayPause: togglePlay,
+    onSpeedUp: handleSpeedIncrease,
+    onSpeedDown: handleSpeedDecrease,
+    onTextSizeUp: handleTextSizeIncrease,
+    onTextSizeDown: handleTextSizeDecrease,
+    onTextWidthUp: handleTextWidthIncrease,
+    onTextWidthDown: handleTextWidthDecrease,
+    onFlip: toggleFlip,
+    onExit: onExit,
+    onGoToTop: () => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = 0;
+        goToTop();
+      }
+    },
+    onGoToBottom: () => goToBottom(scrollContainerRef.current),
+    onAddMarker: addMarker,
+    onNextMarker: () => nextMarker(scrollContainerRef.current, content),
+    onPreviousMarker: () => previousMarker(scrollContainerRef.current, content),
+  });
+
+  useEffect(() => {
+    if (state.isPlaying && settings) {
+      startScrolling(scrollContainerRef.current);
+    } else {
+      stopScrolling();
+    }
+  }, [state.isPlaying, settings?.scrollSpeed, startScrolling, stopScrolling]);
+
+  useEffect(() => {
+    resetPosition();
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [content, resetPosition]);
 
 
   if (isLoading || !settings) {
