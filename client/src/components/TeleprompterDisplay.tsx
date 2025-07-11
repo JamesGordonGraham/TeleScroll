@@ -37,11 +37,7 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
   // Update settings mutation
   const updateSettingsMutation = useMutation({
     mutationFn: (data: Partial<TeleprompterSettings>) => 
-      apiRequest(`/api/settings`, {
-        method: 'PATCH',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' },
-      }),
+      apiRequest('PATCH', '/api/settings', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
     },
