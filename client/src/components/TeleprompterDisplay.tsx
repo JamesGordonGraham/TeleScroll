@@ -66,38 +66,50 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
 
   // Define handler functions first
   const handleSpeedDecrease = () => {
+    console.log('Speed decrease clicked, current speed:', settings?.scrollSpeed);
     if (settings) {
       const newSpeed = Math.max(0.1, settings.scrollSpeed - 0.1);
+      console.log('New speed:', newSpeed);
       updateSettings({ scrollSpeed: newSpeed });
     }
   };
   const handleSpeedIncrease = () => {
+    console.log('Speed increase clicked, current speed:', settings?.scrollSpeed);
     if (settings) {
       const newSpeed = Math.min(3.0, settings.scrollSpeed + 0.1);
+      console.log('New speed:', newSpeed);
       updateSettings({ scrollSpeed: newSpeed });
     }
   };
   const handleTextSizeDecrease = () => {
+    console.log('Text size decrease clicked, current size:', settings?.fontSize);
     if (settings) {
       const newSize = Math.max(12, settings.fontSize - 2);
+      console.log('New size:', newSize);
       updateSettings({ fontSize: newSize });
     }
   };
   const handleTextSizeIncrease = () => {
+    console.log('Text size increase clicked, current size:', settings?.fontSize);
     if (settings) {
       const newSize = Math.min(200, settings.fontSize + 2);
+      console.log('New size:', newSize);
       updateSettings({ fontSize: newSize });
     }
   };
   const handleTextWidthDecrease = () => {
+    console.log('Text width decrease clicked, current width:', settings?.textWidth);
     if (settings) {
       const newWidth = Math.max(40, settings.textWidth - 5);
+      console.log('New width:', newWidth);
       updateSettings({ textWidth: newWidth });
     }
   };
   const handleTextWidthIncrease = () => {
+    console.log('Text width increase clicked, current width:', settings?.textWidth);
     if (settings) {
       const newWidth = Math.min(100, settings.textWidth + 5);
+      console.log('New width:', newWidth);
       updateSettings({ textWidth: newWidth });
     }
   };
