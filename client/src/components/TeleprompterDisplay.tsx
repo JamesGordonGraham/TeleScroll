@@ -131,8 +131,17 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
     resetPosition();
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
+      // Focus the teleprompter container to ensure it can receive keyboard events
+      scrollContainerRef.current.focus();
     }
   }, [content, resetPosition]);
+
+  // Ensure teleprompter stays focused for keyboard events
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.focus();
+    }
+  }, []);
 
 
   if (isLoading || !settings) {
@@ -140,7 +149,7 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
   }
 
   return (
-    <section className="fixed inset-0 bg-black z-50">
+    <section className="fixed inset-0 bg-black z-50" data-teleprompter-active="true">
       <div className="h-full flex flex-col">
         {/* Teleprompter Text Area */}
         <div 
@@ -148,6 +157,13 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
           className="flex-1 overflow-hidden relative"
           style={{ 
             cursor: settings.hideCursor ? 'none' : 'auto'
+          }}
+          tabIndex={0}
+          onFocus={() => {
+            // Ensure the teleprompter can receive keyboard events
+            if (scrollContainerRef.current) {
+              scrollContainerRef.current.focus();
+            }
           }}
         >
           <div 

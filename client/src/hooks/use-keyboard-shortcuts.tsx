@@ -23,6 +23,16 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
     if (!enabled) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Skip if user is typing in an input field
+      const activeElement = document.activeElement;
+      const isInputActive = activeElement && (
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.getAttribute('contenteditable') === 'true'
+      );
+      
+      if (isInputActive) return;
+
       // Prevent default behavior for our shortcuts
       const isOurShortcut = [
         'Space',
@@ -48,32 +58,39 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
 
       if (isOurShortcut) {
         event.preventDefault();
+        event.stopPropagation();
       }
 
       // Handle shortcuts
+      console.log('Keyboard shortcut triggered:', event.code, 'isPlaying:', document.querySelector('[data-teleprompter-active]'));
       switch (event.code) {
         case 'Space':
+          console.log('Space key - Play/Pause');
           handlers.onPlayPause?.();
           break;
         case 'ArrowUp':
+          console.log('Arrow Up - Speed Up');
           handlers.onSpeedUp?.();
           break;
         case 'ArrowDown':
+          console.log('Arrow Down - Speed Down');
           handlers.onSpeedDown?.();
           break;
         case 'ArrowLeft':
           if (event.shiftKey) {
+            console.log('Shift+Arrow Left - Text Width Down');
             handlers.onTextWidthDown?.();
           } else {
-            // Use Left Arrow for previous marker navigation
+            console.log('Arrow Left - Previous Marker');
             handlers.onPreviousMarker?.();
           }
           break;
         case 'ArrowRight':
           if (event.shiftKey) {
+            console.log('Shift+Arrow Right - Text Width Up');
             handlers.onTextWidthUp?.();
           } else {
-            // Use Right Arrow for next marker navigation
+            console.log('Arrow Right - Next Marker');
             handlers.onNextMarker?.();
           }
           break;
@@ -103,25 +120,31 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
           break;
         case 'KeyH':
         case 'Home':
+          console.log('H/Home key - Go to Top');
           handlers.onGoToTop?.();
           break;
         case 'KeyB':
         case 'End':
+          console.log('B/End key - Go to Bottom');
           handlers.onGoToBottom?.();
           break;
         case 'KeyM':
+          console.log('M key - Add Marker');
           handlers.onAddMarker?.();
           break;
         case 'KeyN':
+          console.log('N key - Next Marker');
           handlers.onNextMarker?.();
           break;
         case 'KeyP':
+          console.log('P key - Previous Marker');
           handlers.onPreviousMarker?.();
           break;
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    // Use capture phase to ensure we get events before other handlers
+    document.addEventListener('keydown', handleKeyDown, { capture: true });
+    return () => document.removeEventListener('keydown', handleKeyDown, { capture: true });
   }, [handlers, enabled]);
 }

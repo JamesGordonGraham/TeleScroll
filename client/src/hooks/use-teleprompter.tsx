@@ -120,28 +120,39 @@ export function useTeleprompter() {
     let smoothPosition11 = element.scrollTop;
     let smoothPosition12 = element.scrollTop;
     let lastStatePosition = state.currentPosition;
+    let isKeyboardNavigation = false;
     
     const ultraSmoothScroll = (currentTime: number) => {
       if (!state.isPlaying || !element) return;
       
-      // Smoothly handle keyboard navigation without jittering
+      // Detect keyboard navigation
       const statePositionDiff = state.currentPosition - lastStatePosition;
       if (Math.abs(statePositionDiff) > 5) {
-        // Gradually adjust target position instead of instant jump
+        isKeyboardNavigation = true;
         targetPosition = state.currentPosition;
         lastStatePosition = state.currentPosition;
         
-        // Smooth transition to new position - don't reset all layers
-        const currentPos = element.scrollTop;
-        const posDiff = targetPosition - currentPos;
+        // Immediately set the scroll position for keyboard navigation
+        element.scrollTop = targetPosition;
         
-        // Adjust smooth positions to current element position for seamless transition
-        smoothPosition1 = currentPos + (posDiff * 0.1);
-        smoothPosition2 = currentPos + (posDiff * 0.08);
-        smoothPosition3 = currentPos + (posDiff * 0.06);
-        smoothPosition4 = currentPos + (posDiff * 0.04);
-        smoothPosition5 = currentPos + (posDiff * 0.02);
-        // Keep other positions gradual for ultra-smooth transition
+        // Reset all smooth positions to the new position
+        smoothPosition1 = targetPosition;
+        smoothPosition2 = targetPosition;
+        smoothPosition3 = targetPosition;
+        smoothPosition4 = targetPosition;
+        smoothPosition5 = targetPosition;
+        smoothPosition6 = targetPosition;
+        smoothPosition7 = targetPosition;
+        smoothPosition8 = targetPosition;
+        smoothPosition9 = targetPosition;
+        smoothPosition10 = targetPosition;
+        smoothPosition11 = targetPosition;
+        smoothPosition12 = targetPosition;
+        
+        // Reset flag after a short delay to resume normal scrolling
+        setTimeout(() => {
+          isKeyboardNavigation = false;
+        }, 100);
       }
       
       const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.016); // Cap at 16ms for stability
@@ -156,8 +167,8 @@ export function useTeleprompter() {
       const pixelsPerSecond = basePixelsPerSecond * scaledSpeed;
       
       // Layer 1: Calculate ideal target position with immediate speed response
-      // Only auto-scroll if not interrupted by keyboard navigation
-      if (Math.abs(statePositionDiff) <= 5) {
+      // Only auto-scroll if not during keyboard navigation
+      if (!isKeyboardNavigation) {
         targetPosition += pixelsPerSecond * deltaTime;
       }
       
@@ -211,9 +222,8 @@ export function useTeleprompter() {
       smoothPosition12 += diff12 * 0.28;
       
       // Apply the final 12-layer ultra-smooth position
-      element.scrollTop = smoothPosition12;
-      // Only update state if we're auto-scrolling (not during keyboard navigation)
-      if (Math.abs(statePositionDiff) <= 5) {
+      if (!isKeyboardNavigation) {
+        element.scrollTop = smoothPosition12;
         setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
       }
       
