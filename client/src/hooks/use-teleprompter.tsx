@@ -128,6 +128,7 @@ export function useTeleprompter() {
       // Detect keyboard navigation
       const statePositionDiff = state.currentPosition - lastStatePosition;
       if (Math.abs(statePositionDiff) > 5) {
+        console.log('Keyboard navigation detected, jumping to:', state.currentPosition);
         isKeyboardNavigation = true;
         targetPosition = state.currentPosition;
         lastStatePosition = state.currentPosition;
@@ -135,7 +136,7 @@ export function useTeleprompter() {
         // Immediately set the scroll position for keyboard navigation
         element.scrollTop = targetPosition;
         
-        // Reset all smooth positions to the new position
+        // Reset all smooth positions to the new position for seamless transition
         smoothPosition1 = targetPosition;
         smoothPosition2 = targetPosition;
         smoothPosition3 = targetPosition;
@@ -152,7 +153,8 @@ export function useTeleprompter() {
         // Reset flag after a short delay to resume normal scrolling
         setTimeout(() => {
           isKeyboardNavigation = false;
-        }, 100);
+          console.log('Resuming normal scrolling');
+        }, 50);
       }
       
       const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.016); // Cap at 16ms for stability
@@ -249,6 +251,7 @@ export function useTeleprompter() {
   }, []);
 
   const goToTop = useCallback((element?: HTMLElement | null) => {
+    console.log('goToTop called');
     // Always update state position for seamless integration with smooth scrolling
     setState(prev => ({ ...prev, currentPosition: 0 }));
     
@@ -263,8 +266,10 @@ export function useTeleprompter() {
   }, [state.isPlaying]);
 
   const goToBottom = useCallback((element?: HTMLElement | null) => {
+    console.log('goToBottom called');
     if (element) {
-      const bottomPosition = element.scrollHeight - element.clientHeight;
+      const bottomPosition = Math.max(0, element.scrollHeight - element.clientHeight);
+      console.log('Bottom position calculated:', bottomPosition);
       // Always update state position for seamless integration with smooth scrolling
       setState(prev => ({ ...prev, currentPosition: bottomPosition }));
       
@@ -289,7 +294,10 @@ export function useTeleprompter() {
   }, []);
 
   const nextMarker = useCallback((element?: HTMLElement | null, content?: string) => {
-    if (!element || !content) return;
+    if (!element || !content) {
+      console.log('nextMarker: missing element or content');
+      return;
+    }
     
     const markerPositions = [];
     let index = 0;
@@ -302,11 +310,16 @@ export function useTeleprompter() {
       index = markerIndex + 1;
     }
     
-    if (markerPositions.length === 0) return;
+    console.log('Found markers at positions:', markerPositions);
+    if (markerPositions.length === 0) {
+      console.log('No markers found');
+      return;
+    }
     
     // Calculate current position based on scroll
-    const currentScrollRatio = element.scrollTop / (element.scrollHeight - element.clientHeight);
+    const currentScrollRatio = element.scrollTop / Math.max(1, element.scrollHeight - element.clientHeight);
     const currentCharPosition = Math.floor(currentScrollRatio * content.length);
+    console.log('Current char position:', currentCharPosition, 'Current scroll:', element.scrollTop);
     
     // Find the next marker
     const nextMarkerIndex = markerPositions.find(pos => pos > currentCharPosition);
@@ -315,7 +328,8 @@ export function useTeleprompter() {
       const targetScrollTop = targetScrollRatio * (element.scrollHeight - element.clientHeight);
       const finalPosition = Math.max(0, Math.min(targetScrollTop, element.scrollHeight - element.clientHeight));
       
-      // Always update state position for seamless integration with smooth scrolling
+      console.log('Jumping to next marker at position:', finalPosition);
+      // Always update state position for integration with smooth scrolling
       setState(prev => ({ ...prev, currentPosition: finalPosition }));
       
       // If not playing, also do immediate scroll
@@ -326,11 +340,16 @@ export function useTeleprompter() {
           if (element) element.style.scrollBehavior = 'auto';
         }, 500);
       }
+    } else {
+      console.log('No next marker found');
     }
   }, [state.isPlaying]);
 
   const previousMarker = useCallback((element?: HTMLElement | null, content?: string) => {
-    if (!element || !content) return;
+    if (!element || !content) {
+      console.log('previousMarker: missing element or content');
+      return;
+    }
     
     const markerPositions = [];
     let index = 0;
@@ -343,11 +362,16 @@ export function useTeleprompter() {
       index = markerIndex + 1;
     }
     
-    if (markerPositions.length === 0) return;
+    console.log('Found markers at positions:', markerPositions);
+    if (markerPositions.length === 0) {
+      console.log('No markers found');
+      return;
+    }
     
     // Calculate current position based on scroll
-    const currentScrollRatio = element.scrollTop / (element.scrollHeight - element.clientHeight);
+    const currentScrollRatio = element.scrollTop / Math.max(1, element.scrollHeight - element.clientHeight);
     const currentCharPosition = Math.floor(currentScrollRatio * content.length);
+    console.log('Current char position:', currentCharPosition, 'Current scroll:', element.scrollTop);
     
     // Find the previous marker
     const prevMarkerIndex = markerPositions.reverse().find(pos => pos < currentCharPosition);
@@ -356,7 +380,8 @@ export function useTeleprompter() {
       const targetScrollTop = targetScrollRatio * (element.scrollHeight - element.clientHeight);
       const finalPosition = Math.max(0, Math.min(targetScrollTop, element.scrollHeight - element.clientHeight));
       
-      // Always update state position for seamless integration with smooth scrolling
+      console.log('Jumping to previous marker at position:', finalPosition);
+      // Always update state position for integration with smooth scrolling
       setState(prev => ({ ...prev, currentPosition: finalPosition }));
       
       // If not playing, also do immediate scroll
@@ -367,6 +392,8 @@ export function useTeleprompter() {
           if (element) element.style.scrollBehavior = 'auto';
         }, 500);
       }
+    } else {
+      console.log('No previous marker found');
     }
   }, [state.isPlaying]);
 

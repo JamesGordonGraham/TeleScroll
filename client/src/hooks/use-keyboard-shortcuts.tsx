@@ -62,35 +62,27 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
       }
 
       // Handle shortcuts
-      console.log('Keyboard shortcut triggered:', event.code, 'isPlaying:', document.querySelector('[data-teleprompter-active]'));
       switch (event.code) {
         case 'Space':
-          console.log('Space key - Play/Pause');
           handlers.onPlayPause?.();
           break;
         case 'ArrowUp':
-          console.log('Arrow Up - Speed Up');
           handlers.onSpeedUp?.();
           break;
         case 'ArrowDown':
-          console.log('Arrow Down - Speed Down');
           handlers.onSpeedDown?.();
           break;
         case 'ArrowLeft':
           if (event.shiftKey) {
-            console.log('Shift+Arrow Left - Text Width Down');
             handlers.onTextWidthDown?.();
           } else {
-            console.log('Arrow Left - Previous Marker');
             handlers.onPreviousMarker?.();
           }
           break;
         case 'ArrowRight':
           if (event.shiftKey) {
-            console.log('Shift+Arrow Right - Text Width Up');
             handlers.onTextWidthUp?.();
           } else {
-            console.log('Arrow Right - Next Marker');
             handlers.onNextMarker?.();
           }
           break;
@@ -120,24 +112,19 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
           break;
         case 'KeyH':
         case 'Home':
-          console.log('H/Home key - Go to Top');
           handlers.onGoToTop?.();
           break;
         case 'KeyB':
         case 'End':
-          console.log('B/End key - Go to Bottom');
           handlers.onGoToBottom?.();
           break;
         case 'KeyM':
-          console.log('M key - Add Marker');
           handlers.onAddMarker?.();
           break;
         case 'KeyN':
-          console.log('N key - Next Marker');
           handlers.onNextMarker?.();
           break;
         case 'KeyP':
-          console.log('P key - Previous Marker');
           handlers.onPreviousMarker?.();
           break;
       }
