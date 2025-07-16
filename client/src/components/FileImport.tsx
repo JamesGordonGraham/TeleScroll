@@ -83,7 +83,6 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
       wsRef.current = ws;
       
       let reconnectAttempts = 0;
-      let finalTextBuffer = '';
       let keepAliveInterval: NodeJS.Timeout | null = null;
       
       const startKeepAlive = () => {
@@ -112,20 +111,18 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
         const data = JSON.parse(event.data);
         if (data.type === 'transcript') {
           if (data.isFinal && data.text.trim()) {
-            // Accumulate final text to prevent duplicates
-            finalTextBuffer += data.text.trim() + ' ';
+            // Directly append final text to content without buffering
+            const trimmedText = data.text.trim();
+            const currentContent = content || '';
             
-            // Update content with accumulated final text
-            const newContent = content 
-              ? content + ' ' + finalTextBuffer.trim()
-              : finalTextBuffer.trim();
+            // Add space before new text if content exists and doesn't end with space
+            const needsSpace = currentContent && !currentContent.endsWith(' ') && !currentContent.endsWith('\n');
+            const newContent = currentContent + (needsSpace ? ' ' : '') + trimmedText;
+            
             onContentChange(newContent);
-            
-            // Clear buffers
-            finalTextBuffer = '';
-            setRealtimeTranscript('');
+            setRealtimeTranscript(''); // Clear interim text
           } else {
-            // Show interim results
+            // Show interim results without affecting final content
             setRealtimeTranscript(data.text);
           }
         } else if (data.type === 'error') {
@@ -433,7 +430,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
           </div>
           <Textarea
             ref={textareaRef}
-            value={content + (realtimeTranscript ? (content ? ' ' + realtimeTranscript : realtimeTranscript) : '')}
+            value={content + (realtimeTranscript ? (content && !content.endsWith(' ') && !content.endsWith('\n') ? ' ' + realtimeTranscript : realtimeTranscript) : '')}
             onChange={(e) => {
               // Only update if user is typing (not from real-time transcript)
               if (!isRecording) {
