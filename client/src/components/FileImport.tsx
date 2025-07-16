@@ -3,9 +3,10 @@ import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { CloudUpload, Trash2, Play, FileText, Bookmark } from 'lucide-react';
+import { CloudUpload, Trash2, Play, FileText, Bookmark, Mic, MicOff } from 'lucide-react';
 import { parseFile, validateFile } from '@/lib/file-parser';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 interface FileImportProps {
   onStartTeleprompter: (content: string) => void;
@@ -16,9 +17,13 @@ interface FileImportProps {
 export function FileImport({ onStartTeleprompter, content, onContentChange }: FileImportProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   const handleFileUpload = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
@@ -53,6 +58,102 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
       setIsUploading(false);
     }
   }, [toast, onContentChange]);
+
+  // Speech recording functions
+  const startRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
+      
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+      
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+      
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm;codecs=opus' });
+        await transcribeAudio(audioBlob);
+        
+        // Clean up
+        stream.getTracks().forEach(track => track.stop());
+      };
+      
+      mediaRecorder.start(1000); // Collect data every second
+      setIsRecording(true);
+      
+      toast({
+        title: "Recording started",
+        description: "Speak clearly into your microphone",
+      });
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      toast({
+        title: "Recording failed",
+        description: "Could not access microphone. Please check permissions.",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
+  
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  }, [isRecording]);
+  
+  const transcribeAudio = useCallback(async (audioBlob: Blob) => {
+    setIsTranscribing(true);
+    try {
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
+      
+      const response = await fetch('/api/speech-to-text', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Transcription failed');
+      }
+      
+      const result = await response.json();
+      
+      if (result.transcription && result.transcription.trim()) {
+        // Append transcription to existing content
+        const newContent = content 
+          ? content + '\n\n' + result.transcription.trim()
+          : result.transcription.trim();
+        onContentChange(newContent);
+        
+        toast({
+          title: "Speech transcribed",
+          description: `Added: "${result.transcription.substring(0, 50)}${result.transcription.length > 50 ? '...' : ''}"`,
+        });
+      } else {
+        toast({
+          title: "No speech detected",
+          description: "Please try speaking more clearly",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Transcription error:', error);
+      toast({
+        title: "Transcription failed",
+        description: "Failed to convert speech to text",
+        variant: "destructive",
+      });
+    } finally {
+      setIsTranscribing(false);
+    }
+  }, [content, onContentChange, toast]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: handleFileUpload,
@@ -130,6 +231,27 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-2xl font-semibold gradient-text-accent">Script Editor</h3>
             <div className="flex space-x-3">
+              {/* Voice Input Button */}
+              <Button
+                className={`${
+                  isRecording 
+                    ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 animate-pulse' 
+                    : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+                } text-white px-4 py-2 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300`}
+                disabled={isUploading || isTranscribing}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isRecording) {
+                    stopRecording();
+                  } else {
+                    startRecording();
+                  }
+                }}
+              >
+                {isRecording ? <MicOff className="h-4 w-4 mr-2" /> : <Mic className="h-4 w-4 mr-2" />}
+                {isTranscribing ? 'Processing...' : isRecording ? 'Stop Recording' : 'Voice Input'}
+              </Button>
+
               <Button
                 className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
                 disabled={isUploading}

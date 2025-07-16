@@ -8,6 +8,7 @@ import { z } from "zod";
 // import pdf from "pdf-parse";
 import { JSDOM } from "jsdom";
 import MarkdownIt from "markdown-it";
+import speech from "@google-cloud/speech";
 
 interface MulterRequest extends Request {
   file?: any;
@@ -205,6 +206,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('File upload error:', error);
       res.status(500).json({ message: "Failed to process file" });
+    }
+  });
+
+  // Speech-to-text endpoint
+  app.post("/api/speech-to-text", upload.single('audio'), async (req: MulterRequest, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No audio file uploaded" });
+      }
+
+      // Initialize Google Speech client
+      const client = new speech.SpeechClient({
+        apiKey: process.env.GOOGLE_SPEECH_API_KEY,
+      });
+
+      const audio = {
+        content: req.file.buffer.toString('base64'),
+      };
+
+      const config = {
+        encoding: 'WEBM_OPUS' as const,
+        sampleRateHertz: 48000,
+        languageCode: 'en-US',
+        enableAutomaticPunctuation: true,
+        enableWordTimeOffsets: false,
+      };
+
+      const request = {
+        audio: audio,
+        config: config,
+      };
+
+      const [response] = await client.recognize(request);
+      const transcription = response.results
+        ?.map((result) => result.alternatives?.[0]?.transcript)
+        .filter(Boolean)
+        .join(' ') || '';
+
+      res.json({ transcription });
+    } catch (error) {
+      console.error('Speech-to-text error:', error);
+      res.status(500).json({ message: "Failed to transcribe audio" });
     }
   });
 
