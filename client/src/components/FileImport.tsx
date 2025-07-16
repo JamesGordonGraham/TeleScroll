@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { CloudUpload, Trash2, Play, FileText, Bookmark, Mic, MicOff } from 'lucide-react';
+import { ScriptManager } from './ScriptManager';
 import { parseFile, validateFile } from '@/lib/file-parser';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -473,6 +474,20 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
               <p className="text-gray-600 italic">{realtimeTranscript}</p>
             </div>
           )}
+          
+          {/* Script Management */}
+          <div className="flex justify-center mt-4 pt-4 border-t border-border/40">
+            <ScriptManager 
+              content={content} 
+              onLoadScript={(loadedContent) => {
+                onContentChange(loadedContent);
+                // Update the content ref as well
+                if (contentRef.current !== undefined) {
+                  contentRef.current = loadedContent;
+                }
+              }} 
+            />
+          </div>
         </CardContent>
       </div>
     </section>

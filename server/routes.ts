@@ -2,7 +2,8 @@ import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
 import { storage } from "./storage";
-import { insertTeleprompterSettingsSchema, insertScriptSchema } from "@shared/schema";
+import { insertScriptSchema, type InsertScript } from "@shared/schema";
+import { insertTeleprompterSettingsSchema } from "@shared/schema";
 import mammoth from "mammoth";
 import { z } from "zod";
 // import pdf from "pdf-parse";
@@ -276,6 +277,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Speech-to-text error:', error);
       res.status(500).json({ message: "Failed to transcribe audio" });
+    }
+  });
+
+  // Script management endpoints
+  app.get("/api/scripts", async (req, res) => {
+    try {
+      const userId = "default-user"; // For now, using default user
+      const scripts = await storage.getScripts(userId);
+      // Sort by most recent first
+      scripts.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      res.json(scripts);
+    } catch (error) {
+      console.error('Get scripts error:', error);
+      res.status(500).json({ message: "Failed to retrieve scripts" });
+    }
+  });
+
+  app.post("/api/scripts", async (req, res) => {
+    try {
+      const { title, content } = req.body;
+      
+      if (!title || !content) {
+        return res.status(400).json({ message: "Title and content are required" });
+      }
+
+      const userId = "default-user"; // For now, using default user
+      const script = await storage.createScript({
+        userId,
+        title,
+        content,
+      });
+
+      res.json(script);
+    } catch (error) {
+      console.error('Create script error:', error);
+      res.status(500).json({ message: "Failed to save script" });
+    }
+  });
+
+  app.get("/api/scripts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const script = await storage.getScript(id);
+      
+      if (!script) {
+        return res.status(404).json({ message: "Script not found" });
+      }
+
+      res.json(script);
+    } catch (error) {
+      console.error('Get script error:', error);
+      res.status(500).json({ message: "Failed to retrieve script" });
+    }
+  });
+
+  app.put("/api/scripts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { title, content } = req.body;
+      
+      const updateData: Partial<InsertScript> = {};
+      if (title !== undefined) updateData.title = title;
+      if (content !== undefined) updateData.content = content;
+
+      const script = await storage.updateScript(id, updateData);
+      res.json(script);
+    } catch (error) {
+      console.error('Update script error:', error);
+      res.status(500).json({ message: "Failed to update script" });
+    }
+  });
+
+  app.delete("/api/scripts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteScript(id);
+      res.json({ message: "Script deleted successfully" });
+    } catch (error) {
+      console.error('Delete script error:', error);
+      res.status(500).json({ message: "Failed to delete script" });
     }
   });
 

@@ -193,6 +193,14 @@ Changelog:
   * Changed file upload to append content instead of overwriting existing text
   * Files are now added to the end of Script Editor content with proper spacing
   * Maintains existing workflow while preserving user's current script content
+- July 16, 2025. Local database saving and loading functionality completed:
+  * Added script management with PostgreSQL database integration
+  * Implemented Save Script and Load Script buttons at bottom of script editor
+  * Scripts saved with unique ID, title, content, and timestamps (created/updated)
+  * Load dialog shows list of previously saved scripts with preview and metadata
+  * Users can save current script with custom title and load any previous script
+  * Delete functionality available for script management
+  * Scripts sorted by most recent modification date
 ```
 
 ## User Preferences
