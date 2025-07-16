@@ -183,6 +183,9 @@ Changelog:
   * Separate audio upload configuration for speech files with 50MB limit
   * Support for various audio formats (webm, ogg, wav, mp3, m4a)
   * Real-time audio streaming with 16kHz LINEAR16 encoding for optimal quality
+  * Enhanced WebSocket stability with keep-alive pings and auto-reconnection
+  * Improved stream management to handle speech pauses and continuous recording
+  * Reduced audio buffer size for more responsive real-time transcription
 ```
 
 ## User Preferences

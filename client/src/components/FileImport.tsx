@@ -72,21 +72,41 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
+          autoGainControl: true,
         } 
       });
       
-      // Create WebSocket connection
+      // Create WebSocket connection with ping/pong to keep alive
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const wsUrl = `${protocol}//${window.location.host}/ws/speech`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
       
-      ws.onopen = () => {
-        console.log('WebSocket connected for real-time speech');
-        ws.send(JSON.stringify({ type: 'start' }));
+      let reconnectAttempts = 0;
+      let finalTextBuffer = '';
+      let keepAliveInterval: NodeJS.Timeout | null = null;
+      
+      const startKeepAlive = () => {
+        keepAliveInterval = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'ping' }));
+          }
+        }, 30000); // Send ping every 30 seconds
       };
       
-      let finalTextBuffer = '';
+      const stopKeepAlive = () => {
+        if (keepAliveInterval) {
+          clearInterval(keepAliveInterval);
+          keepAliveInterval = null;
+        }
+      };
+      
+      ws.onopen = () => {
+        console.log('WebSocket connected for real-time speech');
+        reconnectAttempts = 0;
+        ws.send(JSON.stringify({ type: 'start' }));
+        startKeepAlive();
+      };
       
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -110,7 +130,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
           }
         } else if (data.type === 'error') {
           console.error('Speech recognition error:', data.message);
-          // Only show errors for non-timeout issues
+          // Don't show common timeout/restart errors
           if (!data.message.includes('timeout') && !data.message.includes('OUT_OF_RANGE') && !data.message.includes('limit')) {
             toast({
               title: "Recognition error",
@@ -123,34 +143,41 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
       
       ws.onerror = (error) => {
         console.error('WebSocket error:', error);
+        stopKeepAlive();
       };
       
       ws.onclose = (event) => {
         console.log('WebSocket closed:', event.code, event.reason);
-        // If recording was interrupted unexpectedly, try to reconnect
-        if (event.code !== 1000 && event.code !== 1005 && isRecording) {
-          console.log('Unexpected WebSocket close, attempting to reconnect...');
-          toast({
-            title: "Connection lost",
-            description: "Attempting to reconnect voice input...",
-            variant: "destructive",
-          });
-          // Try to restart recording after a short delay
+        stopKeepAlive();
+        
+        // Auto-reconnect if still recording and haven't exceeded attempts
+        if (isRecording && reconnectAttempts < 3) {
+          reconnectAttempts++;
+          console.log(`Attempting to reconnect (${reconnectAttempts}/3)...`);
+          
           setTimeout(() => {
             if (isRecording) {
+              // Restart the entire recording process
               stopRealtimeRecording();
               setTimeout(() => startRealtimeRecording(), 1000);
             }
-          }, 500);
+          }, 1000);
+        } else if (reconnectAttempts >= 3) {
+          toast({
+            title: "Connection failed",
+            description: "Voice input has stopped. Please restart manually.",
+            variant: "destructive",
+          });
+          setIsRecording(false);
         }
       };
       
-      // Setup audio processing
+      // Setup audio processing with smaller buffer for more responsive streaming
       const audioContext = new AudioContext({ sampleRate: 16000 });
       audioContextRef.current = audioContext;
       
       const source = audioContext.createMediaStreamSource(stream);
-      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+      const processor = audioContext.createScriptProcessor(2048, 1, 1); // Smaller buffer
       processorRef.current = processor;
       
       processor.onaudioprocess = (event) => {
@@ -191,7 +218,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
         variant: "destructive",
       });
     }
-  }, [toast, content, onContentChange]);
+  }, [toast, content, onContentChange, isRecording]);
   
   const stopRealtimeRecording = useCallback(() => {
     if (wsRef.current) {

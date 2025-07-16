@@ -313,7 +313,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             languageCode: 'en-US',
             enableAutomaticPunctuation: true,
             enableWordTimeOffsets: false,
-            model: 'latest_short',
+            model: 'command_and_search',
+            useEnhanced: true,
           },
           interimResults: true,
           singleUtterance: false,
@@ -389,6 +390,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (data.type === 'start') {
           createNewStream();
+          
+        } else if (data.type === 'ping') {
+          // Respond to keep-alive ping
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'pong' }));
+          }
           
         } else if (data.type === 'audio') {
           // Send audio data to the stream
