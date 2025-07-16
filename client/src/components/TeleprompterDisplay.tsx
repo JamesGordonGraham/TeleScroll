@@ -112,12 +112,7 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
     onTextWidthDown: handleTextWidthDecrease,
     onFlip: toggleFlip,
     onExit: onExit,
-    onGoToTop: () => {
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTop = 0;
-        goToTop();
-      }
-    },
+    onGoToTop: () => goToTop(scrollContainerRef.current),
     onGoToBottom: () => goToBottom(scrollContainerRef.current),
     onAddMarker: addMarker,
     onNextMarker: () => nextMarker(scrollContainerRef.current, content),

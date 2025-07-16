@@ -211,14 +211,27 @@ export function useTeleprompter() {
     setState(prev => ({ ...prev, currentPosition: 0 }));
   }, []);
 
-  const goToTop = useCallback(() => {
-    setState(prev => ({ ...prev, currentPosition: 0 }));
+  const goToTop = useCallback((element?: HTMLElement | null) => {
+    if (element) {
+      element.style.scrollBehavior = 'smooth';
+      element.scrollTop = 0;
+      setState(prev => ({ ...prev, currentPosition: 0 }));
+      setTimeout(() => {
+        if (element) element.style.scrollBehavior = 'auto';
+      }, 500);
+    } else {
+      setState(prev => ({ ...prev, currentPosition: 0 }));
+    }
   }, []);
 
   const goToBottom = useCallback((element?: HTMLElement | null) => {
     if (element) {
+      element.style.scrollBehavior = 'smooth';
       element.scrollTop = element.scrollHeight;
       setState(prev => ({ ...prev, currentPosition: element.scrollHeight }));
+      setTimeout(() => {
+        if (element) element.style.scrollBehavior = 'auto';
+      }, 500);
     } else {
       setState(prev => ({ ...prev, currentPosition: 100000 })); // Large number to go to bottom
     }
@@ -256,7 +269,21 @@ export function useTeleprompter() {
     if (nextMarkerIndex !== undefined) {
       const targetScrollRatio = nextMarkerIndex / content.length;
       const targetScrollTop = targetScrollRatio * (element.scrollHeight - element.clientHeight);
+      
+      // Set scroll behavior to smooth for marker navigation
+      element.style.scrollBehavior = 'smooth';
       element.scrollTop = Math.max(0, Math.min(targetScrollTop, element.scrollHeight - element.clientHeight));
+      
+      // Update the current position state for active scrolling
+      setState(prev => ({ 
+        ...prev, 
+        currentPosition: Math.max(0, Math.min(targetScrollTop, element.scrollHeight - element.clientHeight))
+      }));
+      
+      // Reset scroll behavior to auto for smooth scrolling
+      setTimeout(() => {
+        if (element) element.style.scrollBehavior = 'auto';
+      }, 500);
     }
   }, []);
 
@@ -285,7 +312,21 @@ export function useTeleprompter() {
     if (prevMarkerIndex !== undefined) {
       const targetScrollRatio = prevMarkerIndex / content.length;
       const targetScrollTop = targetScrollRatio * (element.scrollHeight - element.clientHeight);
+      
+      // Set scroll behavior to smooth for marker navigation
+      element.style.scrollBehavior = 'smooth';
       element.scrollTop = Math.max(0, Math.min(targetScrollTop, element.scrollHeight - element.clientHeight));
+      
+      // Update the current position state for active scrolling
+      setState(prev => ({ 
+        ...prev, 
+        currentPosition: Math.max(0, Math.min(targetScrollTop, element.scrollHeight - element.clientHeight))
+      }));
+      
+      // Reset scroll behavior to auto for smooth scrolling
+      setTimeout(() => {
+        if (element) element.style.scrollBehavior = 'auto';
+      }, 500);
     }
   }, []);
 

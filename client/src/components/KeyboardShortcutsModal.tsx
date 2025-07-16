@@ -11,14 +11,18 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
     { action: 'Play / Pause', key: 'Space' },
     { action: 'Increase Speed', key: '↑' },
     { action: 'Decrease Speed', key: '↓' },
+    { action: 'Next Marker', key: '→' },
+    { action: 'Previous Marker', key: '←' },
     { action: 'Increase Text Size', key: '+' },
     { action: 'Decrease Text Size', key: '-' },
+    { action: 'Increase Text Width', key: 'Shift + →' },
+    { action: 'Decrease Text Width', key: 'Shift + ←' },
     { action: 'Flip Text Horizontally', key: 'F' },
     { action: 'Go to Top', key: 'H or Home' },
     { action: 'Go to Bottom', key: 'B or End' },
     { action: 'Add Marker', key: 'M' },
-    { action: 'Next Marker', key: 'N' },
-    { action: 'Previous Marker', key: 'P' },
+    { action: 'Next Marker (Alt)', key: 'N' },
+    { action: 'Previous Marker (Alt)', key: 'P' },
     { action: 'Exit Teleprompter', key: 'Esc' },
   ];
 
@@ -69,8 +73,8 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
           <div className="flex items-start">
             <Info className="h-6 w-6 text-white mt-0.5 mr-4 flex-shrink-0" />
             <div>
-              <p className="font-semibold mb-2 text-lg">Bluetooth Keyboard Support</p>
-              <p className="text-blue-100">All keyboard shortcuts work seamlessly with Bluetooth keyboards. Make sure your device is paired and connected for the best teleprompter experience.</p>
+              <p className="font-semibold mb-2 text-lg">Active Scrolling Support</p>
+              <p className="text-blue-100">All keyboard shortcuts work while the teleprompter is actively scrolling. Use arrow keys to navigate between markers without stopping playback, or use traditional shortcuts for full control.</p>
             </div>
           </div>
         </div>

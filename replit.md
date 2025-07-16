@@ -201,6 +201,13 @@ Changelog:
   * Users can save current script with custom title and load any previous script
   * Delete functionality available for script management
   * Scripts sorted by most recent modification date
+- July 16, 2025. Enhanced keyboard shortcuts during active scrolling:
+  * Keyboard shortcuts now work while teleprompter is actively scrolling
+  * Arrow keys (← →) navigate between markers without stopping playback
+  * Smooth marker navigation with temporary scroll behavior changes
+  * Updated keyboard shortcuts to include Shift+Arrow for text width adjustment
+  * All navigation functions (Go to Top/Bottom) work during active scrolling
+  * Position state properly synchronized with scroll during marker jumps
 ```
 
 ## User Preferences

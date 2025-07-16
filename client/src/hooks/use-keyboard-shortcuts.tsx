@@ -64,11 +64,17 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
         case 'ArrowLeft':
           if (event.shiftKey) {
             handlers.onTextWidthDown?.();
+          } else {
+            // Use Left Arrow for previous marker navigation
+            handlers.onPreviousMarker?.();
           }
           break;
         case 'ArrowRight':
           if (event.shiftKey) {
             handlers.onTextWidthUp?.();
+          } else {
+            // Use Right Arrow for next marker navigation
+            handlers.onNextMarker?.();
           }
           break;
         case 'Equal':
