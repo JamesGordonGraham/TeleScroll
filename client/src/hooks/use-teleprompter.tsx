@@ -102,7 +102,7 @@ export function useTeleprompter() {
       animationRef.current = null;
     }
 
-    // 8-layer interpolation system for maximum smoothness
+    // 12-layer interpolation system for maximum smoothness
     element.style.scrollBehavior = 'auto';
     
     let lastTime = performance.now();
@@ -119,26 +119,29 @@ export function useTeleprompter() {
     let smoothPosition10 = element.scrollTop;
     let smoothPosition11 = element.scrollTop;
     let smoothPosition12 = element.scrollTop;
+    let lastStatePosition = state.currentPosition;
     
     const ultraSmoothScroll = (currentTime: number) => {
       if (!state.isPlaying || !element) return;
       
-      // Check if we need to update the target position from state
-      if (Math.abs(targetPosition - state.currentPosition) > 5) {
+      // Smoothly handle keyboard navigation without jittering
+      const statePositionDiff = state.currentPosition - lastStatePosition;
+      if (Math.abs(statePositionDiff) > 5) {
+        // Gradually adjust target position instead of instant jump
         targetPosition = state.currentPosition;
-        // Reset all smooth positions to current scroll position for instant response
-        smoothPosition1 = element.scrollTop;
-        smoothPosition2 = element.scrollTop;
-        smoothPosition3 = element.scrollTop;
-        smoothPosition4 = element.scrollTop;
-        smoothPosition5 = element.scrollTop;
-        smoothPosition6 = element.scrollTop;
-        smoothPosition7 = element.scrollTop;
-        smoothPosition8 = element.scrollTop;
-        smoothPosition9 = element.scrollTop;
-        smoothPosition10 = element.scrollTop;
-        smoothPosition11 = element.scrollTop;
-        smoothPosition12 = element.scrollTop;
+        lastStatePosition = state.currentPosition;
+        
+        // Smooth transition to new position - don't reset all layers
+        const currentPos = element.scrollTop;
+        const posDiff = targetPosition - currentPos;
+        
+        // Adjust smooth positions to current element position for seamless transition
+        smoothPosition1 = currentPos + (posDiff * 0.1);
+        smoothPosition2 = currentPos + (posDiff * 0.08);
+        smoothPosition3 = currentPos + (posDiff * 0.06);
+        smoothPosition4 = currentPos + (posDiff * 0.04);
+        smoothPosition5 = currentPos + (posDiff * 0.02);
+        // Keep other positions gradual for ultra-smooth transition
       }
       
       const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.016); // Cap at 16ms for stability
@@ -153,7 +156,10 @@ export function useTeleprompter() {
       const pixelsPerSecond = basePixelsPerSecond * scaledSpeed;
       
       // Layer 1: Calculate ideal target position with immediate speed response
-      targetPosition += pixelsPerSecond * deltaTime;
+      // Only auto-scroll if not interrupted by keyboard navigation
+      if (Math.abs(statePositionDiff) <= 5) {
+        targetPosition += pixelsPerSecond * deltaTime;
+      }
       
       // 12-layer ultra-smooth interpolation system with optimized factors for perfect fluidity
       // Layer 2: Extremely gentle response (0.06)
@@ -206,7 +212,10 @@ export function useTeleprompter() {
       
       // Apply the final 12-layer ultra-smooth position
       element.scrollTop = smoothPosition12;
-      setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
+      // Only update state if we're auto-scrolling (not during keyboard navigation)
+      if (Math.abs(statePositionDiff) <= 5) {
+        setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
+      }
       
       animationRef.current = requestAnimationFrame(ultraSmoothScroll);
     };
@@ -230,35 +239,29 @@ export function useTeleprompter() {
   }, []);
 
   const goToTop = useCallback((element?: HTMLElement | null) => {
-    if (element) {
-      // If currently playing, update the state position and let smooth scrolling handle it
-      if (state.isPlaying) {
-        setState(prev => ({ ...prev, currentPosition: 0 }));
-      } else {
-        // If not playing, do immediate scroll
-        element.style.scrollBehavior = 'smooth';
-        element.scrollTop = 0;
-        setState(prev => ({ ...prev, currentPosition: 0 }));
-        setTimeout(() => {
-          if (element) element.style.scrollBehavior = 'auto';
-        }, 500);
-      }
-    } else {
-      setState(prev => ({ ...prev, currentPosition: 0 }));
+    // Always update state position for seamless integration with smooth scrolling
+    setState(prev => ({ ...prev, currentPosition: 0 }));
+    
+    // If not playing, also do immediate scroll
+    if (element && !state.isPlaying) {
+      element.style.scrollBehavior = 'smooth';
+      element.scrollTop = 0;
+      setTimeout(() => {
+        if (element) element.style.scrollBehavior = 'auto';
+      }, 500);
     }
   }, [state.isPlaying]);
 
   const goToBottom = useCallback((element?: HTMLElement | null) => {
     if (element) {
       const bottomPosition = element.scrollHeight - element.clientHeight;
-      // If currently playing, update the state position and let smooth scrolling handle it
-      if (state.isPlaying) {
-        setState(prev => ({ ...prev, currentPosition: bottomPosition }));
-      } else {
-        // If not playing, do immediate scroll
+      // Always update state position for seamless integration with smooth scrolling
+      setState(prev => ({ ...prev, currentPosition: bottomPosition }));
+      
+      // If not playing, also do immediate scroll
+      if (!state.isPlaying) {
         element.style.scrollBehavior = 'smooth';
         element.scrollTop = bottomPosition;
-        setState(prev => ({ ...prev, currentPosition: bottomPosition }));
         setTimeout(() => {
           if (element) element.style.scrollBehavior = 'auto';
         }, 500);
@@ -302,14 +305,13 @@ export function useTeleprompter() {
       const targetScrollTop = targetScrollRatio * (element.scrollHeight - element.clientHeight);
       const finalPosition = Math.max(0, Math.min(targetScrollTop, element.scrollHeight - element.clientHeight));
       
-      // If currently playing, update the state position and let smooth scrolling handle it
-      if (state.isPlaying) {
-        setState(prev => ({ ...prev, currentPosition: finalPosition }));
-      } else {
-        // If not playing, do immediate scroll
+      // Always update state position for seamless integration with smooth scrolling
+      setState(prev => ({ ...prev, currentPosition: finalPosition }));
+      
+      // If not playing, also do immediate scroll
+      if (!state.isPlaying) {
         element.style.scrollBehavior = 'smooth';
         element.scrollTop = finalPosition;
-        setState(prev => ({ ...prev, currentPosition: finalPosition }));
         setTimeout(() => {
           if (element) element.style.scrollBehavior = 'auto';
         }, 500);
@@ -344,14 +346,13 @@ export function useTeleprompter() {
       const targetScrollTop = targetScrollRatio * (element.scrollHeight - element.clientHeight);
       const finalPosition = Math.max(0, Math.min(targetScrollTop, element.scrollHeight - element.clientHeight));
       
-      // If currently playing, update the state position and let smooth scrolling handle it
-      if (state.isPlaying) {
-        setState(prev => ({ ...prev, currentPosition: finalPosition }));
-      } else {
-        // If not playing, do immediate scroll
+      // Always update state position for seamless integration with smooth scrolling
+      setState(prev => ({ ...prev, currentPosition: finalPosition }));
+      
+      // If not playing, also do immediate scroll
+      if (!state.isPlaying) {
         element.style.scrollBehavior = 'smooth';
         element.scrollTop = finalPosition;
-        setState(prev => ({ ...prev, currentPosition: finalPosition }));
         setTimeout(() => {
           if (element) element.style.scrollBehavior = 'auto';
         }, 500);

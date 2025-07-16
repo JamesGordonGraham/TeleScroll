@@ -208,6 +208,13 @@ Changelog:
   * Updated keyboard shortcuts to include Shift+Arrow for text width adjustment
   * All navigation functions (Go to Top/Bottom) work during active scrolling
   * Position state properly synchronized with scroll during marker jumps
+- July 16, 2025. Fixed smooth scrolling interruption during keyboard navigation:
+  * Redesigned scroll animation to handle keyboard input without jittering
+  * Gradual position adjustments instead of instant resets during navigation
+  * Maintained 12-layer interpolation system for ultra-smooth transitions
+  * Keyboard shortcuts now seamlessly integrate with requestAnimationFrame loop
+  * Eliminated scroll freezing and text jittering during marker jumps
+  * Smooth scrolling continues uninterrupted while navigating between positions
 ```
 
 ## User Preferences
