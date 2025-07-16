@@ -289,9 +289,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     let speechClient: speech.SpeechClient | null = null;
     let recognizeStream: any = null;
+    let streamStartTime: number = 0;
     let restartTimeoutId: NodeJS.Timeout | null = null;
+    let isCreatingStream: boolean = false;
     
     const createNewStream = () => {
+      if (isCreatingStream) return; // Prevent multiple simultaneous stream creation
+      isCreatingStream = true;
+      
       try {
         if (recognizeStream && !recognizeStream.destroyed) {
           recognizeStream.end();
@@ -314,6 +319,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           singleUtterance: false,
         };
         
+        streamStartTime = Date.now();
+        
         recognizeStream = speechClient
           .streamingRecognize(request)
           .on('data', (data: any) => {
@@ -328,32 +335,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   isFinal: isFinal
                 }));
               }
-              
-              // If this is a final result, prepare for the next chunk
-              if (isFinal) {
-                // Restart the stream after a short delay to handle continuous speech
-                if (restartTimeoutId) {
-                  clearTimeout(restartTimeoutId);
-                }
-                restartTimeoutId = setTimeout(() => {
-                  if (ws.readyState === WebSocket.OPEN) {
-                    createNewStream();
-                  }
-                }, 100);
-              }
             }
           })
           .on('error', (error: any) => {
             console.error('Streaming recognition error:', error);
+            isCreatingStream = false;
+            
             if (ws.readyState === WebSocket.OPEN) {
-              // Auto-restart on certain errors
-              if (error.code === 11 || error.code === 3) { // OUT_OF_RANGE or INVALID_ARGUMENT
-                console.log('Restarting stream due to timeout/limit');
+              // Only restart on specific timeout errors after the stream has been running for a while
+              const streamAge = Date.now() - streamStartTime;
+              if ((error.code === 11 || error.code === 3) && streamAge > 5000) { // Only restart if stream has been running for 5+ seconds
+                console.log('Restarting stream due to timeout after', streamAge, 'ms');
                 setTimeout(() => {
-                  if (ws.readyState === WebSocket.OPEN) {
+                  if (ws.readyState === WebSocket.OPEN && !isCreatingStream) {
                     createNewStream();
                   }
-                }, 100);
+                }, 500); // Longer delay to prevent rapid restarts
               } else {
                 ws.send(JSON.stringify({
                   type: 'error',
@@ -363,15 +360,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           })
           .on('end', () => {
-            console.log('Stream ended, creating new stream');
-            if (ws.readyState === WebSocket.OPEN) {
-              setTimeout(() => createNewStream(), 100);
+            console.log('Stream ended naturally');
+            isCreatingStream = false;
+            // Only restart if the stream has been running for a reasonable time
+            const streamAge = Date.now() - streamStartTime;
+            if (ws.readyState === WebSocket.OPEN && streamAge > 3000 && !isCreatingStream) {
+              console.log('Restarting stream after natural end, age:', streamAge, 'ms');
+              setTimeout(() => createNewStream(), 500);
             }
           });
           
         console.log('New recognition stream created');
+        isCreatingStream = false;
       } catch (error) {
         console.error('Error creating stream:', error);
+        isCreatingStream = false;
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({
             type: 'error',

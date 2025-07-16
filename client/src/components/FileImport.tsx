@@ -86,23 +86,32 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
         ws.send(JSON.stringify({ type: 'start' }));
       };
       
+      let finalTextBuffer = '';
+      
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.type === 'transcript') {
-          setRealtimeTranscript(data.text);
-          
-          // If it's a final result, add it to the content
           if (data.isFinal && data.text.trim()) {
+            // Accumulate final text to prevent duplicates
+            finalTextBuffer += data.text.trim() + ' ';
+            
+            // Update content with accumulated final text
             const newContent = content 
-              ? content + ' ' + data.text.trim()
-              : data.text.trim();
+              ? content + ' ' + finalTextBuffer.trim()
+              : finalTextBuffer.trim();
             onContentChange(newContent);
-            setRealtimeTranscript(''); // Clear interim text
+            
+            // Clear buffers
+            finalTextBuffer = '';
+            setRealtimeTranscript('');
+          } else {
+            // Show interim results
+            setRealtimeTranscript(data.text);
           }
         } else if (data.type === 'error') {
           console.error('Speech recognition error:', data.message);
-          // Don't show error toast for common timeout errors, just continue
-          if (!data.message.includes('timeout') && !data.message.includes('OUT_OF_RANGE')) {
+          // Only show errors for non-timeout issues
+          if (!data.message.includes('timeout') && !data.message.includes('OUT_OF_RANGE') && !data.message.includes('limit')) {
             toast({
               title: "Recognition error",
               description: data.message,
@@ -385,7 +394,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
           </div>
           <Textarea
             ref={textareaRef}
-            value={content + (realtimeTranscript ? ' ' + realtimeTranscript : '')}
+            value={content + (realtimeTranscript ? (content ? ' ' + realtimeTranscript : realtimeTranscript) : '')}
             onChange={(e) => {
               // Only update if user is typing (not from real-time transcript)
               if (!isRecording) {
