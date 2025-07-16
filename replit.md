@@ -174,7 +174,7 @@ Changelog:
   * Fixed all speed controls to enforce 0.1x-3.0x range limits
   * Fixed floating panel controls API integration with correct parameter order
   * All teleprompter controls now fully functional with database persistence
-- July 16, 2025. Real-time speech-to-text implementation:
+- July 16, 2025. Real-time speech-to-text implementation completed:
   * Added microphone button to the left of "Choose File" button
   * Implemented WebSocket-based real-time speech-to-text using Google Speech API
   * Live transcription appears in script editor as you speak
@@ -186,6 +186,9 @@ Changelog:
   * Enhanced WebSocket stability with keep-alive pings and auto-reconnection
   * Improved stream management to handle speech pauses and continuous recording
   * Reduced audio buffer size for more responsive real-time transcription
+  * Fixed text accumulation issues - sentences now properly append without overwriting
+  * Implemented proper state management with refs to prevent stale content issues
+  * Voice input now works continuously across speech pauses with automatic reconnection
 ```
 
 ## User Preferences
