@@ -362,11 +362,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .on('end', () => {
             console.log('Stream ended naturally');
             isCreatingStream = false;
-            // Only restart if the stream has been running for a reasonable time
-            const streamAge = Date.now() - streamStartTime;
-            if (ws.readyState === WebSocket.OPEN && streamAge > 3000 && !isCreatingStream) {
-              console.log('Restarting stream after natural end, age:', streamAge, 'ms');
-              setTimeout(() => createNewStream(), 500);
+            // Always restart the stream when it ends naturally (this happens when speech pauses)
+            if (ws.readyState === WebSocket.OPEN && !isCreatingStream) {
+              console.log('Restarting stream for continued listening');
+              setTimeout(() => createNewStream(), 200);
             }
           });
           
@@ -409,6 +408,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             clearTimeout(restartTimeoutId);
             restartTimeoutId = null;
           }
+          // Mark as stopping to prevent auto-restart
+          isCreatingStream = true;
           // End the recognition stream
           if (recognizeStream && !recognizeStream.destroyed) {
             recognizeStream.end();
@@ -421,6 +422,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     ws.on('close', () => {
       console.log('Speech WebSocket client disconnected');
+      isCreatingStream = true; // Prevent any pending restarts
       if (restartTimeoutId) {
         clearTimeout(restartTimeoutId);
       }

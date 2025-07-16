@@ -127,9 +127,21 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
       
       ws.onclose = (event) => {
         console.log('WebSocket closed:', event.code, event.reason);
-        // Don't show error if it was a normal close
-        if (event.code !== 1000 && isRecording) {
-          console.log('Unexpected WebSocket close, connection may have been lost');
+        // If recording was interrupted unexpectedly, try to reconnect
+        if (event.code !== 1000 && event.code !== 1005 && isRecording) {
+          console.log('Unexpected WebSocket close, attempting to reconnect...');
+          toast({
+            title: "Connection lost",
+            description: "Attempting to reconnect voice input...",
+            variant: "destructive",
+          });
+          // Try to restart recording after a short delay
+          setTimeout(() => {
+            if (isRecording) {
+              stopRealtimeRecording();
+              setTimeout(() => startRealtimeRecording(), 1000);
+            }
+          }, 500);
         }
       };
       
