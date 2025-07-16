@@ -186,35 +186,43 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
 
   return (
     <section 
-      className={`fixed inset-0 z-50 ${state.isTransparent ? 'bg-transparent' : 'bg-black'}`} 
+      className={`fixed inset-0 z-50 ${state.isTransparent ? 'bg-transparent' : (state.cameraStream ? 'bg-transparent' : 'bg-black')}`} 
       data-teleprompter-active="true"
       style={state.isTransparent ? { pointerEvents: 'none' } : {}}
     >
       {/* Camera Video Background (only shows when recording) */}
       {state.cameraStream && (
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ 
-            zIndex: -1,
-            transform: state.isFlipped ? 'scaleX(-1)' : 'none'
-          }}
-          onLoadedMetadata={() => console.log('Video metadata loaded')}
-          onError={(e) => console.error('Video error:', e)}
-        />
+        <div className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }}>
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+            style={{ 
+              transform: state.isFlipped ? 'scaleX(-1)' : 'none'
+            }}
+            onLoadedMetadata={() => console.log('Video metadata loaded')}
+            onError={(e) => console.error('Video error:', e)}
+          />
+        </div>
       )}
 
-      <div className="h-full flex flex-col" style={state.isTransparent ? { pointerEvents: 'none' } : {}}>
+      <div 
+        className="h-full flex flex-col relative" 
+        style={{ 
+          pointerEvents: state.isTransparent ? 'none' : 'auto',
+          zIndex: state.cameraStream ? 10 : 'auto'
+        }}
+      >
         {/* Teleprompter Text Area */}
         <div 
           ref={scrollContainerRef}
           className="flex-1 overflow-hidden relative"
           style={{ 
             cursor: settings.hideCursor ? 'none' : 'auto',
-            pointerEvents: state.isTransparent ? 'none' : 'auto'
+            pointerEvents: state.isTransparent ? 'none' : 'auto',
+            backgroundColor: state.cameraStream ? 'transparent' : 'transparent'
           }}
           tabIndex={0}
           onFocus={() => {

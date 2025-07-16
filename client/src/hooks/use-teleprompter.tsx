@@ -372,14 +372,35 @@ export function useTeleprompter() {
         }
       });
       
-      // Schedule next frame without blocking current event loop
-      setTimeout(() => {
+      // Apply different performance levels based on recording state
+      const maxScroll = element.scrollHeight - element.clientHeight;
+      let finalPosition;
+      
+      if (state.isRecording) {
+        // Simplified scrolling when recording for better performance
+        const speed = settings.scrollSpeed * 80; // pixels per second
+        targetPosition += speed * deltaTime;
+        finalPosition = Math.max(0, Math.min(targetPosition, maxScroll));
+        element.scrollTop = finalPosition;
+      } else {
+        // Full smooth scrolling when not recording
+        finalPosition = Math.max(0, Math.min(smoothPosition12, maxScroll));
+        element.scrollTop = finalPosition;
+      }
+      
+      // Update state during normal scrolling only
+      if (Math.abs(statePositionDiff) <= 10) {
+        setState(prev => ({ ...prev, currentPosition: finalPosition }));
+      }
+      
+      // Continue animation
+      if (state.isPlaying && finalPosition < maxScroll - 1) {
         animationRef.current = requestAnimationFrame(ultraSmoothScroll);
-      }, 0);
+      }
     };
     
     animationRef.current = requestAnimationFrame(ultraSmoothScroll);
-  }, [settings, state.isPlaying]);
+  }, [settings, state.isPlaying, state.isRecording]);
 
   const stopScrolling = useCallback(() => {
     if (scrollIntervalRef.current) {
