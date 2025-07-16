@@ -219,13 +219,16 @@ export function useTeleprompter() {
       
       // Apply the final 12-layer ultra-smooth position
       element.scrollTop = smoothPosition12;
-      setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
+      // Only update state during normal scrolling to avoid infinite loops
+      if (Math.abs(statePositionDiff) <= 10) {
+        setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
+      }
       
       animationRef.current = requestAnimationFrame(ultraSmoothScroll);
     };
     
     animationRef.current = requestAnimationFrame(ultraSmoothScroll);
-  }, [settings, state.isPlaying, state.currentPosition]);
+  }, [settings, state.isPlaying]);
 
   const stopScrolling = useCallback(() => {
     if (scrollIntervalRef.current) {
