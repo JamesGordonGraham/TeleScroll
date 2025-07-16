@@ -190,14 +190,10 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
   }
 
   return (
-    <section 
-      className={`fixed inset-0 z-50 ${state.isTransparent ? 'bg-transparent' : (state.cameraStream ? 'bg-transparent' : 'bg-black')}`} 
-      data-teleprompter-active="true"
-      style={state.isTransparent ? { pointerEvents: 'none' } : {}}
-    >
-      {/* Camera Video Background (only shows when recording) */}
+    <>
+      {/* Camera Video Layer - this is what gets recorded */}
       {state.cameraStream && (
-        <div className="fixed inset-0 w-full h-full" style={{ zIndex: 1 }}>
+        <div className="fixed inset-0 w-full h-full bg-transparent" style={{ zIndex: 1 }}>
           <video
             ref={videoRef}
             autoPlay
@@ -218,13 +214,22 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
         </div>
       )}
 
-      <div 
-        className="h-full flex flex-col relative" 
-        style={{ 
+      {/* Teleprompter Overlay - visible to user but NOT recorded */}
+      <section 
+        className={`fixed inset-0 z-50 ${state.isTransparent ? 'bg-transparent' : (state.cameraStream ? 'bg-transparent' : 'bg-black')}`} 
+        data-teleprompter-active="true"
+        style={{
           pointerEvents: state.isTransparent ? 'none' : 'auto',
-          zIndex: state.cameraStream ? 10 : 'auto'
+          zIndex: state.cameraStream ? 100 : 50, // Always above camera
+          mixBlendMode: state.cameraStream ? 'normal' : 'normal'
         }}
       >
+        <div 
+          className="h-full flex flex-col relative" 
+          style={{ 
+            pointerEvents: state.isTransparent ? 'none' : 'auto'
+          }}
+        >
         {/* Teleprompter Text Area */}
         <div 
           ref={scrollContainerRef}
@@ -416,7 +421,7 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
             {/* Recording Status Indicator */}
             {state.isRecording && (
               <div className="text-red-400 text-sm font-semibold bg-black/50 px-3 py-1 rounded-lg">
-                REC
+                REC {isFFmpegLoaded ? '(MP4)' : '(WebM)'}
               </div>
             )}
 
@@ -515,6 +520,7 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
           </div>
         </div>
       )}
-    </section>
+      </section>
+    </>
   );
 }

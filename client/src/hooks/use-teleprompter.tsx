@@ -2,6 +2,8 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import type { TeleprompterSettings } from '@shared/schema';
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile, toBlobURL } from '@ffmpeg/util';
 
 interface TeleprompterState {
   isPlaying: boolean;
@@ -34,6 +36,8 @@ export function useTeleprompter() {
   const lastFrameTimeRef = useRef<number>(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
+  const ffmpegRef = useRef<FFmpeg | null>(null);
+  const [isFFmpegLoaded, setIsFFmpegLoaded] = useState(false);
 
   // Get settings
   const { data: settings, isLoading: settingsLoading } = useQuery<TeleprompterSettings>({
@@ -63,15 +67,43 @@ export function useTeleprompter() {
     setState(prev => ({ ...prev, isTransparent: !prev.isTransparent }));
   }, []);
 
+  // Initialize FFmpeg
+  const loadFFmpeg = useCallback(async () => {
+    if (ffmpegRef.current || isFFmpegLoaded) return;
+    
+    try {
+      console.log('Loading FFmpeg...');
+      const ffmpeg = new FFmpeg();
+      
+      const baseURL = 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm';
+      await ffmpeg.load({
+        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+        workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
+      });
+      
+      ffmpegRef.current = ffmpeg;
+      setIsFFmpegLoaded(true);
+      console.log('FFmpeg loaded successfully');
+    } catch (error) {
+      console.error('Failed to load FFmpeg:', error);
+    }
+  }, [isFFmpegLoaded]);
+
+  // Load FFmpeg on mount
+  useEffect(() => {
+    loadFFmpeg();
+  }, [loadFFmpeg]);
+
   const startRecording = useCallback(async () => {
     try {
       console.log('Starting camera recording...');
       
-      // Request camera access
+      // Request camera access - this captures the real camera including background
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: { ideal: 1280, max: 1920 },
-          height: { ideal: 720, max: 1080 },
+          width: { ideal: 1920, max: 1920 },
+          height: { ideal: 1080, max: 1080 },
           frameRate: { ideal: 30, max: 60 },
           facingMode: 'user'
         },
@@ -85,13 +117,9 @@ export function useTeleprompter() {
       console.log('Camera stream obtained');
       setState(prev => ({ ...prev, cameraStream: stream, isRecording: true }));
 
-      // Try MP4 format first, then fallback to WebM
+      // Record in WebM format (browser native) then convert to MP4 with FFmpeg
       let options: MediaRecorderOptions;
-      if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1.424028,mp4a.40.2')) {
-        options = { mimeType: 'video/mp4;codecs=avc1.424028,mp4a.40.2' };
-      } else if (MediaRecorder.isTypeSupported('video/mp4')) {
-        options = { mimeType: 'video/mp4' };
-      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
+      if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
         options = { mimeType: 'video/webm;codecs=vp9,opus' };
       } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
         options = { mimeType: 'video/webm;codecs=vp8,opus' };
@@ -119,7 +147,7 @@ export function useTeleprompter() {
         console.log('Recording started');
       };
 
-      mediaRecorder.onstop = () => {
+      mediaRecorder.onstop = async () => {
         console.log('Recording stopped, chunks:', recordedChunksRef.current.length);
         
         if (recordedChunksRef.current.length === 0) {
@@ -127,23 +155,23 @@ export function useTeleprompter() {
           return;
         }
 
-        const mimeType = options.mimeType || 'video/webm';
-        const blob = new Blob(recordedChunksRef.current, { type: mimeType });
-        console.log('Created blob:', blob.size, 'bytes, mimeType:', mimeType);
+        // Create WebM blob
+        const webmBlob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+        console.log('Created WebM blob:', webmBlob.size, 'bytes');
         
-        const url = URL.createObjectURL(blob);
-        const extension = mimeType.includes('mp4') ? '.mp4' : '.webm';
-        
-        // Create download link
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `teleprompter-recording-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}${extension}`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        
-        // Clean up
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        // Convert to MP4 using FFmpeg if available
+        if (ffmpegRef.current && isFFmpegLoaded) {
+          try {
+            console.log('Converting WebM to MP4...');
+            await convertWebMToMP4(webmBlob);
+          } catch (error) {
+            console.error('MP4 conversion failed, downloading WebM instead:', error);
+            downloadFile(webmBlob, 'video/webm', '.webm');
+          }
+        } else {
+          console.log('FFmpeg not available, downloading WebM');
+          downloadFile(webmBlob, 'video/webm', '.webm');
+        }
       };
 
       mediaRecorder.onerror = (event) => {
@@ -158,8 +186,67 @@ export function useTeleprompter() {
     } catch (error) {
       console.error('Error starting recording:', error);
       setState(prev => ({ ...prev, isRecording: false, cameraStream: null }));
-      alert(`Failed to access camera: ${error.message}. Please check permissions and try again.`);
+      alert(`Failed to access camera: ${(error as Error).message}. Please check permissions and try again.`);
     }
+  }, [isFFmpegLoaded]);
+
+  // Convert WebM to MP4 using FFmpeg
+  const convertWebMToMP4 = useCallback(async (webmBlob: Blob) => {
+    if (!ffmpegRef.current) {
+      throw new Error('FFmpeg not loaded');
+    }
+
+    const ffmpeg = ffmpegRef.current;
+    const inputFileName = 'input.webm';
+    const outputFileName = 'output.mp4';
+
+    try {
+      // Write input file to FFmpeg virtual filesystem
+      console.log('Writing input file to FFmpeg...');
+      await ffmpeg.writeFile(inputFileName, await fetchFile(webmBlob));
+
+      // Run FFmpeg conversion
+      console.log('Running FFmpeg conversion...');
+      await ffmpeg.exec([
+        '-i', inputFileName,
+        '-c:v', 'libx264',  // H.264 video codec
+        '-c:a', 'aac',      // AAC audio codec
+        '-preset', 'fast',   // Fast encoding preset
+        '-crf', '23',       // Good quality
+        outputFileName
+      ]);
+
+      // Read the output file
+      console.log('Reading converted MP4 file...');
+      const mp4Data = await ffmpeg.readFile(outputFileName);
+      const mp4Blob = new Blob([mp4Data], { type: 'video/mp4' });
+
+      console.log('MP4 conversion successful, size:', mp4Blob.size, 'bytes');
+      downloadFile(mp4Blob, 'video/mp4', '.mp4');
+
+      // Clean up
+      await ffmpeg.deleteFile(inputFileName);
+      await ffmpeg.deleteFile(outputFileName);
+    } catch (error) {
+      console.error('FFmpeg conversion error:', error);
+      throw error;
+    }
+  }, []);
+
+  // Download file helper
+  const downloadFile = useCallback((blob: Blob, mimeType: string, extension: string) => {
+    const url = URL.createObjectURL(blob);
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `teleprompter-recording-${timestamp}${extension}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    
+    // Clean up
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }, []);
 
   const stopRecording = useCallback(() => {
