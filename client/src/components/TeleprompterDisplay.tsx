@@ -11,7 +11,9 @@ import {
   ZoomOut,
   AlignJustify,
   MoveHorizontal,
-  Keyboard
+  Keyboard,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { useTeleprompter } from '@/hooks/use-teleprompter';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
@@ -47,6 +49,7 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
     state,
     togglePlay,
     toggleFlip,
+    toggleTransparent,
     adjustSpeed,
     adjustTextSize,
     adjustTextWidth,
@@ -169,14 +172,19 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
   }
 
   return (
-    <section className="fixed inset-0 bg-black z-50" data-teleprompter-active="true">
-      <div className="h-full flex flex-col">
+    <section 
+      className={`fixed inset-0 z-50 ${state.isTransparent ? 'bg-transparent' : 'bg-black'}`} 
+      data-teleprompter-active="true"
+      style={state.isTransparent ? { pointerEvents: 'none' } : {}}
+    >
+      <div className="h-full flex flex-col" style={state.isTransparent ? { pointerEvents: 'none' } : {}}>
         {/* Teleprompter Text Area */}
         <div 
           ref={scrollContainerRef}
           className="flex-1 overflow-hidden relative"
           style={{ 
-            cursor: settings.hideCursor ? 'none' : 'auto'
+            cursor: settings.hideCursor ? 'none' : 'auto',
+            pointerEvents: state.isTransparent ? 'none' : 'auto'
           }}
           tabIndex={0}
           onFocus={() => {
@@ -230,7 +238,10 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
         </div>
 
         {/* Floating Control Panel */}
-        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 control-panel rounded-3xl px-8 py-4">
+        <div 
+          className="fixed bottom-8 left-1/2 transform -translate-x-1/2 control-panel rounded-3xl px-8 py-4"
+          style={state.isTransparent ? { pointerEvents: 'all' } : {}}
+        >
           <div className="flex items-center space-x-6">
             {/* Play/Pause */}
             <Button
@@ -322,6 +333,21 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
               }`}
             >
               <ArrowLeftRight className="h-5 w-5" />
+            </Button>
+
+            {/* Background Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleTransparent}
+              className={`p-3 rounded-2xl transition-all duration-200 ${
+                state.isTransparent 
+                  ? 'bg-violet-500 text-white shadow-lg' 
+                  : 'text-white hover:text-violet-200 hover:bg-white/20 bg-black/30'
+              }`}
+              title={state.isTransparent ? 'Switch to black background' : 'Switch to transparent background (OBS overlay mode)'}
+            >
+              {state.isTransparent ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </Button>
 
             {/* Shortcuts */}

@@ -10,6 +10,7 @@ interface TeleprompterState {
   isFullscreen: boolean;
   markers: number[];
   currentMarkerIndex: number;
+  isTransparent: boolean;
 }
 
 export function useTeleprompter() {
@@ -21,6 +22,7 @@ export function useTeleprompter() {
     isFullscreen: false,
     markers: [],
     currentMarkerIndex: -1,
+    isTransparent: false,
   });
 
   const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -49,6 +51,10 @@ export function useTeleprompter() {
 
   const toggleFlip = useCallback(() => {
     setState(prev => ({ ...prev, isFlipped: !prev.isFlipped }));
+  }, []);
+
+  const toggleTransparent = useCallback(() => {
+    setState(prev => ({ ...prev, isTransparent: !prev.isTransparent }));
   }, []);
 
   const adjustSpeed = useCallback((delta: number) => {
@@ -381,6 +387,7 @@ export function useTeleprompter() {
     settingsLoading,
     togglePlay,
     toggleFlip,
+    toggleTransparent,
     adjustSpeed,
     adjustTextSize,
     adjustTextWidth,
