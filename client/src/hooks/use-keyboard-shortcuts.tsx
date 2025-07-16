@@ -59,6 +59,7 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
       if (isOurShortcut) {
         event.preventDefault();
         event.stopPropagation();
+        event.stopImmediatePropagation();
       }
 
       // Handle shortcuts
@@ -130,8 +131,51 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
       }
     };
 
-    // Use capture phase to ensure we get events before other handlers
-    document.addEventListener('keydown', handleKeyDown, { capture: true });
-    return () => document.removeEventListener('keydown', handleKeyDown, { capture: true });
+    // Add multiple event listeners to ensure we capture all keyboard events
+    const options = { capture: true, passive: false };
+    
+    // Listen on document, window, and body for maximum coverage
+    document.addEventListener('keydown', handleKeyDown, options);
+    window.addEventListener('keydown', handleKeyDown, options);
+    document.body.addEventListener('keydown', handleKeyDown, options);
+    
+    // Also listen for keypress as backup
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (isInputActive(event)) return;
+      
+      const key = event.key.toLowerCase();
+      if (['n', 'p', 'h', 'b', 'm'].includes(key)) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        
+        // Trigger the appropriate handler
+        if (key === 'n') handlers.onNextMarker?.();
+        if (key === 'p') handlers.onPreviousMarker?.();
+        if (key === 'h') handlers.onGoToTop?.();
+        if (key === 'b') handlers.onGoToBottom?.();
+        if (key === 'm') handlers.onAddMarker?.();
+      }
+    };
+    
+    const isInputActive = (event: KeyboardEvent) => {
+      const activeElement = document.activeElement;
+      return activeElement && (
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.getAttribute('contenteditable') === 'true'
+      );
+    };
+    
+    document.addEventListener('keypress', handleKeyPress, options);
+    window.addEventListener('keypress', handleKeyPress, options);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown, options);
+      window.removeEventListener('keydown', handleKeyDown, options);
+      document.body.removeEventListener('keydown', handleKeyDown, options);
+      document.removeEventListener('keypress', handleKeyPress, options);
+      window.removeEventListener('keypress', handleKeyPress, options);
+    };
   }, [handlers, enabled]);
 }

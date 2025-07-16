@@ -133,8 +133,12 @@ export function useTeleprompter() {
         targetPosition = state.currentPosition;
         lastStatePosition = state.currentPosition;
         
-        // Instantly move to new position
-        element.scrollTop = targetPosition;
+        // Instantly move to new position without interfering with event handling
+        requestAnimationFrame(() => {
+          if (element) {
+            element.scrollTop = targetPosition;
+          }
+        });
         
         // Reset all smooth positions to sync with new position
         smoothPosition1 = targetPosition;
@@ -217,14 +221,21 @@ export function useTeleprompter() {
       const diff12 = smoothPosition11 - smoothPosition12;
       smoothPosition12 += diff12 * 0.28;
       
-      // Apply the final 12-layer ultra-smooth position
-      element.scrollTop = smoothPosition12;
-      // Only update state during normal scrolling to avoid infinite loops
-      if (Math.abs(statePositionDiff) <= 10) {
-        setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
-      }
+      // Apply the final 12-layer ultra-smooth position using rAF to avoid blocking events
+      requestAnimationFrame(() => {
+        if (element) {
+          element.scrollTop = smoothPosition12;
+          // Only update state during normal scrolling to avoid infinite loops
+          if (Math.abs(statePositionDiff) <= 10) {
+            setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
+          }
+        }
+      });
       
-      animationRef.current = requestAnimationFrame(ultraSmoothScroll);
+      // Schedule next frame without blocking current event loop
+      setTimeout(() => {
+        animationRef.current = requestAnimationFrame(ultraSmoothScroll);
+      }, 0);
     };
     
     animationRef.current = requestAnimationFrame(ultraSmoothScroll);

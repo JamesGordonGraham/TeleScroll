@@ -141,6 +141,26 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
     if (scrollContainerRef.current) {
       scrollContainerRef.current.focus();
     }
+    
+    // Set up periodic focus maintenance during scrolling
+    const focusInterval = setInterval(() => {
+      if (scrollContainerRef.current && state.isPlaying) {
+        scrollContainerRef.current.focus();
+      }
+    }, 100);
+    
+    return () => clearInterval(focusInterval);
+  }, [state.isPlaying]);
+
+  // Force focus when teleprompter becomes active
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.focus();
+      }
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, []);
 
 
@@ -161,6 +181,18 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
           tabIndex={0}
           onFocus={() => {
             // Ensure the teleprompter can receive keyboard events
+            if (scrollContainerRef.current) {
+              scrollContainerRef.current.focus();
+            }
+          }}
+          onClick={() => {
+            // Ensure focus when clicking anywhere in the teleprompter
+            if (scrollContainerRef.current) {
+              scrollContainerRef.current.focus();
+            }
+          }}
+          onMouseEnter={() => {
+            // Ensure focus when mouse enters the teleprompter
             if (scrollContainerRef.current) {
               scrollContainerRef.current.focus();
             }
