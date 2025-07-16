@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Save, FolderOpen, Trash2, Clock, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -32,7 +31,8 @@ export function ScriptManager({ content, onLoadScript }: ScriptManagerProps) {
   // Save script mutation
   const saveScriptMutation = useMutation({
     mutationFn: async (data: { title: string; content: string }) => {
-      return apiRequest('POST', '/api/scripts', data);
+      const response = await apiRequest('POST', '/api/scripts', data);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/scripts'] });
@@ -44,6 +44,7 @@ export function ScriptManager({ content, onLoadScript }: ScriptManagerProps) {
       });
     },
     onError: (error: any) => {
+      console.error('Save script error:', error);
       toast({
         title: "Save failed",
         description: error.message || "Failed to save script",
@@ -55,7 +56,8 @@ export function ScriptManager({ content, onLoadScript }: ScriptManagerProps) {
   // Delete script mutation
   const deleteScriptMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest('DELETE', `/api/scripts/${id}`);
+      const response = await apiRequest('DELETE', `/api/scripts/${id}`);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/scripts'] });
@@ -92,6 +94,7 @@ export function ScriptManager({ content, onLoadScript }: ScriptManagerProps) {
       return;
     }
 
+    console.log('Saving script:', { title: saveTitle.trim(), content: content.substring(0, 50) + '...' });
     saveScriptMutation.mutate({
       title: saveTitle.trim(),
       content: content,
@@ -134,6 +137,9 @@ export function ScriptManager({ content, onLoadScript }: ScriptManagerProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Save Script</DialogTitle>
+            <DialogDescription>
+              Enter a title for your script to save it to the database.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -177,8 +183,11 @@ export function ScriptManager({ content, onLoadScript }: ScriptManagerProps) {
         <DialogContent className="max-w-4xl max-h-[80vh]">
           <DialogHeader>
             <DialogTitle>Saved Scripts</DialogTitle>
+            <DialogDescription>
+              Select a script to load into the editor.
+            </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="max-h-[60vh]">
+          <div className="max-h-[60vh] overflow-y-auto">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="text-muted-foreground">Loading scripts...</div>
@@ -243,7 +252,7 @@ export function ScriptManager({ content, onLoadScript }: ScriptManagerProps) {
                 ))}
               </div>
             )}
-          </ScrollArea>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

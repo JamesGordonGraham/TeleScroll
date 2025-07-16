@@ -296,19 +296,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/scripts", async (req, res) => {
     try {
+      console.log('POST /api/scripts received:', req.body);
       const { title, content } = req.body;
       
       if (!title || !content) {
+        console.log('Missing title or content:', { title: !!title, content: !!content });
         return res.status(400).json({ message: "Title and content are required" });
       }
 
       const userId = "default-user"; // For now, using default user
+      console.log('Creating script for user:', userId);
       const script = await storage.createScript({
         userId,
         title,
         content,
       });
 
+      console.log('Script created successfully:', script.id);
       res.json(script);
     } catch (error) {
       console.error('Create script error:', error);
