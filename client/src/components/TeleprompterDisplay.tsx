@@ -211,40 +211,33 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
 
   return (
     <>
-      {/* Camera Video Layer - this is what gets recorded */}
+      {/* Camera Video Background - Raw MediaStream Display */}
       {state.cameraStream && (
-        <div className="fixed inset-0 w-full h-full bg-transparent" style={{ zIndex: 1 }}>
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-            style={{ 
-              transform: state.isFlipped ? 'scaleX(-1)' : 'none'
-            }}
-            onLoadedMetadata={() => {
-              console.log('Video metadata loaded');
-            }}
-            onCanPlay={() => {
-              console.log('Video can play');
-            }}
-            onPlay={() => {
-              console.log('Video started playing');
-            }}
-            onError={(e) => console.error('Video error:', e)}
-          />
-        </div>
+        <video
+          ref={videoRef}
+          id="camera-video"
+          autoPlay
+          muted
+          playsInline
+          className="fixed inset-0 w-full h-full object-cover"
+          style={{ 
+            zIndex: 1,
+            transform: state.isFlipped ? 'scaleX(-1)' : 'none'
+          }}
+          onLoadedMetadata={() => console.log('Video metadata loaded')}
+          onCanPlay={() => console.log('Video can play')}
+          onPlay={() => console.log('Video started playing')}
+          onError={(e) => console.error('Video error:', e)}
+        />
       )}
 
-      {/* Teleprompter Overlay - visible to user but NOT recorded */}
-      <section 
-        className={`fixed inset-0 z-50 ${state.isTransparent ? 'bg-transparent' : (state.cameraStream ? 'bg-transparent' : 'bg-black')}`} 
-        data-teleprompter-active="true"
+      {/* Teleprompter Text Overlay - CSS positioned above camera */}
+      <div 
+        id="teleprompter"
+        className={`fixed inset-0 ${state.isTransparent ? 'bg-transparent' : (state.cameraStream ? 'bg-transparent' : 'bg-black')}`}
         style={{
-          pointerEvents: state.isTransparent ? 'none' : 'auto',
-          zIndex: state.cameraStream ? 100 : 50, // Always above camera
-          mixBlendMode: state.cameraStream ? 'normal' : 'normal'
+          zIndex: 1000, // High z-index to stay above camera video
+          pointerEvents: state.isTransparent ? 'none' : 'auto'
         }}
       >
         <div 
@@ -543,7 +536,7 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
           </div>
         </div>
       )}
-      </section>
+      </div>
     </>
   );
 }

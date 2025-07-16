@@ -131,7 +131,8 @@ export function useTeleprompter() {
 
       console.log('Using MediaRecorder options:', options);
 
-      // Create MediaRecorder
+      // Create MediaRecorder with ONLY the raw camera stream
+      // This records pure camera data - no HTML/CSS overlays included
       const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
       recordedChunksRef.current = [];
