@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,6 +15,10 @@ interface FileImportProps {
 }
 
 export function FileImport({ onStartTeleprompter, content, onContentChange }: FileImportProps) {
+  // Update content ref whenever content changes
+  React.useEffect(() => {
+    contentRef.current = content;
+  }, [content]);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -28,6 +32,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
   const wsRef = useRef<WebSocket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const contentRef = useRef<string>(content);
 
   const handleFileUpload = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
@@ -111,14 +116,16 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
         const data = JSON.parse(event.data);
         if (data.type === 'transcript') {
           if (data.isFinal && data.text.trim()) {
-            // Directly append final text to content without buffering
+            // Use the ref to get the most current content state
             const trimmedText = data.text.trim();
-            const currentContent = content || '';
+            const currentContent = contentRef.current || '';
             
             // Add space before new text if content exists and doesn't end with space
             const needsSpace = currentContent && !currentContent.endsWith(' ') && !currentContent.endsWith('\n');
             const newContent = currentContent + (needsSpace ? ' ' : '') + trimmedText;
             
+            // Update both the state and the ref
+            contentRef.current = newContent;
             onContentChange(newContent);
             setRealtimeTranscript(''); // Clear interim text
           } else {
@@ -215,7 +222,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
         variant: "destructive",
       });
     }
-  }, [toast, content, onContentChange, isRecording]);
+  }, [toast, onContentChange, isRecording]);
   
   const stopRealtimeRecording = useCallback(() => {
     if (wsRef.current) {
