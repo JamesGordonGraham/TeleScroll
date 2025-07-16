@@ -52,10 +52,16 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
     setIsUploading(true);
     try {
       const result = await parseFile(file);
-      onContentChange(result.content);
+      
+      // Append to existing content instead of overwriting
+      const existingContent = content || '';
+      const needsSpace = existingContent && !existingContent.endsWith('\n') && !existingContent.endsWith(' ');
+      const newContent = existingContent + (needsSpace ? '\n\n' : '') + result.content;
+      
+      onContentChange(newContent);
       toast({
         title: "File uploaded successfully",
-        description: `Loaded content from ${result.filename}`,
+        description: `Content from ${result.filename} has been added to your script`,
       });
     } catch (error) {
       toast({

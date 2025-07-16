@@ -189,6 +189,10 @@ Changelog:
   * Fixed text accumulation issues - sentences now properly append without overwriting
   * Implemented proper state management with refs to prevent stale content issues
   * Voice input now works continuously across speech pauses with automatic reconnection
+- July 16, 2025. File upload behavior updated:
+  * Changed file upload to append content instead of overwriting existing text
+  * Files are now added to the end of Script Editor content with proper spacing
+  * Maintains existing workflow while preserving user's current script content
 ```
 
 ## User Preferences
