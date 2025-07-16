@@ -148,7 +148,12 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
   // Camera stream effect
   useEffect(() => {
     if (state.cameraStream && videoRef.current) {
+      console.log('Setting video srcObject to camera stream');
       videoRef.current.srcObject = state.cameraStream;
+      videoRef.current.play().catch(e => console.error('Video play error:', e));
+    } else if (!state.cameraStream && videoRef.current) {
+      console.log('Clearing video srcObject');
+      videoRef.current.srcObject = null;
     }
   }, [state.cameraStream]);
 
@@ -192,7 +197,7 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
     >
       {/* Camera Video Background (only shows when recording) */}
       {state.cameraStream && (
-        <div className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }}>
+        <div className="fixed inset-0 w-full h-full" style={{ zIndex: 1 }}>
           <video
             ref={videoRef}
             autoPlay
@@ -202,7 +207,12 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
             style={{ 
               transform: state.isFlipped ? 'scaleX(-1)' : 'none'
             }}
-            onLoadedMetadata={() => console.log('Video metadata loaded')}
+            onLoadedMetadata={() => {
+              console.log('Video metadata loaded');
+              if (videoRef.current && state.cameraStream) {
+                videoRef.current.srcObject = state.cameraStream;
+              }
+            }}
             onError={(e) => console.error('Video error:', e)}
           />
         </div>

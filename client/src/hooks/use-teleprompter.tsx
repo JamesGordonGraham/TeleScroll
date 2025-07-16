@@ -85,16 +85,18 @@ export function useTeleprompter() {
       console.log('Camera stream obtained');
       setState(prev => ({ ...prev, cameraStream: stream, isRecording: true }));
 
-      // Try different codec options with fallbacks
+      // Try MP4 format first, then fallback to WebM
       let options: MediaRecorderOptions;
-      if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
+      if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1.424028,mp4a.40.2')) {
+        options = { mimeType: 'video/mp4;codecs=avc1.424028,mp4a.40.2' };
+      } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+        options = { mimeType: 'video/mp4' };
+      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
         options = { mimeType: 'video/webm;codecs=vp9,opus' };
       } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
         options = { mimeType: 'video/webm;codecs=vp8,opus' };
       } else if (MediaRecorder.isTypeSupported('video/webm')) {
         options = { mimeType: 'video/webm' };
-      } else if (MediaRecorder.isTypeSupported('video/mp4')) {
-        options = { mimeType: 'video/mp4' };
       } else {
         options = {};
       }
@@ -127,7 +129,7 @@ export function useTeleprompter() {
 
         const mimeType = options.mimeType || 'video/webm';
         const blob = new Blob(recordedChunksRef.current, { type: mimeType });
-        console.log('Created blob:', blob.size, 'bytes');
+        console.log('Created blob:', blob.size, 'bytes, mimeType:', mimeType);
         
         const url = URL.createObjectURL(blob);
         const extension = mimeType.includes('mp4') ? '.mp4' : '.webm';
@@ -377,8 +379,8 @@ export function useTeleprompter() {
       let finalPosition;
       
       if (state.isRecording) {
-        // Simplified scrolling when recording for better performance
-        const speed = settings.scrollSpeed * 80; // pixels per second
+        // Simplified scrolling when recording for better performance - doubled speed
+        const speed = settings.scrollSpeed * 160; // pixels per second (doubled from 80)
         targetPosition += speed * deltaTime;
         finalPosition = Math.max(0, Math.min(targetPosition, maxScroll));
         element.scrollTop = finalPosition;
