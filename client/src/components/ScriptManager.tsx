@@ -152,6 +152,7 @@ export function ScriptManager({ content, onLoadScript }: ScriptManagerProps) {
                 onChange={(e) => setSaveTitle(e.target.value)}
                 placeholder="Enter a title for your script..."
                 maxLength={100}
+                autoFocus
               />
             </div>
             <div className="flex justify-end gap-2">
@@ -164,6 +165,7 @@ export function ScriptManager({ content, onLoadScript }: ScriptManagerProps) {
               <Button
                 onClick={handleSaveScript}
                 disabled={saveScriptMutation.isPending || !saveTitle.trim()}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 {saveScriptMutation.isPending ? 'Saving...' : 'Save'}
               </Button>
