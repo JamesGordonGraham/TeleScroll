@@ -65,60 +65,119 @@ export function useTeleprompter() {
 
   const startRecording = useCallback(async () => {
     try {
+      console.log('Starting camera recording...');
+      
       // Request camera access
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 },
+          frameRate: { ideal: 30, max: 60 },
           facingMode: 'user'
         },
-        audio: true
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 44100
+        }
       });
 
+      console.log('Camera stream obtained');
       setState(prev => ({ ...prev, cameraStream: stream, isRecording: true }));
 
-      // Create MediaRecorder
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'video/webm;codecs=vp9,opus'
-      });
+      // Try different codec options with fallbacks
+      let options: MediaRecorderOptions;
+      if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
+        options = { mimeType: 'video/webm;codecs=vp9,opus' };
+      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
+        options = { mimeType: 'video/webm;codecs=vp8,opus' };
+      } else if (MediaRecorder.isTypeSupported('video/webm')) {
+        options = { mimeType: 'video/webm' };
+      } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+        options = { mimeType: 'video/mp4' };
+      } else {
+        options = {};
+      }
 
+      console.log('Using MediaRecorder options:', options);
+
+      // Create MediaRecorder
+      const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
       recordedChunksRef.current = [];
 
       mediaRecorder.ondataavailable = (event) => {
+        console.log('Data available:', event.data.size, 'bytes');
         if (event.data.size > 0) {
           recordedChunksRef.current.push(event.data);
         }
       };
 
+      mediaRecorder.onstart = () => {
+        console.log('Recording started');
+      };
+
       mediaRecorder.onstop = () => {
-        const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+        console.log('Recording stopped, chunks:', recordedChunksRef.current.length);
+        
+        if (recordedChunksRef.current.length === 0) {
+          alert('No video data was recorded. Please try again.');
+          return;
+        }
+
+        const mimeType = options.mimeType || 'video/webm';
+        const blob = new Blob(recordedChunksRef.current, { type: mimeType });
+        console.log('Created blob:', blob.size, 'bytes');
+        
         const url = URL.createObjectURL(blob);
+        const extension = mimeType.includes('mp4') ? '.mp4' : '.webm';
         
         // Create download link
         const a = document.createElement('a');
         a.href = url;
-        a.download = `teleprompter-recording-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.webm`;
+        a.download = `teleprompter-recording-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}${extension}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        
+        // Clean up
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
       };
 
-      mediaRecorder.start();
+      mediaRecorder.onerror = (event) => {
+        console.error('MediaRecorder error:', event);
+        alert('Recording error occurred. Please try again.');
+      };
+
+      // Start recording with timeslice for regular data events
+      mediaRecorder.start(1000); // Request data every second
+      console.log('MediaRecorder start() called');
+      
     } catch (error) {
       console.error('Error starting recording:', error);
-      alert('Failed to access camera. Please check permissions and try again.');
+      setState(prev => ({ ...prev, isRecording: false, cameraStream: null }));
+      alert(`Failed to access camera: ${error.message}. Please check permissions and try again.`);
     }
   }, []);
 
   const stopRecording = useCallback(() => {
+    console.log('Stopping recording...');
+    
     if (mediaRecorderRef.current && state.isRecording) {
-      mediaRecorderRef.current.stop();
+      try {
+        if (mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+      } catch (error) {
+        console.error('Error stopping MediaRecorder:', error);
+      }
     }
 
     if (state.cameraStream) {
-      state.cameraStream.getTracks().forEach(track => track.stop());
+      state.cameraStream.getTracks().forEach(track => {
+        track.stop();
+        console.log('Stopped track:', track.kind);
+      });
     }
 
     setState(prev => ({ 
@@ -126,6 +185,10 @@ export function useTeleprompter() {
       isRecording: false, 
       cameraStream: null 
     }));
+    
+    // Clean up refs
+    mediaRecorderRef.current = null;
+    recordedChunksRef.current = [];
   }, [state.isRecording, state.cameraStream]);
 
   const adjustSpeed = useCallback((delta: number) => {

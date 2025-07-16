@@ -196,8 +196,14 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
           ref={videoRef}
           autoPlay
           muted
+          playsInline
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ zIndex: -1 }}
+          style={{ 
+            zIndex: -1,
+            transform: state.isFlipped ? 'scaleX(-1)' : 'none'
+          }}
+          onLoadedMetadata={() => console.log('Video metadata loaded')}
+          onError={(e) => console.error('Video error:', e)}
         />
       )}
 
@@ -388,6 +394,13 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
             >
               {state.isRecording ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
             </Button>
+
+            {/* Recording Status Indicator */}
+            {state.isRecording && (
+              <div className="text-red-400 text-sm font-semibold bg-black/50 px-3 py-1 rounded-lg">
+                REC
+              </div>
+            )}
 
             {/* Shortcuts */}
             <Button
