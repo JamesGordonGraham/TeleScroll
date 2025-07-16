@@ -13,7 +13,9 @@ import {
   MoveHorizontal,
   Keyboard,
   Eye,
-  EyeOff
+  EyeOff,
+  Video,
+  VideoOff
 } from 'lucide-react';
 import { useTeleprompter } from '@/hooks/use-teleprompter';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
@@ -29,6 +31,7 @@ interface TeleprompterDisplayProps {
 export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProps) {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const queryClient = useQueryClient();
   
   // Fetch settings
@@ -50,6 +53,8 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
     togglePlay,
     toggleFlip,
     toggleTransparent,
+    startRecording,
+    stopRecording,
     adjustSpeed,
     adjustTextSize,
     adjustTextWidth,
@@ -120,6 +125,7 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
     onAddMarker: addMarker,
     onNextMarker: () => nextMarker(scrollContainerRef.current, content),
     onPreviousMarker: () => previousMarker(scrollContainerRef.current, content),
+    onToggleRecording: state.isRecording ? stopRecording : startRecording,
   });
 
   useEffect(() => {
@@ -138,6 +144,13 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
       scrollContainerRef.current.focus();
     }
   }, [content, resetPosition]);
+
+  // Camera stream effect
+  useEffect(() => {
+    if (state.cameraStream && videoRef.current) {
+      videoRef.current.srcObject = state.cameraStream;
+    }
+  }, [state.cameraStream]);
 
   // Ensure teleprompter stays focused for keyboard events
   useEffect(() => {
@@ -177,6 +190,17 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
       data-teleprompter-active="true"
       style={state.isTransparent ? { pointerEvents: 'none' } : {}}
     >
+      {/* Camera Video Background (only shows when recording) */}
+      {state.cameraStream && (
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ zIndex: -1 }}
+        />
+      )}
+
       <div className="h-full flex flex-col" style={state.isTransparent ? { pointerEvents: 'none' } : {}}>
         {/* Teleprompter Text Area */}
         <div 
@@ -348,6 +372,21 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
               title={state.isTransparent ? 'Switch to black background' : 'Switch to transparent background (OBS overlay mode)'}
             >
               {state.isTransparent ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </Button>
+
+            {/* Recording Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={state.isRecording ? stopRecording : startRecording}
+              className={`p-3 rounded-2xl transition-all duration-200 ${
+                state.isRecording 
+                  ? 'bg-red-500 text-white shadow-lg animate-pulse' 
+                  : 'text-white hover:text-red-200 hover:bg-white/20 bg-black/30'
+              }`}
+              title={state.isRecording ? 'Stop recording' : 'Start camera recording'}
+            >
+              {state.isRecording ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
             </Button>
 
             {/* Shortcuts */}

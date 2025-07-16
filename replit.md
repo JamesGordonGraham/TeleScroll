@@ -215,6 +215,17 @@ Changelog:
   * Keyboard shortcuts now seamlessly integrate with requestAnimationFrame loop
   * Eliminated scroll freezing and text jittering during marker jumps
   * Smooth scrolling continues uninterrupted while navigating between positions
+- July 16, 2025. Video recording functionality completed:
+  * Added camera access using MediaDevices API (getUserMedia)
+  * Implemented MediaRecorder API for video capture with audio
+  * Video shows only speaker and background, teleprompter text remains overlay-only
+  * Camera video appears as background layer (z-index: -1) when recording
+  * Teleprompter text floats as invisible overlay that doesn't appear in recording
+  * Added recording toggle button with red pulsing animation when active
+  * R key shortcut for quick recording start/stop
+  * Automatic file download with timestamped filename (.webm format)
+  * Recording works with transparent background mode for OBS streaming
+  * Enhanced floating control panel remains interactive during transparent mode
 ```
 
 ## User Preferences

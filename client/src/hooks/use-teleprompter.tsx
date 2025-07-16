@@ -11,6 +11,8 @@ interface TeleprompterState {
   markers: number[];
   currentMarkerIndex: number;
   isTransparent: boolean;
+  isRecording: boolean;
+  cameraStream: MediaStream | null;
 }
 
 export function useTeleprompter() {
@@ -23,11 +25,15 @@ export function useTeleprompter() {
     markers: [],
     currentMarkerIndex: -1,
     isTransparent: false,
+    isRecording: false,
+    cameraStream: null,
   });
 
   const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const animationRef = useRef<number | null>(null);
   const lastFrameTimeRef = useRef<number>(0);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
 
   // Get settings
   const { data: settings, isLoading: settingsLoading } = useQuery<TeleprompterSettings>({
@@ -56,6 +62,71 @@ export function useTeleprompter() {
   const toggleTransparent = useCallback(() => {
     setState(prev => ({ ...prev, isTransparent: !prev.isTransparent }));
   }, []);
+
+  const startRecording = useCallback(async () => {
+    try {
+      // Request camera access
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          facingMode: 'user'
+        },
+        audio: true
+      });
+
+      setState(prev => ({ ...prev, cameraStream: stream, isRecording: true }));
+
+      // Create MediaRecorder
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'video/webm;codecs=vp9,opus'
+      });
+
+      mediaRecorderRef.current = mediaRecorder;
+      recordedChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          recordedChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        
+        // Create download link
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `teleprompter-recording-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.webm`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      };
+
+      mediaRecorder.start();
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      alert('Failed to access camera. Please check permissions and try again.');
+    }
+  }, []);
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && state.isRecording) {
+      mediaRecorderRef.current.stop();
+    }
+
+    if (state.cameraStream) {
+      state.cameraStream.getTracks().forEach(track => track.stop());
+    }
+
+    setState(prev => ({ 
+      ...prev, 
+      isRecording: false, 
+      cameraStream: null 
+    }));
+  }, [state.isRecording, state.cameraStream]);
 
   const adjustSpeed = useCallback((delta: number) => {
     if (!settings) return;
@@ -388,6 +459,8 @@ export function useTeleprompter() {
     togglePlay,
     toggleFlip,
     toggleTransparent,
+    startRecording,
+    stopRecording,
     adjustSpeed,
     adjustTextSize,
     adjustTextWidth,

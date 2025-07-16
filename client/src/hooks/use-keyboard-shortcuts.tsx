@@ -16,6 +16,7 @@ interface KeyboardShortcutHandlers {
   onAddMarker?: () => void;
   onNextMarker?: () => void;
   onPreviousMarker?: () => void;
+  onToggleRecording?: () => void;
 }
 
 export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled: boolean = true) {
@@ -127,6 +128,9 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
           break;
         case 'KeyP':
           handlers.onPreviousMarker?.();
+          break;
+        case 'KeyR':
+          handlers.onToggleRecording?.();
           break;
       }
     };
