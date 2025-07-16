@@ -39,6 +39,32 @@ const upload = multer({
   }
 });
 
+// Separate multer configuration for audio files
+const audioUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB for audio
+  fileFilter: (req: any, file: any, cb: any) => {
+    const allowedAudioTypes = [
+      'audio/webm',
+      'audio/ogg',
+      'audio/wav',
+      'audio/mp3',
+      'audio/mpeg',
+      'audio/mp4',
+      'audio/x-wav'
+    ];
+    
+    const allowedAudioExtensions = ['.webm', '.ogg', '.wav', '.mp3', '.m4a'];
+    const fileExtension = '.' + file.originalname.split('.').pop()?.toLowerCase();
+    
+    if (allowedAudioTypes.includes(file.mimetype) || allowedAudioExtensions.includes(fileExtension)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Supported audio formats: .webm, .ogg, .wav, .mp3, .m4a'));
+    }
+  }
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
   const userId = "default-user"; // For this demo, using a default user
 
@@ -210,7 +236,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Speech-to-text endpoint
-  app.post("/api/speech-to-text", upload.single('audio'), async (req: MulterRequest, res) => {
+  app.post("/api/speech-to-text", audioUpload.single('audio'), async (req: MulterRequest, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No audio file uploaded" });
@@ -231,6 +257,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         languageCode: 'en-US',
         enableAutomaticPunctuation: true,
         enableWordTimeOffsets: false,
+        model: 'latest_long',
       };
 
       const request = {
