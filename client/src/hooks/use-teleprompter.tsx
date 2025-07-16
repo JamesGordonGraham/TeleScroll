@@ -114,7 +114,7 @@ export function useTeleprompter() {
         }
       });
 
-      console.log('Camera stream obtained');
+      console.log('Camera stream obtained, tracks:', stream.getTracks().map(t => ({ kind: t.kind, enabled: t.enabled, readyState: t.readyState })));
       setState(prev => ({ ...prev, cameraStream: stream, isRecording: true }));
 
       // Record in WebM format (browser native) then convert to MP4 with FFmpeg

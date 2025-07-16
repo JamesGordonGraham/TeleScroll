@@ -147,13 +147,33 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
 
   // Camera stream effect
   useEffect(() => {
-    if (state.cameraStream && videoRef.current) {
+    const video = videoRef.current;
+    if (state.cameraStream && video) {
       console.log('Setting video srcObject to camera stream');
-      videoRef.current.srcObject = state.cameraStream;
-      videoRef.current.play().catch(e => console.error('Video play error:', e));
-    } else if (!state.cameraStream && videoRef.current) {
+      video.srcObject = state.cameraStream;
+      
+      // Ensure video is visible and playing
+      video.style.display = 'block';
+      video.style.opacity = '1';
+      
+      const playVideo = async () => {
+        try {
+          await video.play();
+          console.log('Video is now playing');
+        } catch (error) {
+          console.error('Video play error:', error);
+        }
+      };
+      
+      if (video.readyState >= 2) {
+        playVideo();
+      } else {
+        video.addEventListener('loadeddata', playVideo, { once: true });
+      }
+    } else if (!state.cameraStream && video) {
       console.log('Clearing video srcObject');
-      videoRef.current.srcObject = null;
+      video.srcObject = null;
+      video.style.display = 'none';
     }
   }, [state.cameraStream]);
 
@@ -205,9 +225,12 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
             }}
             onLoadedMetadata={() => {
               console.log('Video metadata loaded');
-              if (videoRef.current && state.cameraStream) {
-                videoRef.current.srcObject = state.cameraStream;
-              }
+            }}
+            onCanPlay={() => {
+              console.log('Video can play');
+            }}
+            onPlay={() => {
+              console.log('Video started playing');
             }}
             onError={(e) => console.error('Video error:', e)}
           />
@@ -421,7 +444,7 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
             {/* Recording Status Indicator */}
             {state.isRecording && (
               <div className="text-red-400 text-sm font-semibold bg-black/50 px-3 py-1 rounded-lg">
-                REC {isFFmpegLoaded ? '(MP4)' : '(WebM)'}
+                REC
               </div>
             )}
 
