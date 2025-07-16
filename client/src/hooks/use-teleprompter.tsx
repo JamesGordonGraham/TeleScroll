@@ -123,6 +123,24 @@ export function useTeleprompter() {
     const ultraSmoothScroll = (currentTime: number) => {
       if (!state.isPlaying || !element) return;
       
+      // Check if we need to update the target position from state
+      if (Math.abs(targetPosition - state.currentPosition) > 5) {
+        targetPosition = state.currentPosition;
+        // Reset all smooth positions to current scroll position for instant response
+        smoothPosition1 = element.scrollTop;
+        smoothPosition2 = element.scrollTop;
+        smoothPosition3 = element.scrollTop;
+        smoothPosition4 = element.scrollTop;
+        smoothPosition5 = element.scrollTop;
+        smoothPosition6 = element.scrollTop;
+        smoothPosition7 = element.scrollTop;
+        smoothPosition8 = element.scrollTop;
+        smoothPosition9 = element.scrollTop;
+        smoothPosition10 = element.scrollTop;
+        smoothPosition11 = element.scrollTop;
+        smoothPosition12 = element.scrollTop;
+      }
+      
       const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.016); // Cap at 16ms for stability
       lastTime = currentTime;
       
@@ -213,29 +231,42 @@ export function useTeleprompter() {
 
   const goToTop = useCallback((element?: HTMLElement | null) => {
     if (element) {
-      element.style.scrollBehavior = 'smooth';
-      element.scrollTop = 0;
-      setState(prev => ({ ...prev, currentPosition: 0 }));
-      setTimeout(() => {
-        if (element) element.style.scrollBehavior = 'auto';
-      }, 500);
+      // If currently playing, update the state position and let smooth scrolling handle it
+      if (state.isPlaying) {
+        setState(prev => ({ ...prev, currentPosition: 0 }));
+      } else {
+        // If not playing, do immediate scroll
+        element.style.scrollBehavior = 'smooth';
+        element.scrollTop = 0;
+        setState(prev => ({ ...prev, currentPosition: 0 }));
+        setTimeout(() => {
+          if (element) element.style.scrollBehavior = 'auto';
+        }, 500);
+      }
     } else {
       setState(prev => ({ ...prev, currentPosition: 0 }));
     }
-  }, []);
+  }, [state.isPlaying]);
 
   const goToBottom = useCallback((element?: HTMLElement | null) => {
     if (element) {
-      element.style.scrollBehavior = 'smooth';
-      element.scrollTop = element.scrollHeight;
-      setState(prev => ({ ...prev, currentPosition: element.scrollHeight }));
-      setTimeout(() => {
-        if (element) element.style.scrollBehavior = 'auto';
-      }, 500);
+      const bottomPosition = element.scrollHeight - element.clientHeight;
+      // If currently playing, update the state position and let smooth scrolling handle it
+      if (state.isPlaying) {
+        setState(prev => ({ ...prev, currentPosition: bottomPosition }));
+      } else {
+        // If not playing, do immediate scroll
+        element.style.scrollBehavior = 'smooth';
+        element.scrollTop = bottomPosition;
+        setState(prev => ({ ...prev, currentPosition: bottomPosition }));
+        setTimeout(() => {
+          if (element) element.style.scrollBehavior = 'auto';
+        }, 500);
+      }
     } else {
       setState(prev => ({ ...prev, currentPosition: 100000 })); // Large number to go to bottom
     }
-  }, []);
+  }, [state.isPlaying]);
 
   const addMarker = useCallback(() => {
     setState(prev => ({
@@ -269,23 +300,22 @@ export function useTeleprompter() {
     if (nextMarkerIndex !== undefined) {
       const targetScrollRatio = nextMarkerIndex / content.length;
       const targetScrollTop = targetScrollRatio * (element.scrollHeight - element.clientHeight);
+      const finalPosition = Math.max(0, Math.min(targetScrollTop, element.scrollHeight - element.clientHeight));
       
-      // Set scroll behavior to smooth for marker navigation
-      element.style.scrollBehavior = 'smooth';
-      element.scrollTop = Math.max(0, Math.min(targetScrollTop, element.scrollHeight - element.clientHeight));
-      
-      // Update the current position state for active scrolling
-      setState(prev => ({ 
-        ...prev, 
-        currentPosition: Math.max(0, Math.min(targetScrollTop, element.scrollHeight - element.clientHeight))
-      }));
-      
-      // Reset scroll behavior to auto for smooth scrolling
-      setTimeout(() => {
-        if (element) element.style.scrollBehavior = 'auto';
-      }, 500);
+      // If currently playing, update the state position and let smooth scrolling handle it
+      if (state.isPlaying) {
+        setState(prev => ({ ...prev, currentPosition: finalPosition }));
+      } else {
+        // If not playing, do immediate scroll
+        element.style.scrollBehavior = 'smooth';
+        element.scrollTop = finalPosition;
+        setState(prev => ({ ...prev, currentPosition: finalPosition }));
+        setTimeout(() => {
+          if (element) element.style.scrollBehavior = 'auto';
+        }, 500);
+      }
     }
-  }, []);
+  }, [state.isPlaying]);
 
   const previousMarker = useCallback((element?: HTMLElement | null, content?: string) => {
     if (!element || !content) return;
@@ -312,23 +342,22 @@ export function useTeleprompter() {
     if (prevMarkerIndex !== undefined) {
       const targetScrollRatio = prevMarkerIndex / content.length;
       const targetScrollTop = targetScrollRatio * (element.scrollHeight - element.clientHeight);
+      const finalPosition = Math.max(0, Math.min(targetScrollTop, element.scrollHeight - element.clientHeight));
       
-      // Set scroll behavior to smooth for marker navigation
-      element.style.scrollBehavior = 'smooth';
-      element.scrollTop = Math.max(0, Math.min(targetScrollTop, element.scrollHeight - element.clientHeight));
-      
-      // Update the current position state for active scrolling
-      setState(prev => ({ 
-        ...prev, 
-        currentPosition: Math.max(0, Math.min(targetScrollTop, element.scrollHeight - element.clientHeight))
-      }));
-      
-      // Reset scroll behavior to auto for smooth scrolling
-      setTimeout(() => {
-        if (element) element.style.scrollBehavior = 'auto';
-      }, 500);
+      // If currently playing, update the state position and let smooth scrolling handle it
+      if (state.isPlaying) {
+        setState(prev => ({ ...prev, currentPosition: finalPosition }));
+      } else {
+        // If not playing, do immediate scroll
+        element.style.scrollBehavior = 'smooth';
+        element.scrollTop = finalPosition;
+        setState(prev => ({ ...prev, currentPosition: finalPosition }));
+        setTimeout(() => {
+          if (element) element.style.scrollBehavior = 'auto';
+        }, 500);
+      }
     }
-  }, []);
+  }, [state.isPlaying]);
 
   useEffect(() => {
     return () => {
