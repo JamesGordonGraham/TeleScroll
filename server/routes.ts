@@ -289,58 +289,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     let speechClient: speech.SpeechClient | null = null;
     let recognizeStream: any = null;
+    let restartTimeoutId: NodeJS.Timeout | null = null;
     
-    ws.on('message', async (message: Buffer) => {
+    const createNewStream = () => {
       try {
-        const data = JSON.parse(message.toString());
+        if (recognizeStream && !recognizeStream.destroyed) {
+          recognizeStream.end();
+        }
         
-        if (data.type === 'start') {
-          // Initialize speech client and streaming recognition
-          speechClient = new speech.SpeechClient({
-            apiKey: process.env.GOOGLE_SPEECH_API_KEY,
-          });
-          
-          const request = {
-            config: {
-              encoding: 'LINEAR16' as const,
-              sampleRateHertz: 16000,
-              languageCode: 'en-US',
-              enableAutomaticPunctuation: true,
-              enableWordTimeOffsets: false,
-              model: 'latest_short',
-            },
-            interimResults: true,
-          };
-          
-          recognizeStream = speechClient
-            .streamingRecognize(request)
-            .on('data', (data: any) => {
-              if (data.results[0] && data.results[0].alternatives[0]) {
-                const transcript = data.results[0].alternatives[0].transcript;
-                const isFinal = data.results[0].isFinal;
-                
+        speechClient = new speech.SpeechClient({
+          apiKey: process.env.GOOGLE_SPEECH_API_KEY,
+        });
+        
+        const request = {
+          config: {
+            encoding: 'LINEAR16' as const,
+            sampleRateHertz: 16000,
+            languageCode: 'en-US',
+            enableAutomaticPunctuation: true,
+            enableWordTimeOffsets: false,
+            model: 'latest_short',
+          },
+          interimResults: true,
+          singleUtterance: false,
+        };
+        
+        recognizeStream = speechClient
+          .streamingRecognize(request)
+          .on('data', (data: any) => {
+            if (data.results[0] && data.results[0].alternatives[0]) {
+              const transcript = data.results[0].alternatives[0].transcript;
+              const isFinal = data.results[0].isFinal;
+              
+              if (ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({
                   type: 'transcript',
                   text: transcript,
                   isFinal: isFinal
                 }));
               }
-            })
-            .on('error', (error: any) => {
-              console.error('Streaming recognition error:', error);
-              ws.send(JSON.stringify({
-                type: 'error',
-                message: 'Speech recognition error'
-              }));
-            });
+              
+              // If this is a final result, prepare for the next chunk
+              if (isFinal) {
+                // Restart the stream after a short delay to handle continuous speech
+                if (restartTimeoutId) {
+                  clearTimeout(restartTimeoutId);
+                }
+                restartTimeoutId = setTimeout(() => {
+                  if (ws.readyState === WebSocket.OPEN) {
+                    createNewStream();
+                  }
+                }, 100);
+              }
+            }
+          })
+          .on('error', (error: any) => {
+            console.error('Streaming recognition error:', error);
+            if (ws.readyState === WebSocket.OPEN) {
+              // Auto-restart on certain errors
+              if (error.code === 11 || error.code === 3) { // OUT_OF_RANGE or INVALID_ARGUMENT
+                console.log('Restarting stream due to timeout/limit');
+                setTimeout(() => {
+                  if (ws.readyState === WebSocket.OPEN) {
+                    createNewStream();
+                  }
+                }, 100);
+              } else {
+                ws.send(JSON.stringify({
+                  type: 'error',
+                  message: 'Speech recognition error: ' + error.message
+                }));
+              }
+            }
+          })
+          .on('end', () => {
+            console.log('Stream ended, creating new stream');
+            if (ws.readyState === WebSocket.OPEN) {
+              setTimeout(() => createNewStream(), 100);
+            }
+          });
+          
+        console.log('New recognition stream created');
+      } catch (error) {
+        console.error('Error creating stream:', error);
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({
+            type: 'error',
+            message: 'Failed to create speech stream'
+          }));
+        }
+      }
+    };
+    
+    ws.on('message', async (message: Buffer) => {
+      try {
+        const data = JSON.parse(message.toString());
+        
+        if (data.type === 'start') {
+          createNewStream();
           
         } else if (data.type === 'audio') {
           // Send audio data to the stream
-          if (recognizeStream && !recognizeStream.destroyed) {
-            const audioBuffer = Buffer.from(data.audio, 'base64');
-            recognizeStream.write(audioBuffer);
+          if (recognizeStream && !recognizeStream.destroyed && ws.readyState === WebSocket.OPEN) {
+            try {
+              const audioBuffer = Buffer.from(data.audio, 'base64');
+              recognizeStream.write(audioBuffer);
+            } catch (writeError) {
+              console.error('Error writing to stream:', writeError);
+              // Try to recreate the stream
+              createNewStream();
+            }
           }
         } else if (data.type === 'stop') {
+          // Clear any pending restart
+          if (restartTimeoutId) {
+            clearTimeout(restartTimeoutId);
+            restartTimeoutId = null;
+          }
           // End the recognition stream
           if (recognizeStream && !recognizeStream.destroyed) {
             recognizeStream.end();
@@ -353,6 +418,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     ws.on('close', () => {
       console.log('Speech WebSocket client disconnected');
+      if (restartTimeoutId) {
+        clearTimeout(restartTimeoutId);
+      }
       if (recognizeStream && !recognizeStream.destroyed) {
         recognizeStream.end();
       }

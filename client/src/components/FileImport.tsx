@@ -101,11 +101,26 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
           }
         } else if (data.type === 'error') {
           console.error('Speech recognition error:', data.message);
-          toast({
-            title: "Recognition error",
-            description: data.message,
-            variant: "destructive",
-          });
+          // Don't show error toast for common timeout errors, just continue
+          if (!data.message.includes('timeout') && !data.message.includes('OUT_OF_RANGE')) {
+            toast({
+              title: "Recognition error",
+              description: data.message,
+              variant: "destructive",
+            });
+          }
+        }
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+      
+      ws.onclose = (event) => {
+        console.log('WebSocket closed:', event.code, event.reason);
+        // Don't show error if it was a normal close
+        if (event.code !== 1000 && isRecording) {
+          console.log('Unexpected WebSocket close, connection may have been lost');
         }
       };
       
