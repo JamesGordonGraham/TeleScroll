@@ -19,11 +19,15 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
   const [isDragOver, setIsDragOver] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [realtimeTranscript, setRealtimeTranscript] = useState('');
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const wsRef = useRef<WebSocket | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const processorRef = useRef<ScriptProcessorNode | null>(null);
 
   const handleFileUpload = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
@@ -59,54 +63,125 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
     }
   }, [toast, onContentChange]);
 
-  // Speech recording functions
-  const startRecording = useCallback(async () => {
+  // Real-time speech recording functions
+  const startRealtimeRecording = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          sampleRate: 16000,
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+        } 
       });
       
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
+      // Create WebSocket connection
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const wsUrl = `${protocol}//${window.location.host}/ws/speech`;
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
       
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
+      ws.onopen = () => {
+        console.log('WebSocket connected for real-time speech');
+        ws.send(JSON.stringify({ type: 'start' }));
+      };
+      
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'transcript') {
+          setRealtimeTranscript(data.text);
+          
+          // If it's a final result, add it to the content
+          if (data.isFinal && data.text.trim()) {
+            const newContent = content 
+              ? content + ' ' + data.text.trim()
+              : data.text.trim();
+            onContentChange(newContent);
+            setRealtimeTranscript(''); // Clear interim text
+          }
+        } else if (data.type === 'error') {
+          console.error('Speech recognition error:', data.message);
+          toast({
+            title: "Recognition error",
+            description: data.message,
+            variant: "destructive",
+          });
         }
       };
       
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm;codecs=opus' });
-        await transcribeAudio(audioBlob);
-        
-        // Clean up
-        stream.getTracks().forEach(track => track.stop());
+      // Setup audio processing
+      const audioContext = new AudioContext({ sampleRate: 16000 });
+      audioContextRef.current = audioContext;
+      
+      const source = audioContext.createMediaStreamSource(stream);
+      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+      processorRef.current = processor;
+      
+      processor.onaudioprocess = (event) => {
+        if (ws.readyState === WebSocket.OPEN) {
+          const inputData = event.inputBuffer.getChannelData(0);
+          
+          // Convert float32 to int16
+          const int16Array = new Int16Array(inputData.length);
+          for (let i = 0; i < inputData.length; i++) {
+            int16Array[i] = Math.max(-32768, Math.min(32767, inputData[i] * 32768));
+          }
+          
+          // Send audio data as base64
+          const audioBase64 = btoa(String.fromCharCode(...new Uint8Array(int16Array.buffer)));
+          ws.send(JSON.stringify({
+            type: 'audio',
+            audio: audioBase64
+          }));
+        }
       };
       
-      mediaRecorder.start(1000); // Collect data every second
+      source.connect(processor);
+      processor.connect(audioContext.destination);
+      
       setIsRecording(true);
+      setRealtimeTranscript('');
       
       toast({
-        title: "Recording started",
-        description: "Speak clearly into your microphone",
+        title: "Real-time recording started",
+        description: "Speak clearly - text will appear as you talk",
       });
+      
     } catch (error) {
-      console.error('Error starting recording:', error);
+      console.error('Error starting real-time recording:', error);
       toast({
         title: "Recording failed",
         description: "Could not access microphone. Please check permissions.",
         variant: "destructive",
       });
     }
-  }, [toast]);
+  }, [toast, content, onContentChange]);
   
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
+  const stopRealtimeRecording = useCallback(() => {
+    if (wsRef.current) {
+      wsRef.current.send(JSON.stringify({ type: 'stop' }));
+      wsRef.current.close();
+      wsRef.current = null;
     }
-  }, [isRecording]);
+    
+    if (processorRef.current) {
+      processorRef.current.disconnect();
+      processorRef.current = null;
+    }
+    
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+    
+    setIsRecording(false);
+    setRealtimeTranscript('');
+    
+    toast({
+      title: "Recording stopped",
+      description: "Speech-to-text session ended",
+    });
+  }, [toast]);
   
   const transcribeAudio = useCallback(async (audioBlob: Blob) => {
     setIsTranscribing(true);
@@ -242,9 +317,9 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
                 onClick={(e) => {
                   e.stopPropagation();
                   if (isRecording) {
-                    stopRecording();
+                    stopRealtimeRecording();
                   } else {
-                    startRecording();
+                    startRealtimeRecording();
                   }
                 }}
               >
@@ -295,8 +370,13 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
           </div>
           <Textarea
             ref={textareaRef}
-            value={content}
-            onChange={(e) => onContentChange(e.target.value)}
+            value={content + (realtimeTranscript ? ' ' + realtimeTranscript : '')}
+            onChange={(e) => {
+              // Only update if user is typing (not from real-time transcript)
+              if (!isRecording) {
+                onContentChange(e.target.value);
+              }
+            }}
             onPaste={(e) => {
               // Allow normal paste behavior - the textarea handles it automatically
               // But also show a success message
@@ -311,6 +391,15 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
             className="h-[600px] resize-none rounded-2xl border-gray-200 focus:border-purple-400 focus:ring-purple-400 text-lg leading-relaxed bg-gray-50/50"
             style={{ aspectRatio: '1/1.414' }}
           />
+          {isRecording && realtimeTranscript && (
+            <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center mb-1">
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse mr-2"></div>
+                <span className="text-sm font-medium text-blue-700">Live Transcription</span>
+              </div>
+              <p className="text-gray-600 italic">{realtimeTranscript}</p>
+            </div>
+          )}
         </CardContent>
       </div>
     </section>

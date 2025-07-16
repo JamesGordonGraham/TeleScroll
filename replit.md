@@ -174,6 +174,15 @@ Changelog:
   * Fixed all speed controls to enforce 0.1x-3.0x range limits
   * Fixed floating panel controls API integration with correct parameter order
   * All teleprompter controls now fully functional with database persistence
+- July 16, 2025. Real-time speech-to-text implementation:
+  * Added microphone button to the left of "Choose File" button
+  * Implemented WebSocket-based real-time speech-to-text using Google Speech API
+  * Live transcription appears in script editor as you speak
+  * Added visual feedback with pulsing red recording indicator
+  * Text appears instantly during speech and gets added to script when finalized
+  * Separate audio upload configuration for speech files with 50MB limit
+  * Support for various audio formats (webm, ogg, wav, mp3, m4a)
+  * Real-time audio streaming with 16kHz LINEAR16 encoding for optimal quality
 ```
 
 ## User Preferences

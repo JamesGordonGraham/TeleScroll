@@ -9,6 +9,7 @@ import { z } from "zod";
 import { JSDOM } from "jsdom";
 import MarkdownIt from "markdown-it";
 import speech from "@google-cloud/speech";
+import { WebSocketServer, WebSocket } from "ws";
 
 interface MulterRequest extends Request {
   file?: any;
@@ -279,5 +280,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // WebSocket server for real-time speech-to-text
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws/speech' });
+  
+  wss.on('connection', (ws: WebSocket) => {
+    console.log('Speech WebSocket client connected');
+    
+    let speechClient: speech.SpeechClient | null = null;
+    let recognizeStream: any = null;
+    
+    ws.on('message', async (message: Buffer) => {
+      try {
+        const data = JSON.parse(message.toString());
+        
+        if (data.type === 'start') {
+          // Initialize speech client and streaming recognition
+          speechClient = new speech.SpeechClient({
+            apiKey: process.env.GOOGLE_SPEECH_API_KEY,
+          });
+          
+          const request = {
+            config: {
+              encoding: 'LINEAR16' as const,
+              sampleRateHertz: 16000,
+              languageCode: 'en-US',
+              enableAutomaticPunctuation: true,
+              enableWordTimeOffsets: false,
+              model: 'latest_short',
+            },
+            interimResults: true,
+          };
+          
+          recognizeStream = speechClient
+            .streamingRecognize(request)
+            .on('data', (data: any) => {
+              if (data.results[0] && data.results[0].alternatives[0]) {
+                const transcript = data.results[0].alternatives[0].transcript;
+                const isFinal = data.results[0].isFinal;
+                
+                ws.send(JSON.stringify({
+                  type: 'transcript',
+                  text: transcript,
+                  isFinal: isFinal
+                }));
+              }
+            })
+            .on('error', (error: any) => {
+              console.error('Streaming recognition error:', error);
+              ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Speech recognition error'
+              }));
+            });
+          
+        } else if (data.type === 'audio') {
+          // Send audio data to the stream
+          if (recognizeStream && !recognizeStream.destroyed) {
+            const audioBuffer = Buffer.from(data.audio, 'base64');
+            recognizeStream.write(audioBuffer);
+          }
+        } else if (data.type === 'stop') {
+          // End the recognition stream
+          if (recognizeStream && !recognizeStream.destroyed) {
+            recognizeStream.end();
+          }
+        }
+      } catch (error) {
+        console.error('WebSocket message error:', error);
+      }
+    });
+    
+    ws.on('close', () => {
+      console.log('Speech WebSocket client disconnected');
+      if (recognizeStream && !recognizeStream.destroyed) {
+        recognizeStream.end();
+      }
+    });
+  });
+  
   return httpServer;
 }
