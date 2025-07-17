@@ -11,7 +11,39 @@ function initializeSpeechClient() {
     
     if (credentialsJson) {
       // Use service account credentials from environment
-      const credentials = JSON.parse(credentialsJson);
+      console.log('Raw credentials length:', credentialsJson.length);
+      console.log('First 50 chars:', credentialsJson.substring(0, 50));
+      console.log('Last 50 chars:', credentialsJson.substring(credentialsJson.length - 50));
+
+      // Clean up the JSON string - remove any potential whitespace/newlines
+      const cleanedJson = credentialsJson.trim();
+      
+      let credentials;
+      try {
+        credentials = JSON.parse(cleanedJson);
+      } catch (parseError) {
+        console.error('JSON parsing failed:', parseError);
+        console.error('Attempting to parse credentials again...');
+        
+        // Try to fix common JSON issues
+        let fixedJson = cleanedJson;
+        
+        // Remove potential escape characters or quotes around the JSON
+        if (fixedJson.startsWith('"') && fixedJson.endsWith('"')) {
+          fixedJson = fixedJson.slice(1, -1);
+        }
+        
+        // Replace escaped quotes
+        fixedJson = fixedJson.replace(/\\"/g, '"');
+        
+        console.log('Fixed JSON first 100 chars:', fixedJson.substring(0, 100));
+        credentials = JSON.parse(fixedJson);
+      }
+
+      if (!credentials.project_id) {
+        throw new Error('Invalid credentials: missing project_id');
+      }
+
       speechClient = new SpeechClient({
         credentials,
         projectId: credentials.project_id,
