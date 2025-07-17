@@ -211,6 +211,13 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
 
   return (
     <>
+      {/* Download Container for video files */}
+      <div
+        id="download-container"
+        className="fixed top-4 right-4 space-y-2 z-[2000]"
+        style={{ maxWidth: '300px' }}
+      ></div>
+
       {/* Camera Video Background - Raw MediaStream Display */}
       {state.cameraStream && (
         <video

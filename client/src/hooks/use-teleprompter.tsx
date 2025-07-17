@@ -169,38 +169,48 @@ export function useTeleprompter() {
         
         const url = URL.createObjectURL(blob);
 
-        // Force browser to use new filename with cache busting
-        const link = document.createElement('a');
-        link.href = url;
+        // Use dedicated download container (like your example)
+        const downloadContainer = document.getElementById('download-container') || document.body;
         
-        // Force the exact filename with cache busting
-        const cacheBuster = Math.random().toString(36).substr(2, 9);
-        link.download = filename;
-        link.setAttribute('download', filename);
+        // Clear previous downloads
+        if (downloadContainer.id === 'download-container') {
+          downloadContainer.innerHTML = '';
+        }
+        
+        // Create download link exactly like your example
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.textContent = `Download ${filename}`;
+        a.className = 'download-link';
         
         // Style the download link
-        link.textContent = `Download ${filename}`;
-        link.style.display = 'block';
-        link.style.margin = '10px';
-        link.style.padding = '10px';
-        link.style.backgroundColor = '#0ea5e9';
-        link.style.color = 'white';
-        link.style.textDecoration = 'none';
-        link.style.borderRadius = '5px';
-        link.style.fontWeight = 'bold';
+        a.style.display = 'block';
+        a.style.margin = '10px 0';
+        a.style.padding = '12px 16px';
+        a.style.backgroundColor = '#0ea5e9';
+        a.style.color = 'white';
+        a.style.textDecoration = 'none';
+        a.style.borderRadius = '8px';
+        a.style.fontWeight = 'bold';
+        a.style.fontSize = '14px';
+        a.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+        a.style.transition = 'all 0.2s ease';
         
-        // Add unique ID to prevent conflicts
-        link.id = `download-${cacheBuster}`;
+        // Add hover effect
+        a.addEventListener('mouseenter', () => {
+          a.style.backgroundColor = '#0284c7';
+          a.style.transform = 'translateY(-1px)';
+        });
+        a.addEventListener('mouseleave', () => {
+          a.style.backgroundColor = '#0ea5e9';
+          a.style.transform = 'translateY(0)';
+        });
         
-        document.body.appendChild(link);
+        downloadContainer.appendChild(a);
         
-        // Force immediate download with slight delay to ensure DOM is ready
-        setTimeout(() => {
-          link.click();
-          console.log('Forced download of:', filename);
-        }, 100);
-        
-        console.log('Download link created with ID:', link.id, 'for file:', filename);
+        console.log('Download link created for:', filename);
+        console.log('Added to container:', downloadContainer.id || 'body');
         
         // Clean up
         chunks = [];
