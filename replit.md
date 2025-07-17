@@ -226,6 +226,14 @@ Changelog:
   * Automatic file download with timestamped filename (.webm format)
   * Recording works with transparent background mode for OBS streaming
   * Enhanced floating control panel remains interactive during transparent mode
+- July 17, 2025. Fixed video file naming and download system:
+  * Resolved browser filename caching issue causing file overwrites
+  * Implemented reliable unique filename generation using ISO timestamp format
+  * Fixed chunk accumulation bug that was causing incomplete recordings
+  * Added visible download links that persist in DOM for reliable downloads
+  * WebM files now save with format: teleprompter-recording-YYYY-MM-DDTHH-MM-SS-sssZ.webm
+  * Enhanced MediaRecorder setup with simplified local chunks array approach
+  * Each recording creates unique files that won't conflict with previous recordings
 ```
 
 ## User Preferences

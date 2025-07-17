@@ -99,6 +99,11 @@ export function useTeleprompter() {
     try {
       console.log('Starting camera recording...');
       
+      // Generate filename at start of recording (like your example)
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const filename = `teleprompter-recording-${timestamp}.webm`;
+      console.log('Recording filename:', filename);
+      
       // Request camera access - this captures the real camera including background
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -140,57 +145,50 @@ export function useTeleprompter() {
 
       console.log('Using MediaRecorder options:', options);
 
-      // Create MediaRecorder with ONLY the raw camera stream
-      // This records pure camera data - no HTML/CSS overlays included
-      const mediaRecorder = new MediaRecorder(stream, options);
+      // Simple MediaRecorder setup (like your example)
+      const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
-      recordedChunksRef.current = [];
+      
+      // Use local chunks array (like your example)
+      let chunks: BlobPart[] = [];
 
-      mediaRecorder.ondataavailable = (event) => {
-        console.log('Data available:', event.data.size, 'bytes');
-        if (event.data.size > 0) {
-          recordedChunksRef.current.push(event.data);
-          console.log('Total chunks so far:', recordedChunksRef.current.length);
-        }
+      mediaRecorder.ondataavailable = (e) => {
+        chunks.push(e.data);
+        console.log('Data chunk:', e.data.size, 'bytes. Total chunks:', chunks.length);
       };
 
-      mediaRecorder.onstart = () => {
-        console.log('Recording started');
-      };
 
-      mediaRecorder.onstop = async () => {
-        console.log('Recording stopped, chunks:', recordedChunksRef.current.length);
-        
-        if (recordedChunksRef.current.length === 0) {
-          alert('No video data was recorded. Please try again.');
-          // Clear chunks only if no data
-          recordedChunksRef.current = [];
-          return;
-        }
 
-        // Create WebM blob from accumulated chunks
-        const webmBlob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
-        console.log('Created WebM blob:', webmBlob.size, 'bytes', 'from', recordedChunksRef.current.length, 'chunks');
+      mediaRecorder.onstop = () => {
+        console.log('Recording stopped. Processing', chunks.length, 'chunks...');
         
-        // Convert to MP4 using FFmpeg if available
-        if (ffmpegRef.current && isFFmpegLoaded) {
-          try {
-            console.log('Converting WebM to MP4...');
-            await convertWebMToMP4(webmBlob);
-          } catch (error) {
-            console.error('MP4 conversion failed, downloading WebM instead:', error);
-            downloadFile(webmBlob, 'video/webm', '.webm');
-          }
-        } else {
-          console.log('FFmpeg not available, downloading WebM');
-          downloadFile(webmBlob, 'video/webm', '.webm');
-          
-          // Show conversion tip to user
-          console.log('Tip: To convert to MP4, upload your WebM file to https://cloudconvert.com/webm-to-mp4');
-        }
+        const blob = new Blob(chunks, { type: "video/webm" });
+        console.log('Final blob size:', blob.size, 'bytes');
         
-        // Clear chunks after successful download
-        recordedChunksRef.current = [];
+        const url = URL.createObjectURL(blob);
+
+        // Create download link (like your example)
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.textContent = `Download ${filename}`;
+        a.style.display = 'block';
+        a.style.margin = '10px';
+        a.style.padding = '10px';
+        a.style.backgroundColor = '#0ea5e9';
+        a.style.color = 'white';
+        a.style.textDecoration = 'none';
+        a.style.borderRadius = '5px';
+        
+        document.body.appendChild(a);
+        
+        // Auto-click download
+        a.click();
+        
+        console.log('Download link created for:', filename);
+        
+        // Clean up
+        chunks = [];
       };
 
       mediaRecorder.onerror = (event) => {
@@ -198,9 +196,8 @@ export function useTeleprompter() {
         alert('Recording error occurred. Please try again.');
       };
 
-      // Start recording with timeslice for regular data events
-      mediaRecorder.start(1000); // Request data every second
-      console.log('MediaRecorder start() called');
+      mediaRecorder.start();
+      console.log('Recording started with filename:', filename);
       
     } catch (error) {
       console.error('Error starting recording:', error);
@@ -255,41 +252,38 @@ export function useTeleprompter() {
     }
   }, []);
 
-  // Download file helper with unique timestamps in YYYY-MM-DD_HH-MM-SS format
+  // Download file helper with reliable unique filenames
   const downloadFile = useCallback((blob: Blob, mimeType: string, extension: string) => {
+    // Generate unique timestamp filename like your example
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const filename = `teleprompter-recording-${timestamp}${extension}`;
+    
     const url = URL.createObjectURL(blob);
-    const now = new Date();
     
-    // Format: YYYY-MM-DD_HH-MM-SS
-    const year = now.getFullYear();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    const seconds = now.getSeconds().toString().padStart(2, '0');
-    
-    const filename = `teleprompter-recording-${year}-${month}-${day}_${hours}-${minutes}-${seconds}${extension}`;
-    
-    // Force download with explicit filename
+    // Create download link that stays in DOM (like your example)
     const a = document.createElement('a');
-    a.style.display = 'none';
     a.href = url;
     a.download = filename;
+    a.textContent = `Download ${filename}`;
+    a.style.display = 'block';
+    a.style.margin = '10px';
+    a.style.padding = '10px';
+    a.style.backgroundColor = '#0ea5e9';
+    a.style.color = 'white';
+    a.style.textDecoration = 'none';
+    a.style.borderRadius = '5px';
     
-    // Ensure unique download by adding to body, clicking, and removing
+    // Add to body so it's visible and clickable
     document.body.appendChild(a);
     
-    // Force the download with the exact filename
-    try {
-      a.click();
-      console.log(`Download initiated: ${filename}`);
-    } catch (error) {
-      console.error('Download failed:', error);
-    }
+    // Also trigger immediate download
+    a.click();
     
-    // Clean up immediately
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    console.log(`Download link created: ${filename}`);
+    console.log(`File size: ${blob.size} bytes`);
+    
+    // Clean up URL after delay but keep link visible
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
   }, []);
 
   const stopRecording = useCallback(() => {
