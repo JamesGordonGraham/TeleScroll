@@ -265,7 +265,7 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
               maxWidth: `${settings.textWidth}%`,
               left: '50%',
               transform: `translateX(-50%) ${state.isPlaying ? '' : 'translateY(-50%)'}`,
-              top: state.isPlaying ? '-100%' : '50%',
+              top: state.isPlaying ? '100%' : '50%',
               padding: '64px 32px'
             }}
           >

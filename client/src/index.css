@@ -17,8 +17,8 @@
 .scroll-content {
   position: absolute;
   width: 100%;
-  top: -100%;
-  transition: top 0.05s linear;
+  top: 100%;
+  transition: top 0.03s linear;
   text-align: center;
   left: 50%;
   transform: translateX(-50%);

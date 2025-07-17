@@ -251,10 +251,10 @@ Changelog:
 - July 17, 2025. Enhanced JavaScript scrolling implementation:
   * Replaced CSS animation with JavaScript requestAnimationFrame for better control
   * Text properly centered when paused (50% with translateY(-50%))
-  * Smooth scrolling from top (-100%) to bottom (100%) using position updates
-  * Linear transition with 0.05s for ultra-smooth movement
-  * Enhanced speed control: 0.1x-1x range uses speed * 0.5 for faster movement
-  * Auto-reset to top when reaching bottom for continuous scrolling
+  * Traditional teleprompter scrolling from bottom (100%) to top (-100%) - upward movement
+  * Ultra-smooth movement with 0.03s linear transition for 60fps performance
+  * Enhanced speed control: 0.1x-1x range uses speed * 0.3 for optimal smoothness at 1x
+  * Auto-reset to bottom when reaching top for continuous scrolling
   * Fixed horizontal centering with left: 50% and translateX(-50%)
 ```
 
