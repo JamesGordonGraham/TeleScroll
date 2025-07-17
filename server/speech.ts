@@ -13,31 +13,31 @@ function initializeSpeechClient() {
       // Use service account credentials from environment
       console.log('Raw credentials length:', credentialsJson.length);
       console.log('First 50 chars:', credentialsJson.substring(0, 50));
-      console.log('Last 50 chars:', credentialsJson.substring(credentialsJson.length - 50));
-
-      // Clean up the JSON string - remove any potential whitespace/newlines
-      const cleanedJson = credentialsJson.trim();
       
       let credentials;
       try {
-        credentials = JSON.parse(cleanedJson);
+        // First try to parse as JSON
+        credentials = JSON.parse(credentialsJson.trim());
       } catch (parseError) {
-        console.error('JSON parsing failed:', parseError);
-        console.error('Attempting to parse credentials again...');
+        console.log('Not valid JSON, attempting to parse tab-separated format...');
         
-        // Try to fix common JSON issues
-        let fixedJson = cleanedJson;
+        // Parse tab-separated format
+        const lines = credentialsJson.trim().split('\n');
+        credentials = {};
         
-        // Remove potential escape characters or quotes around the JSON
-        if (fixedJson.startsWith('"') && fixedJson.endsWith('"')) {
-          fixedJson = fixedJson.slice(1, -1);
+        for (const line of lines) {
+          const [key, ...valueParts] = line.split('\t');
+          if (key && valueParts.length > 0) {
+            let value = valueParts.join('\t').trim();
+            // Remove quotes if present
+            if (value.startsWith('"') && value.endsWith('"')) {
+              value = value.slice(1, -1);
+            }
+            credentials[key] = value;
+          }
         }
         
-        // Replace escaped quotes
-        fixedJson = fixedJson.replace(/\\"/g, '"');
-        
-        console.log('Fixed JSON first 100 chars:', fixedJson.substring(0, 100));
-        credentials = JSON.parse(fixedJson);
+        console.log('Parsed credentials keys:', Object.keys(credentials));
       }
 
       if (!credentials.project_id) {
