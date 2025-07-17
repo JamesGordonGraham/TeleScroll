@@ -211,32 +211,9 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
 
   return (
     <>
-      {/* Download Container for video files */}
-      <div
-        id="download-container"
-        className="fixed top-4 right-4 space-y-2 z-[2000]"
-        style={{ maxWidth: '300px' }}
-      ></div>
+      {/* Download Container temporarily removed during rebuild */}
 
-      {/* Camera Video Background - Raw MediaStream Display */}
-      {state.cameraStream && (
-        <video
-          ref={videoRef}
-          id="camera-video"
-          autoPlay
-          muted
-          playsInline
-          className="fixed inset-0 w-full h-full object-cover"
-          style={{ 
-            zIndex: 1,
-            transform: state.isFlipped ? 'scaleX(-1)' : 'none'
-          }}
-          onLoadedMetadata={() => console.log('Video metadata loaded')}
-          onCanPlay={() => console.log('Video can play')}
-          onPlay={() => console.log('Video started playing')}
-          onError={(e) => console.error('Video error:', e)}
-        />
-      )}
+      {/* Camera Video temporarily removed during rebuild */}
 
       {/* Teleprompter Text Overlay - CSS positioned above camera */}
       <div 
@@ -426,27 +403,17 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
               {state.isTransparent ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </Button>
 
-            {/* Recording Toggle */}
+            {/* Recording Toggle - Temporarily disabled during rebuild */}
             <Button
               variant="ghost"
               size="sm"
-              onClick={state.isRecording ? stopRecording : startRecording}
-              className={`p-3 rounded-2xl transition-all duration-200 ${
-                state.isRecording 
-                  ? 'bg-red-500 text-white shadow-lg animate-pulse' 
-                  : 'text-white hover:text-red-200 hover:bg-white/20 bg-black/30'
-              }`}
-              title={state.isRecording ? 'Stop recording' : 'Start camera recording'}
+              onClick={() => console.log('Recording temporarily disabled for rebuild')}
+              className="text-gray-500 bg-gray-300/30 p-3 rounded-2xl cursor-not-allowed"
+              title="Video recording temporarily disabled during rebuild"
+              disabled
             >
-              {state.isRecording ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
+              <Video className="h-5 w-5" />
             </Button>
-
-            {/* Recording Status Indicator */}
-            {state.isRecording && (
-              <div className="text-red-400 text-sm font-semibold bg-black/50 px-3 py-1 rounded-lg">
-                REC
-              </div>
-            )}
 
             {/* Shortcuts */}
             <Button

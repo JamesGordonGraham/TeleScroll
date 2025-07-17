@@ -96,124 +96,9 @@ export function useTeleprompter() {
   }, [loadFFmpeg]);
 
   const startRecording = useCallback(async () => {
-    try {
-      console.log('Starting camera recording...');
-      
-      // Generate completely unique filename to prevent browser caching
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      const ms = String(now.getMilliseconds()).padStart(3, '0');
-      const randomId = Math.random().toString(36).substr(2, 12);
-      
-      const filename = `teleprompter-${year}${month}${day}_${hours}${minutes}${seconds}${ms}_${randomId}.webm`;
-      console.log('Recording filename generated:', filename);
-      
-      // Balanced camera settings for good quality and performance
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 1280, max: 1920 },
-          height: { ideal: 720, max: 1080 },
-          frameRate: { ideal: 25, max: 30 }, // Balanced frame rate
-          facingMode: 'user'
-        },
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          sampleRate: 44100
-        }
-      });
-
-      console.log('Camera stream obtained, tracks:', stream.getTracks().map(t => ({ kind: t.kind, enabled: t.enabled, readyState: t.readyState })));
-      setState(prev => ({ ...prev, cameraStream: stream, isRecording: true }));
-
-      // Balanced MediaRecorder settings for good quality and performance
-      const options: MediaRecorderOptions = {
-        mimeType: 'video/webm',
-        videoBitsPerSecond: 1500000, // Higher quality
-        audioBitsPerSecond: 128000   // Good audio quality
-      };
-      
-      console.log('Using optimized MediaRecorder options:', options);
-      
-      const mediaRecorder = new MediaRecorder(stream, 
-        MediaRecorder.isTypeSupported(options.mimeType) ? options : undefined
-      );
-      mediaRecorderRef.current = mediaRecorder;
-      
-      // Use local chunks array (like your example)
-      let chunks: BlobPart[] = [];
-
-      mediaRecorder.ondataavailable = (e) => {
-        chunks.push(e.data);
-        console.log('Data chunk:', e.data.size, 'bytes. Total chunks:', chunks.length);
-      };
-
-
-
-      mediaRecorder.onstop = () => {
-        console.log('Recording stopped. Processing', chunks.length, 'chunks...');
-        
-        const blob = new Blob(chunks, { type: "video/webm" });
-        console.log('Final blob size:', blob.size, 'bytes');
-        
-        const url = URL.createObjectURL(blob);
-
-        // Simple, reliable download approach that works consistently
-        const downloadContainer = document.getElementById('download-container') || document.body;
-        
-        // Clear previous downloads
-        if (downloadContainer.id === 'download-container') {
-          downloadContainer.innerHTML = '';
-        }
-        
-        // Create download link with forced save behavior
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.textContent = `Download ${filename}`;
-        a.className = 'download-link';
-        
-        // Style the download link
-        a.style.display = 'block';
-        a.style.margin = '10px 0';
-        a.style.padding = '12px 16px';
-        a.style.backgroundColor = '#0ea5e9';
-        a.style.color = 'white';
-        a.style.textDecoration = 'none';
-        a.style.borderRadius = '8px';
-        a.style.fontWeight = 'bold';
-        a.style.fontSize = '14px';
-        a.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
-        a.style.transition = 'all 0.2s ease';
-        
-        downloadContainer.appendChild(a);
-        
-        console.log('Download link created for:', filename);
-        console.log('Click the download button to save the file');
-        
-        // Clean up
-        chunks = [];
-      };
-
-      mediaRecorder.onerror = (event) => {
-        console.error('MediaRecorder error:', event);
-        alert('Recording error occurred. Please try again.');
-      };
-
-      mediaRecorder.start();
-      console.log('Recording started with filename:', filename);
-      
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      setState(prev => ({ ...prev, isRecording: false, cameraStream: null }));
-      alert(`Failed to access camera: ${(error as Error).message}. Please check permissions and try again.`);
-    }
-  }, [isFFmpegLoaded]);
+    // TODO: Implement clean video recording system
+    console.log('Video recording temporarily disabled for rebuild');
+  }, []);
 
   // Convert WebM to MP4 using FFmpeg
   const convertWebMToMP4 = useCallback(async (webmBlob: Blob) => {
@@ -296,34 +181,14 @@ export function useTeleprompter() {
   }, []);
 
   const stopRecording = useCallback(() => {
-    console.log('Stopping recording...');
-    
-    if (mediaRecorderRef.current && state.isRecording) {
-      try {
-        if (mediaRecorderRef.current.state !== 'inactive') {
-          mediaRecorderRef.current.stop();
-        }
-      } catch (error) {
-        console.error('Error stopping MediaRecorder:', error);
-      }
-    }
-
-    if (state.cameraStream) {
-      state.cameraStream.getTracks().forEach(track => {
-        track.stop();
-        console.log('Stopped track:', track.kind);
-      });
-    }
-
+    // TODO: Implement clean video recording stop
+    console.log('Video recording stop temporarily disabled for rebuild');
     setState(prev => ({ 
       ...prev, 
       isRecording: false, 
       cameraStream: null 
     }));
-    
-    // Clean up refs (recordedChunksRef cleared after download in onstop handler)
-    mediaRecorderRef.current = null;
-  }, [state.isRecording, state.cameraStream]);
+  }, []);
 
   const adjustSpeed = useCallback((delta: number) => {
     if (!settings) return;
@@ -434,10 +299,9 @@ export function useTeleprompter() {
       const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.016); // Cap at 16ms for stability
       lastTime = currentTime;
       
-      // Get current speed settings for instant real-time updates with recording optimization
+      // Get current speed settings for instant real-time updates
       const currentSpeed = Math.max(0.1, Math.min(3.0, settings.scrollSpeed));
-      // Use same speed whether recording or not
-      const basePixelsPerSecond = 180; // Faster base speed
+      const basePixelsPerSecond = 160; // Standard base speed
       const scaledSpeed = Math.pow(currentSpeed, 1.3); // Exponential scaling for dramatic differences
       const pixelsPerSecond = basePixelsPerSecond * scaledSpeed;
       
@@ -509,19 +373,9 @@ export function useTeleprompter() {
       const maxScroll = element.scrollHeight - element.clientHeight;
       let finalPosition;
       
-      if (state.isRecording) {
-        // Simplified but faster scrolling when recording - use normal scrollTop
-        const speed = settings.scrollSpeed * 140; // Faster speed for recording
-        targetPosition += speed * deltaTime;
-        finalPosition = Math.max(0, Math.min(targetPosition, maxScroll));
-        
-        // Use normal scrollTop but with simplified animation
-        element.scrollTop = finalPosition;
-      } else {
-        // Full smooth scrolling when not recording
-        finalPosition = Math.max(0, Math.min(smoothPosition12, maxScroll));
-        element.scrollTop = finalPosition;
-      }
+      // Unified smooth scrolling (no recording-specific logic)
+      finalPosition = Math.max(0, Math.min(smoothPosition12, maxScroll));
+      element.scrollTop = finalPosition;
       
       // Update state during normal scrolling only
       if (Math.abs(statePositionDiff) <= 10) {
