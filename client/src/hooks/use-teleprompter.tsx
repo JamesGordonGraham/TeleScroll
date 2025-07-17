@@ -154,6 +154,8 @@ export function useTeleprompter() {
         
         if (recordedChunksRef.current.length === 0) {
           alert('No video data was recorded. Please try again.');
+          // Clear chunks only if no data
+          recordedChunksRef.current = [];
           return;
         }
 
@@ -174,6 +176,9 @@ export function useTeleprompter() {
           console.log('FFmpeg not available, downloading WebM');
           downloadFile(webmBlob, 'video/webm', '.webm');
         }
+        
+        // Clear chunks after successful download
+        recordedChunksRef.current = [];
       };
 
       mediaRecorder.onerror = (event) => {
@@ -226,9 +231,12 @@ export function useTeleprompter() {
       console.log('MP4 conversion successful, size:', mp4Blob.size, 'bytes');
       downloadFile(mp4Blob, 'video/mp4', '.mp4');
 
-      // Clean up
+      // Clean up FFmpeg files
       await ffmpeg.deleteFile(inputFileName);
       await ffmpeg.deleteFile(outputFileName);
+      
+      // Clear chunks after successful MP4 conversion
+      recordedChunksRef.current = [];
     } catch (error) {
       console.error('FFmpeg conversion error:', error);
       throw error;
@@ -282,9 +290,9 @@ export function useTeleprompter() {
       cameraStream: null 
     }));
     
-    // Clean up refs
+    // Clean up refs (but NOT recordedChunksRef - that's needed for download)
     mediaRecorderRef.current = null;
-    recordedChunksRef.current = [];
+    // recordedChunksRef.current = []; // Don't clear this until after download!
   }, [state.isRecording, state.cameraStream]);
 
   const adjustSpeed = useCallback((delta: number) => {
