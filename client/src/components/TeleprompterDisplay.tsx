@@ -257,15 +257,16 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
           }}
         >
           <div 
-            className={`scroll-content text-white text-center px-8 py-16 ${state.isFlipped ? 'scale-x-[-1]' : ''}`}
+            className={`scroll-content text-white text-center ${state.isFlipped ? 'scale-x-[-1]' : ''}`}
             style={{
               lineHeight: 1.6,
               letterSpacing: '0.02em',
               fontSize: `${settings.fontSize}px`,
               maxWidth: `${settings.textWidth}%`,
-              margin: '0 auto',
+              left: '50%',
+              transform: `translateX(-50%) ${state.isPlaying ? '' : 'translateY(-50%)'}`,
               top: state.isPlaying ? '100%' : '50%',
-              transform: state.isPlaying ? 'none' : 'translateY(-50%)'
+              padding: '64px 32px'
             }}
           >
             {content.split('\n').map((line, index) => (
