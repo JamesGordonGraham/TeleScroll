@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Enhanced Teleprompter</title>
+  <style>
+    body {
+      margin: 0;
+      background: transparent;
+      overflow: hidden;
+      font-family: Helvetica, sans-serif;
+    }
+    #teleprompter {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      color: white;
+      font-size: 3em;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+    }
+    #scrollText {
+      position: absolute;
+      width: 100%;
+      top: 100%;
+      transition: top 0.05s linear;
+    }
+    .marker {
+      color: yellow;
+    }
+    #controls {
+      position: fixed;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
+    }
+    input[type=range] {
+      width: 200px;
+    }
+    button {
+      font-size: 1em;
+      margin: 0 10px;
+      padding: 5px 15px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="teleprompter">
+  <div id="scrollText">
+    <p>Welcome to Vibe Prompting – Speak Smooth. Stay in Flow.</p>
+    <p>Your Words. Perfectly Delivered.</p>
+    <p class="marker">[Marker 1]</p>
+    <p>Confidence on Cue.</p>
+    <p>Flawless Delivery, Every Time.</p>
+    <p class="marker">[Marker 2]</p>
+    <p>Let your voice shine with clarity and confidence.</p>
+  </div>
+</div>
+
+<div id="controls">
+  <button onclick="toggleScroll()"><span id="toggleText">Pause</span></button>
+  <label>Speed:
+    <input type="range" min="0.5" max="5" value="1" step="0.1" id="speedControl" onchange="updateSpeed()" />
+  </label>
+  <button onclick="jumpToMarker(0)">Go to Marker 1</button>
+  <button onclick="jumpToMarker(1)">Go to Marker 2</button>
+</div>
+
+<script>
+  const scrollText = document.getElementById('scrollText');
+  const speedSlider = document.getElementById('speedControl');
+  const toggleBtn = document.getElementById('toggleText');
+
+  let scrollSpeed = parseFloat(speedSlider.value);
+  let scrollPos = 100; // percentage
+  let scrolling = true;
+
+  function updateSpeed() {
+    scrollSpeed = parseFloat(speedSlider.value);
+  }
+
+  function toggleScroll() {
+    scrolling = !scrolling;
+    toggleBtn.innerText = scrolling ? 'Pause' : 'Resume';
+  }
+
+  function jumpToMarker(index) {
+    const markers = document.querySelectorAll('.marker');
+    if (markers[index]) {
+      const markerTop = markers[index].offsetTop;
+      scrollPos = 100 * (markerTop / scrollText.scrollHeight);
+    }
+  }
+
+  function scrollLoop() {
+    if (scrolling) {
+      scrollPos -= scrollSpeed * 0.1;
+      if (scrollPos < -100) scrollPos = 100;
+      scrollText.style.top = scrollPos + '%';
+    }
+    requestAnimationFrame(scrollLoop);
+  }
+
+  scrollLoop();
+</script>
+
+</body>
+</html>

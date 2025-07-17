@@ -4,6 +4,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS Keyframes for smooth teleprompter scrolling */
+@keyframes teleprompterScroll {
+  0% { 
+    top: 100%; 
+  }
+  100% { 
+    top: -100%; 
+  }
+}
+
 :root {
   --background: hsl(0, 0%, 98%);
   --foreground: hsl(0, 0%, 15%);

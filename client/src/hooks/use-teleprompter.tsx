@@ -56,8 +56,7 @@ export function useTeleprompter() {
   });
 
   const togglePlay = useCallback(() => {
-    // TODO: Implement clean play/pause with simple scrolling
-    console.log('Play/pause temporarily disabled for scrolling rebuild');
+    setState(prev => ({ ...prev, isPlaying: !prev.isPlaying }));
   }, []);
 
   const toggleFlip = useCallback(() => {
@@ -230,18 +229,30 @@ export function useTeleprompter() {
   }, []);
 
   const startScrolling = useCallback((element: HTMLElement | null) => {
-    // TODO: Implement clean simple scrolling system
-    console.log('Scrolling temporarily disabled for rebuild');
-  }, []);
+    if (!element || !settings) return;
+    
+    // Clean CSS animation-based scrolling
+    const scrollContent = element.querySelector('.scroll-content') as HTMLElement;
+    if (!scrollContent) return;
+    
+    // Calculate animation duration based on speed (slower speed = longer duration)
+    const baseSpeed = 60; // 60 seconds for 1.0x speed
+    const duration = baseSpeed / settings.scrollSpeed;
+    
+    // Apply CSS animation
+    scrollContent.style.animation = `teleprompterScroll ${duration}s linear infinite`;
+    
+    console.log(`Started CSS scrolling at ${settings.scrollSpeed}x speed (${duration}s duration)`);
+  }, [settings]);
 
-  const stopScrolling = useCallback(() => {
-    if (scrollIntervalRef.current) {
-      clearInterval(scrollIntervalRef.current);
-      scrollIntervalRef.current = null;
-    }
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-      animationRef.current = null;
+  const stopScrolling = useCallback((element: HTMLElement | null) => {
+    if (!element) return;
+    
+    // Stop CSS animation
+    const scrollContent = element.querySelector('.scroll-content') as HTMLElement;
+    if (scrollContent) {
+      scrollContent.style.animation = 'none';
+      console.log('Stopped CSS scrolling');
     }
   }, []);
 
