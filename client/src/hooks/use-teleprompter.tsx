@@ -117,14 +117,23 @@ export function useTeleprompter() {
       console.log('Camera stream obtained, tracks:', stream.getTracks().map(t => ({ kind: t.kind, enabled: t.enabled, readyState: t.readyState })));
       setState(prev => ({ ...prev, cameraStream: stream, isRecording: true }));
 
-      // Record in WebM format (browser native) then convert to MP4 with FFmpeg
+      // Record in WebM format with high quality for macOS compatibility
       let options: MediaRecorderOptions;
       if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
-        options = { mimeType: 'video/webm;codecs=vp9,opus' };
+        options = { 
+          mimeType: 'video/webm;codecs=vp9,opus',
+          videoBitsPerSecond: 2500000 // 2.5 Mbps for good quality
+        };
       } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
-        options = { mimeType: 'video/webm;codecs=vp8,opus' };
+        options = { 
+          mimeType: 'video/webm;codecs=vp8,opus',
+          videoBitsPerSecond: 2500000
+        };
       } else if (MediaRecorder.isTypeSupported('video/webm')) {
-        options = { mimeType: 'video/webm' };
+        options = { 
+          mimeType: 'video/webm',
+          videoBitsPerSecond: 2500000
+        };
       } else {
         options = {};
       }
@@ -175,6 +184,9 @@ export function useTeleprompter() {
         } else {
           console.log('FFmpeg not available, downloading WebM');
           downloadFile(webmBlob, 'video/webm', '.webm');
+          
+          // Show conversion tip to user
+          console.log('Tip: To convert to MP4, upload your WebM file to https://cloudconvert.com/webm-to-mp4');
         }
         
         // Clear chunks after successful download
@@ -243,25 +255,41 @@ export function useTeleprompter() {
     }
   }, []);
 
-  // Download file helper with unique timestamps
+  // Download file helper with unique timestamps in YYYY-MM-DD_HH-MM-SS format
   const downloadFile = useCallback((blob: Blob, mimeType: string, extension: string) => {
     const url = URL.createObjectURL(blob);
     const now = new Date();
-    const timestamp = now.toISOString().slice(0, 19).replace(/:/g, '-');
-    const milliseconds = now.getMilliseconds().toString().padStart(3, '0');
-    const uniqueId = Math.random().toString(36).substr(2, 5);
     
+    // Format: YYYY-MM-DD_HH-MM-SS
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
+    
+    const filename = `teleprompter-recording-${year}-${month}-${day}_${hours}-${minutes}-${seconds}${extension}`;
+    
+    // Force download with explicit filename
     const a = document.createElement('a');
+    a.style.display = 'none';
     a.href = url;
-    a.download = `teleprompter-recording-${timestamp}-${milliseconds}-${uniqueId}${extension}`;
+    a.download = filename;
+    
+    // Ensure unique download by adding to body, clicking, and removing
     document.body.appendChild(a);
-    a.click();
+    
+    // Force the download with the exact filename
+    try {
+      a.click();
+      console.log(`Download initiated: ${filename}`);
+    } catch (error) {
+      console.error('Download failed:', error);
+    }
+    
+    // Clean up immediately
     document.body.removeChild(a);
-    
-    console.log(`Downloaded: teleprompter-recording-${timestamp}-${milliseconds}-${uniqueId}${extension}`);
-    
-    // Clean up
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
   }, []);
 
   const stopRecording = useCallback(() => {
@@ -290,9 +318,8 @@ export function useTeleprompter() {
       cameraStream: null 
     }));
     
-    // Clean up refs (but NOT recordedChunksRef - that's needed for download)
+    // Clean up refs (recordedChunksRef cleared after download in onstop handler)
     mediaRecorderRef.current = null;
-    // recordedChunksRef.current = []; // Don't clear this until after download!
   }, [state.isRecording, state.cameraStream]);
 
   const adjustSpeed = useCallback((delta: number) => {
