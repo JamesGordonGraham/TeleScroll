@@ -3,9 +3,10 @@ import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { CloudUpload, Trash2, Play, FileText, Bookmark } from 'lucide-react';
+import { CloudUpload, Trash2, Play, FileText, Bookmark, Mic, MicOff } from 'lucide-react';
 import { parseFile, validateFile } from '@/lib/file-parser';
 import { useToast } from '@/hooks/use-toast';
+import { useVoiceInput } from '@/hooks/use-voice-input';
 
 interface FileImportProps {
   onStartTeleprompter: (content: string) => void;
@@ -19,6 +20,58 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Voice input functionality
+  const { isListening, isSupported, startListening, stopListening } = useVoiceInput({
+    onResult: (text) => {
+      const textarea = textareaRef.current;
+      if (textarea) {
+        const cursorPosition = textarea.selectionStart;
+        const beforeText = content.slice(0, cursorPosition);
+        const afterText = content.slice(cursorPosition);
+        const newContent = beforeText + (beforeText.length > 0 ? ' ' : '') + text + afterText;
+        onContentChange(newContent);
+        
+        // Move cursor to end of inserted text
+        setTimeout(() => {
+          const newPosition = cursorPosition + text.length + (beforeText.length > 0 ? 1 : 0);
+          textarea.focus();
+          textarea.setSelectionRange(newPosition, newPosition);
+        }, 0);
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: "Voice input error",
+        description: error,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleVoiceToggle = () => {
+    if (isListening) {
+      stopListening();
+      toast({
+        title: "Voice input stopped",
+        description: "Speech recognition has been stopped",
+      });
+    } else {
+      if (!isSupported) {
+        toast({
+          title: "Voice input not supported",
+          description: "Your browser doesn't support speech recognition",
+          variant: "destructive",
+        });
+        return;
+      }
+      startListening();
+      toast({
+        title: "Voice input started",
+        description: "Speak now to add text to your script",
+      });
+    }
+  };
 
   const handleFileUpload = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
@@ -130,6 +183,23 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-2xl font-semibold gradient-text-accent">Script Editor</h3>
             <div className="flex space-x-3">
+              {/* Voice Input Button */}
+              <Button
+                className={`${
+                  isListening 
+                    ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700' 
+                    : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+                } text-white px-4 py-2 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleVoiceToggle();
+                }}
+                disabled={!isSupported}
+              >
+                {isListening ? <MicOff className="h-4 w-4 mr-2" /> : <Mic className="h-4 w-4 mr-2" />}
+                {isListening ? 'Stop Voice' : 'Voice Input'}
+              </Button>
+
               <Button
                 className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
                 disabled={isUploading}

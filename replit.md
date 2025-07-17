@@ -174,6 +174,13 @@ Changelog:
   * Fixed all speed controls to enforce 0.1x-3.0x range limits
   * Fixed floating panel controls API integration with correct parameter order
   * All teleprompter controls now fully functional with database persistence
+- July 17, 2025. Voice input functionality added:
+  * Added voice input button to the left of "Choose File" button
+  * Implemented browser-based speech recognition for voice-to-text input
+  * Green/red gradient button styling: green when inactive, red when listening
+  * Voice text automatically inserted at cursor position in Script Editor
+  * Real-time voice input with error handling and toast notifications
+  * Supports continuous speech recognition with interim results
 ```
 
 ## User Preferences
