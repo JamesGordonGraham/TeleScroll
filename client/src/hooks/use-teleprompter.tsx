@@ -141,6 +141,7 @@ export function useTeleprompter() {
         console.log('Data available:', event.data.size, 'bytes');
         if (event.data.size > 0) {
           recordedChunksRef.current.push(event.data);
+          console.log('Total chunks so far:', recordedChunksRef.current.length);
         }
       };
 
@@ -156,9 +157,9 @@ export function useTeleprompter() {
           return;
         }
 
-        // Create WebM blob
+        // Create WebM blob from accumulated chunks
         const webmBlob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
-        console.log('Created WebM blob:', webmBlob.size, 'bytes');
+        console.log('Created WebM blob:', webmBlob.size, 'bytes', 'from', recordedChunksRef.current.length, 'chunks');
         
         // Convert to MP4 using FFmpeg if available
         if (ffmpegRef.current && isFFmpegLoaded) {
@@ -234,17 +235,22 @@ export function useTeleprompter() {
     }
   }, []);
 
-  // Download file helper
+  // Download file helper with unique timestamps
   const downloadFile = useCallback((blob: Blob, mimeType: string, extension: string) => {
     const url = URL.createObjectURL(blob);
-    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+    const now = new Date();
+    const timestamp = now.toISOString().slice(0, 19).replace(/:/g, '-');
+    const milliseconds = now.getMilliseconds().toString().padStart(3, '0');
+    const uniqueId = Math.random().toString(36).substr(2, 5);
     
     const a = document.createElement('a');
     a.href = url;
-    a.download = `teleprompter-recording-${timestamp}${extension}`;
+    a.download = `teleprompter-recording-${timestamp}-${milliseconds}-${uniqueId}${extension}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    
+    console.log(`Downloaded: teleprompter-recording-${timestamp}-${milliseconds}-${uniqueId}${extension}`);
     
     // Clean up
     setTimeout(() => URL.revokeObjectURL(url), 1000);
