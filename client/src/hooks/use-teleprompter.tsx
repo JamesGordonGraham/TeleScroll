@@ -99,10 +99,12 @@ export function useTeleprompter() {
     try {
       console.log('Starting camera recording...');
       
-      // Generate filename at start of recording (like your example)
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      const filename = `teleprompter-recording-${timestamp}.webm`;
-      console.log('Recording filename:', filename);
+      // Generate unique filename at start of recording with extra randomness
+      const now = new Date();
+      const timestamp = now.toISOString().replace(/[:.]/g, "-");
+      const randomId = Math.random().toString(36).substr(2, 8);
+      const filename = `teleprompter-recording-${timestamp}-${randomId}.webm`;
+      console.log('Recording filename generated:', filename);
       
       // Request camera access - this captures the real camera including background
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -167,25 +169,38 @@ export function useTeleprompter() {
         
         const url = URL.createObjectURL(blob);
 
-        // Create download link (like your example)
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.textContent = `Download ${filename}`;
-        a.style.display = 'block';
-        a.style.margin = '10px';
-        a.style.padding = '10px';
-        a.style.backgroundColor = '#0ea5e9';
-        a.style.color = 'white';
-        a.style.textDecoration = 'none';
-        a.style.borderRadius = '5px';
+        // Force browser to use new filename with cache busting
+        const link = document.createElement('a');
+        link.href = url;
         
-        document.body.appendChild(a);
+        // Force the exact filename with cache busting
+        const cacheBuster = Math.random().toString(36).substr(2, 9);
+        link.download = filename;
+        link.setAttribute('download', filename);
         
-        // Auto-click download
-        a.click();
+        // Style the download link
+        link.textContent = `Download ${filename}`;
+        link.style.display = 'block';
+        link.style.margin = '10px';
+        link.style.padding = '10px';
+        link.style.backgroundColor = '#0ea5e9';
+        link.style.color = 'white';
+        link.style.textDecoration = 'none';
+        link.style.borderRadius = '5px';
+        link.style.fontWeight = 'bold';
         
-        console.log('Download link created for:', filename);
+        // Add unique ID to prevent conflicts
+        link.id = `download-${cacheBuster}`;
+        
+        document.body.appendChild(link);
+        
+        // Force immediate download with slight delay to ensure DOM is ready
+        setTimeout(() => {
+          link.click();
+          console.log('Forced download of:', filename);
+        }, 100);
+        
+        console.log('Download link created with ID:', link.id, 'for file:', filename);
         
         // Clean up
         chunks = [];
