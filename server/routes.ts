@@ -14,6 +14,7 @@ interface MulterRequest extends Request {
   file?: any;
 }
 
+// File upload for documents
 const upload = multer({ 
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
@@ -35,6 +36,30 @@ const upload = multer({
       cb(null, true);
     } else {
       cb(new Error('Supported formats: .txt, .doc, .docx, .rtf, .html, .htm, .md'));
+    }
+  }
+});
+
+// Audio upload for speech transcription
+const audioUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB for audio
+  fileFilter: (req: any, file: any, cb: any) => {
+    const allowedAudioTypes = [
+      'audio/webm',
+      'audio/wav',
+      'audio/mp3',
+      'audio/mp4',
+      'audio/mpeg',
+      'audio/ogg'
+    ];
+    
+    console.log('Audio file upload - mimetype:', file.mimetype, 'filename:', file.originalname);
+    
+    if (allowedAudioTypes.includes(file.mimetype) || file.mimetype.startsWith('audio/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Supported audio formats: webm, wav, mp3, mp4, mpeg, ogg'));
     }
   }
 });
@@ -210,7 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Speech transcription endpoint
-  app.post("/api/transcribe", upload.single('audio'), async (req: MulterRequest, res) => {
+  app.post("/api/transcribe", audioUpload.single('audio'), async (req: MulterRequest, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No audio file provided" });
