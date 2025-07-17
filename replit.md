@@ -234,6 +234,13 @@ Changelog:
   * WebM files now save with format: teleprompter-recording-YYYY-MM-DDTHH-MM-SS-sssZ.webm
   * Enhanced MediaRecorder setup with simplified local chunks array approach
   * Each recording creates unique files that won't conflict with previous recordings
+- July 17, 2025. Aggressive download fix and recording performance optimization:
+  * Implemented multiple download methods: FileReader DataURL + traditional blob URL
+  * Added cache-busting timestamps and multiple download attempts
+  * Optimized recording performance: 720p@20fps, 500kbps video, 64kbps audio
+  * Fixed jerky scrolling during recording with transform-based scrolling
+  * Disabled audio processing (echo cancellation/noise suppression) for better performance
+  * Ultra-simplified scroll algorithm when recording with 80 pixels/sec base speed
 ```
 
 ## User Preferences

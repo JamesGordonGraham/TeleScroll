@@ -113,28 +113,29 @@ export function useTeleprompter() {
       const filename = `teleprompter-${year}${month}${day}_${hours}${minutes}${seconds}${ms}_${randomId}.webm`;
       console.log('Recording filename generated:', filename);
       
-      // Optimized camera settings for better performance during recording
+      // Ultra-optimized camera settings for smooth recording performance
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: { ideal: 1280, max: 1920 }, // Reduced resolution for better performance
-          height: { ideal: 720, max: 1080 },
-          frameRate: { ideal: 24, max: 30 }, // Reduced frame rate for smoother scrolling
+          width: { ideal: 1280, max: 1280 }, // Fixed lower resolution
+          height: { ideal: 720, max: 720 },
+          frameRate: { ideal: 20, max: 24 }, // Much lower frame rate for smooth scrolling
           facingMode: 'user'
         },
         audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          sampleRate: 44100
+          echoCancellation: false, // Disable processing for better performance
+          noiseSuppression: false,
+          sampleRate: 22050 // Lower sample rate
         }
       });
 
       console.log('Camera stream obtained, tracks:', stream.getTracks().map(t => ({ kind: t.kind, enabled: t.enabled, readyState: t.readyState })));
       setState(prev => ({ ...prev, cameraStream: stream, isRecording: true }));
 
-      // Optimized MediaRecorder setup for better performance during scrolling
+      // Ultra-optimized MediaRecorder for smooth scrolling during recording
       const options: MediaRecorderOptions = {
         mimeType: 'video/webm',
-        videoBitsPerSecond: 1000000 // Reduced bitrate for better performance
+        videoBitsPerSecond: 500000, // Much lower bitrate for smooth scrolling
+        audioBitsPerSecond: 64000   // Lower audio bitrate
       };
       
       console.log('Using optimized MediaRecorder options:', options);
@@ -162,7 +163,7 @@ export function useTeleprompter() {
         
         const url = URL.createObjectURL(blob);
 
-        // Use dedicated download container (like your example)
+        // Aggressive download approach to bypass browser caching
         const downloadContainer = document.getElementById('download-container') || document.body;
         
         // Clear previous downloads
@@ -170,12 +171,36 @@ export function useTeleprompter() {
           downloadContainer.innerHTML = '';
         }
         
-        // Create download link exactly like your example
+        // Create multiple download mechanisms to ensure success
+        const timestamp = Date.now();
+        const uniqueFilename = `${filename}?t=${timestamp}`;
+        
+        // Method 1: Force download using data URL approach
+        const reader = new FileReader();
+        reader.onload = function() {
+          const dataUrl = reader.result as string;
+          const tempLink = document.createElement('a');
+          tempLink.href = dataUrl;
+          tempLink.download = filename;
+          tempLink.style.display = 'none';
+          document.body.appendChild(tempLink);
+          tempLink.click();
+          document.body.removeChild(tempLink);
+          console.log('Data URL download triggered for:', filename);
+        };
+        reader.readAsDataURL(blob);
+        
+        // Method 2: Traditional blob URL with cache busting
         const a = document.createElement('a');
-        a.href = url;
+        a.href = url + '#' + timestamp;
         a.download = filename;
         a.textContent = `Download ${filename}`;
         a.className = 'download-link';
+        
+        // Force new download context
+        a.setAttribute('download', filename);
+        a.setAttribute('data-filename', filename);
+        a.setAttribute('data-timestamp', timestamp.toString());
         
         // Style the download link
         a.style.display = 'block';
@@ -190,24 +215,14 @@ export function useTeleprompter() {
         a.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
         a.style.transition = 'all 0.2s ease';
         
-        // Add hover effect
-        a.addEventListener('mouseenter', () => {
-          a.style.backgroundColor = '#0284c7';
-          a.style.transform = 'translateY(-1px)';
-        });
-        a.addEventListener('mouseleave', () => {
-          a.style.backgroundColor = '#0ea5e9';
-          a.style.transform = 'translateY(0)';
-        });
-        
         downloadContainer.appendChild(a);
         
-        // Force immediate download programmatically
-        a.click();
+        // Force immediate download with multiple attempts
+        setTimeout(() => a.click(), 100);
+        setTimeout(() => a.click(), 500);
         
-        console.log('Download link created for:', filename);
-        console.log('Added to container:', downloadContainer.id || 'body');
-        console.log('Immediate download triggered');
+        console.log('Multiple download methods triggered for:', filename);
+        console.log('Timestamp:', timestamp);
         
         // Clean up
         chunks = [];
@@ -523,16 +538,27 @@ export function useTeleprompter() {
       let finalPosition;
       
       if (state.isRecording) {
-        // Simplified scrolling when recording for better performance
-        const speed = settings.scrollSpeed * 120; // Reduced speed for smoother recording
+        // Ultra-simplified scrolling when recording - bypass all interpolation
+        const speed = settings.scrollSpeed * 80; // Much slower base speed for recording
         targetPosition += speed * deltaTime;
         finalPosition = Math.max(0, Math.min(targetPosition, maxScroll));
         
-        // Direct scroll without interpolation layers for better recording performance
-        element.scrollTop = finalPosition;
+        // Use transform instead of scrollTop for better performance during recording
+        const scrollElement = element.querySelector('.teleprompter-content') as HTMLElement;
+        if (scrollElement) {
+          scrollElement.style.transform = `translateY(-${finalPosition}px)`;
+        } else {
+          element.scrollTop = finalPosition;
+        }
       } else {
         // Full smooth scrolling when not recording
         finalPosition = Math.max(0, Math.min(smoothPosition12, maxScroll));
+        
+        // Reset transform and use normal scrolling
+        const scrollElement = element.querySelector('.teleprompter-content') as HTMLElement;
+        if (scrollElement) {
+          scrollElement.style.transform = '';
+        }
         element.scrollTop = finalPosition;
       }
       
