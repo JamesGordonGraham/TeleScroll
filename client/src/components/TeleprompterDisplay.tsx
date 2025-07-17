@@ -230,73 +230,57 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
             pointerEvents: state.isTransparent ? 'none' : 'auto'
           }}
         >
-        {/* Teleprompter Text Area */}
+        {/* Teleprompter Text Area - Smooth JavaScript Scrolling */}
         <div 
           ref={scrollContainerRef}
-          className="flex-1 overflow-hidden relative"
+          className="teleprompter-container"
           style={{ 
             cursor: settings.hideCursor ? 'none' : 'auto',
             pointerEvents: state.isTransparent ? 'none' : 'auto',
-            backgroundColor: state.cameraStream ? 'transparent' : 'transparent'
+            backgroundColor: 'transparent'
           }}
           tabIndex={0}
           onFocus={() => {
-            // Ensure the teleprompter can receive keyboard events
             if (scrollContainerRef.current) {
               scrollContainerRef.current.focus();
             }
           }}
           onClick={() => {
-            // Ensure focus when clicking anywhere in the teleprompter
             if (scrollContainerRef.current) {
               scrollContainerRef.current.focus();
             }
           }}
           onMouseEnter={() => {
-            // Ensure focus when mouse enters the teleprompter
             if (scrollContainerRef.current) {
               scrollContainerRef.current.focus();
             }
           }}
         >
           <div 
-            className={`text-white text-center px-8 py-16 ${state.isFlipped ? 'scale-x-[-1]' : ''}`}
+            className={`scroll-content text-white text-center px-8 py-16 ${state.isFlipped ? 'scale-x-[-1]' : ''}`}
             style={{
               lineHeight: 1.6,
               letterSpacing: '0.02em',
+              fontSize: `${settings.fontSize}px`,
+              maxWidth: `${settings.textWidth}%`,
+              margin: '0 auto',
+              top: state.isPlaying ? '100%' : '50%',
+              transform: state.isPlaying ? 'none' : 'translateY(-50%)'
             }}
           >
-            <div 
-              className="mx-auto leading-relaxed"
-              style={{ 
-                fontSize: `${settings.fontSize}px`,
-                maxWidth: `${settings.textWidth}%`,
-              }}
-            >
-              <div 
-                className="scroll-content"
-                style={{
-                  position: 'absolute',
-                  top: state.isPlaying ? '100%' : '0',
-                  width: '100%',
-                  transition: state.isPlaying ? 'none' : 'top 0.3s ease'
-                }}
-              >
-                {content.split('\n').map((line, index) => (
-                  <p key={index} className="mb-4 relative">
-                    {/* Render line with violet square markers */}
-                    {line.split('■').map((segment, segmentIndex) => (
-                      <span key={segmentIndex}>
-                        {segment}
-                        {segmentIndex < line.split('■').length - 1 && (
-                          <span className="inline-block w-3 h-3 bg-violet-500 rounded-sm mx-1 align-middle"></span>
-                        )}
-                      </span>
-                    )) || '\u00A0'}
-                  </p>
-                ))}
-              </div>
-            </div>
+            {content.split('\n').map((line, index) => (
+              <p key={index} className="mb-4 relative">
+                {/* Render line with violet square markers */}
+                {line.split('■').map((segment, segmentIndex) => (
+                  <span key={segmentIndex}>
+                    {segment}
+                    {segmentIndex < line.split('■').length - 1 && (
+                      <span className="inline-block w-3 h-3 bg-violet-500 rounded-sm mx-1 align-middle"></span>
+                    )}
+                  </span>
+                )) || '\u00A0'}
+              </p>
+            ))}
           </div>
         </div>
 

@@ -248,13 +248,13 @@ Changelog:
   * Cleaned up animation frame management and position synchronization
   * Isolated teleprompter display from broken scrolling performance issues
   * Prepared codebase for simple, reliable scrolling implementation
-- July 17, 2025. Simple CSS animation scrolling implementation:
-  * Implemented clean CSS keyframe-based scrolling using @keyframes teleprompterScroll
-  * Smooth 60-second base animation with speed control (60s / scrollSpeed)
-  * Text starts at bottom (100%) and scrolls to top (-100%) smoothly
-  * Restored play/pause functionality with instant CSS animation control
-  * Eliminated all JavaScript animation complexity for ultra-smooth performance
-  * Speed adjustments instantly update animation duration for real-time control
+- July 17, 2025. Enhanced JavaScript scrolling implementation:
+  * Replaced CSS animation with JavaScript requestAnimationFrame for better control
+  * Text properly centered when paused (50% with translateY(-50%))
+  * Smooth scrolling from bottom (100%) to top (-100%) using position updates
+  * Linear transition with 0.05s for ultra-smooth movement
+  * Speed control through scrollSpeed * 0.1 calculation
+  * Auto-reset to bottom when reaching top for continuous scrolling
 ```
 
 ## User Preferences

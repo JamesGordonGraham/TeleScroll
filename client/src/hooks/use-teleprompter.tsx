@@ -231,29 +231,38 @@ export function useTeleprompter() {
   const startScrolling = useCallback((element: HTMLElement | null) => {
     if (!element || !settings) return;
     
-    // Clean CSS animation-based scrolling
+    // Clean up any existing animation
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+    
     const scrollContent = element.querySelector('.scroll-content') as HTMLElement;
     if (!scrollContent) return;
     
-    // Calculate animation duration based on speed (slower speed = longer duration)
-    const baseSpeed = 60; // 60 seconds for 1.0x speed
-    const duration = baseSpeed / settings.scrollSpeed;
+    let scrollPos = 100; // Start at 100% (bottom)
+    const speed = settings.scrollSpeed;
     
-    // Apply CSS animation
-    scrollContent.style.animation = `teleprompterScroll ${duration}s linear infinite`;
+    const scrollLoop = () => {
+      if (!state.isPlaying) return;
+      
+      scrollPos -= speed * 0.1;
+      if (scrollPos < -100) scrollPos = 100; // Reset to bottom when reaching top
+      
+      scrollContent.style.top = scrollPos + '%';
+      
+      animationRef.current = requestAnimationFrame(scrollLoop);
+    };
     
-    console.log(`Started CSS scrolling at ${settings.scrollSpeed}x speed (${duration}s duration)`);
-  }, [settings]);
+    animationRef.current = requestAnimationFrame(scrollLoop);
+    console.log(`Started smooth scrolling at ${speed}x speed`);
+  }, [settings, state.isPlaying]);
 
   const stopScrolling = useCallback((element: HTMLElement | null) => {
-    if (!element) return;
-    
-    // Stop CSS animation
-    const scrollContent = element.querySelector('.scroll-content') as HTMLElement;
-    if (scrollContent) {
-      scrollContent.style.animation = 'none';
-      console.log('Stopped CSS scrolling');
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
     }
+    console.log('Stopped smooth scrolling');
   }, []);
 
   const resetPosition = useCallback(() => {
