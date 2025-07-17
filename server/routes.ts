@@ -244,10 +244,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No audio file uploaded" });
       }
 
-      // Initialize Google Speech client
-      const client = new speech.SpeechClient({
-        keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-      });
+      // Check if Google Cloud credentials are available
+      if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+        return res.status(503).json({ message: "Speech-to-text service is not configured. Please contact support." });
+      }
+
+      // Initialize Google Speech client with proper credentials handling
+      let client: speech.SpeechClient;
+      try {
+        // Try to parse as JSON first (for service account key content)
+        const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+        client = new speech.SpeechClient({ credentials });
+      } catch (jsonError) {
+        // If not JSON, treat as file path
+        client = new speech.SpeechClient({
+          keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+        });
+      }
 
       const audio = {
         content: req.file.buffer.toString('base64'),
@@ -372,6 +385,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   wss.on('connection', (ws: WebSocket) => {
     console.log('Speech WebSocket client connected');
     
+    // Check if Google Cloud credentials are available
+    if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      console.log('Google Cloud credentials not configured, speech features disabled');
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          type: 'error',
+          message: 'Speech-to-text service is not configured. Please contact support.'
+        }));
+        ws.close();
+      }
+      return;
+    }
+    
     let speechClient: speech.SpeechClient | null = null;
     let recognizeStream: any = null;
     let streamStartTime: number = 0;
@@ -387,9 +413,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           recognizeStream.end();
         }
         
-        speechClient = new speech.SpeechClient({
-          keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-        });
+        // Initialize Google Speech client with proper credentials handling
+        try {
+          // Try to parse as JSON first (for service account key content)
+          const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS || '{}');
+          speechClient = new speech.SpeechClient({ credentials });
+        } catch (jsonError) {
+          // If not JSON, treat as file path
+          speechClient = new speech.SpeechClient({
+            keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+          });
+        }
         
         const request = {
           config: {
