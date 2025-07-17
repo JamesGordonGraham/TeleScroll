@@ -2,8 +2,6 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import type { TeleprompterSettings } from '@shared/schema';
-import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { fetchFile, toBlobURL } from '@ffmpeg/util';
 
 interface TeleprompterState {
   isPlaying: boolean;
@@ -13,8 +11,6 @@ interface TeleprompterState {
   markers: number[];
   currentMarkerIndex: number;
   isTransparent: boolean;
-  isRecording: boolean;
-  cameraStream: MediaStream | null;
 }
 
 export function useTeleprompter() {
@@ -27,17 +23,11 @@ export function useTeleprompter() {
     markers: [],
     currentMarkerIndex: -1,
     isTransparent: false,
-    isRecording: false,
-    cameraStream: null,
   });
 
   const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const animationRef = useRef<number | null>(null);
   const lastFrameTimeRef = useRef<number>(0);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const recordedChunksRef = useRef<Blob[]>([]);
-  const ffmpegRef = useRef<FFmpeg | null>(null);
-  const [isFFmpegLoaded, setIsFFmpegLoaded] = useState(false);
 
   // Get settings
   const { data: settings, isLoading: settingsLoading } = useQuery<TeleprompterSettings>({
@@ -65,129 +55,6 @@ export function useTeleprompter() {
 
   const toggleTransparent = useCallback(() => {
     setState(prev => ({ ...prev, isTransparent: !prev.isTransparent }));
-  }, []);
-
-  // Initialize FFmpeg
-  const loadFFmpeg = useCallback(async () => {
-    if (ffmpegRef.current || isFFmpegLoaded) return;
-    
-    try {
-      console.log('Loading FFmpeg...');
-      const ffmpeg = new FFmpeg();
-      
-      const baseURL = 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm';
-      await ffmpeg.load({
-        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-        workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
-      });
-      
-      ffmpegRef.current = ffmpeg;
-      setIsFFmpegLoaded(true);
-      console.log('FFmpeg loaded successfully');
-    } catch (error) {
-      console.error('Failed to load FFmpeg:', error);
-    }
-  }, [isFFmpegLoaded]);
-
-  // Load FFmpeg on mount
-  useEffect(() => {
-    loadFFmpeg();
-  }, [loadFFmpeg]);
-
-  const startRecording = useCallback(async () => {
-    // TODO: Implement clean video recording system
-    console.log('Video recording temporarily disabled for rebuild');
-  }, []);
-
-  // Convert WebM to MP4 using FFmpeg
-  const convertWebMToMP4 = useCallback(async (webmBlob: Blob) => {
-    if (!ffmpegRef.current) {
-      throw new Error('FFmpeg not loaded');
-    }
-
-    const ffmpeg = ffmpegRef.current;
-    const inputFileName = 'input.webm';
-    const outputFileName = 'output.mp4';
-
-    try {
-      // Write input file to FFmpeg virtual filesystem
-      console.log('Writing input file to FFmpeg...');
-      await ffmpeg.writeFile(inputFileName, await fetchFile(webmBlob));
-
-      // Run FFmpeg conversion
-      console.log('Running FFmpeg conversion...');
-      await ffmpeg.exec([
-        '-i', inputFileName,
-        '-c:v', 'libx264',  // H.264 video codec
-        '-c:a', 'aac',      // AAC audio codec
-        '-preset', 'fast',   // Fast encoding preset
-        '-crf', '23',       // Good quality
-        outputFileName
-      ]);
-
-      // Read the output file
-      console.log('Reading converted MP4 file...');
-      const mp4Data = await ffmpeg.readFile(outputFileName);
-      const mp4Blob = new Blob([mp4Data], { type: 'video/mp4' });
-
-      console.log('MP4 conversion successful, size:', mp4Blob.size, 'bytes');
-      downloadFile(mp4Blob, 'video/mp4', '.mp4');
-
-      // Clean up FFmpeg files
-      await ffmpeg.deleteFile(inputFileName);
-      await ffmpeg.deleteFile(outputFileName);
-      
-      // Clear chunks after successful MP4 conversion
-      recordedChunksRef.current = [];
-    } catch (error) {
-      console.error('FFmpeg conversion error:', error);
-      throw error;
-    }
-  }, []);
-
-  // Download file helper with reliable unique filenames
-  const downloadFile = useCallback((blob: Blob, mimeType: string, extension: string) => {
-    // Generate unique timestamp filename like your example
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const filename = `teleprompter-recording-${timestamp}${extension}`;
-    
-    const url = URL.createObjectURL(blob);
-    
-    // Create download link that stays in DOM (like your example)
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.textContent = `Download ${filename}`;
-    a.style.display = 'block';
-    a.style.margin = '10px';
-    a.style.padding = '10px';
-    a.style.backgroundColor = '#0ea5e9';
-    a.style.color = 'white';
-    a.style.textDecoration = 'none';
-    a.style.borderRadius = '5px';
-    
-    // Add to body so it's visible and clickable
-    document.body.appendChild(a);
-    
-    // Also trigger immediate download
-    a.click();
-    
-    console.log(`Download link created: ${filename}`);
-    console.log(`File size: ${blob.size} bytes`);
-    
-    // Clean up URL after delay but keep link visible
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
-  }, []);
-
-  const stopRecording = useCallback(() => {
-    // TODO: Implement clean video recording stop
-    console.log('Video recording stop temporarily disabled for rebuild');
-    setState(prev => ({ 
-      ...prev, 
-      isRecording: false, 
-      cameraStream: null 
-    }));
   }, []);
 
   const adjustSpeed = useCallback((delta: number) => {
@@ -230,41 +97,165 @@ export function useTeleprompter() {
 
   const startScrolling = useCallback((element: HTMLElement | null) => {
     if (!element || !settings) return;
-    
-    // Clean up any existing animation
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-    }
-    
-    const scrollContent = element.querySelector('.scroll-content') as HTMLElement;
-    if (!scrollContent) return;
-    
-    let scrollPos = -100; // Start at -100% (top)
-    const speed = settings.scrollSpeed;
-    
-    const scrollLoop = () => {
-      if (!state.isPlaying) return;
-      
-      // Linear speed scaling - higher numbers = faster scrolling
-      const speedMultiplier = speed * 0.3;
-      scrollPos += speedMultiplier; // Positive for downward scrolling from top
-      if (scrollPos > 100) scrollPos = -100; // Reset to top when reaching bottom
-      
-      scrollContent.style.top = scrollPos + '%';
-      
-      animationRef.current = requestAnimationFrame(scrollLoop);
-    };
-    
-    animationRef.current = requestAnimationFrame(scrollLoop);
-    console.log(`Started smooth scrolling at ${speed}x speed`);
-  }, [settings, state.isPlaying]);
 
-  const stopScrolling = useCallback((element: HTMLElement | null) => {
+    // Clean up any existing intervals or animations
+    if (scrollIntervalRef.current) {
+      clearInterval(scrollIntervalRef.current);
+      scrollIntervalRef.current = null;
+    }
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
     }
-    console.log('Stopped smooth scrolling');
+
+    // 12-layer interpolation system for maximum smoothness
+    element.style.scrollBehavior = 'auto';
+    
+    let lastTime = performance.now();
+    let targetPosition = element.scrollTop;
+    let smoothPosition1 = element.scrollTop;
+    let smoothPosition2 = element.scrollTop;
+    let smoothPosition3 = element.scrollTop;
+    let smoothPosition4 = element.scrollTop;
+    let smoothPosition5 = element.scrollTop;
+    let smoothPosition6 = element.scrollTop;
+    let smoothPosition7 = element.scrollTop;
+    let smoothPosition8 = element.scrollTop;
+    let smoothPosition9 = element.scrollTop;
+    let smoothPosition10 = element.scrollTop;
+    let smoothPosition11 = element.scrollTop;
+    let smoothPosition12 = element.scrollTop;
+    let lastStatePosition = state.currentPosition;
+    
+    const ultraSmoothScroll = (currentTime: number) => {
+      if (!state.isPlaying || !element) return;
+      
+      // Check for keyboard navigation by comparing state position with target
+      const statePositionDiff = state.currentPosition - lastStatePosition;
+      if (Math.abs(statePositionDiff) > 10) {
+        console.log('Keyboard navigation detected, jumping from', lastStatePosition, 'to', state.currentPosition);
+        
+        // Immediately update positions for keyboard navigation
+        targetPosition = state.currentPosition;
+        lastStatePosition = state.currentPosition;
+        
+        // Instantly move to new position without interfering with event handling
+        requestAnimationFrame(() => {
+          if (element) {
+            element.scrollTop = targetPosition;
+          }
+        });
+        
+        // Reset all smooth positions to sync with new position
+        smoothPosition1 = targetPosition;
+        smoothPosition2 = targetPosition;
+        smoothPosition3 = targetPosition;
+        smoothPosition4 = targetPosition;
+        smoothPosition5 = targetPosition;
+        smoothPosition6 = targetPosition;
+        smoothPosition7 = targetPosition;
+        smoothPosition8 = targetPosition;
+        smoothPosition9 = targetPosition;
+        smoothPosition10 = targetPosition;
+        smoothPosition11 = targetPosition;
+        smoothPosition12 = targetPosition;
+        
+        console.log('Position synchronized to:', targetPosition);
+      }
+      
+      const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.016); // Cap at 16ms for stability
+      lastTime = currentTime;
+      
+      // Get current speed settings for instant real-time updates
+      const currentSpeed = Math.max(0.1, Math.min(3.0, settings.scrollSpeed));
+      // Doubled the base speed: 0.1x-1.0x range now twice as fast as before
+      // Current baseline (1.0x) = 160 pixels/sec, 3.0x will be significantly faster
+      const basePixelsPerSecond = 160;
+      const scaledSpeed = Math.pow(currentSpeed, 1.3); // Exponential scaling for dramatic differences
+      const pixelsPerSecond = basePixelsPerSecond * scaledSpeed;
+      
+      // Layer 1: Calculate ideal target position with immediate speed response
+      // Continue auto-scrolling from current position
+      targetPosition += pixelsPerSecond * deltaTime;
+      
+      // 12-layer ultra-smooth interpolation system with optimized factors for perfect fluidity
+      // Layer 2: Extremely gentle response (0.06)
+      const diff1 = targetPosition - smoothPosition1;
+      smoothPosition1 += diff1 * 0.06;
+      
+      // Layer 3: Extremely gentle response (0.08)
+      const diff2 = smoothPosition1 - smoothPosition2;
+      smoothPosition2 += diff2 * 0.08;
+      
+      // Layer 4: Ultra-gentle response (0.10)
+      const diff3 = smoothPosition2 - smoothPosition3;
+      smoothPosition3 += diff3 * 0.10;
+      
+      // Layer 5: Ultra-gentle response (0.12)
+      const diff4 = smoothPosition3 - smoothPosition4;
+      smoothPosition4 += diff4 * 0.12;
+      
+      // Layer 6: Very gentle response (0.14)
+      const diff5 = smoothPosition4 - smoothPosition5;
+      smoothPosition5 += diff5 * 0.14;
+      
+      // Layer 7: Very gentle response (0.16)
+      const diff6 = smoothPosition5 - smoothPosition6;
+      smoothPosition6 += diff6 * 0.16;
+      
+      // Layer 8: Gentle response (0.18)
+      const diff7 = smoothPosition6 - smoothPosition7;
+      smoothPosition7 += diff7 * 0.18;
+      
+      // Layer 9: Gentle response (0.20)
+      const diff8 = smoothPosition7 - smoothPosition8;
+      smoothPosition8 += diff8 * 0.20;
+      
+      // Layer 10: Medium-gentle response (0.22)
+      const diff9 = smoothPosition8 - smoothPosition9;
+      smoothPosition9 += diff9 * 0.22;
+      
+      // Layer 11: Medium response (0.24)
+      const diff10 = smoothPosition9 - smoothPosition10;
+      smoothPosition10 += diff10 * 0.24;
+      
+      // Layer 12: Medium-smooth response (0.26)
+      const diff11 = smoothPosition10 - smoothPosition11;
+      smoothPosition11 += diff11 * 0.26;
+      
+      // Layer 13: Final ultra-smooth output (0.28)
+      const diff12 = smoothPosition11 - smoothPosition12;
+      smoothPosition12 += diff12 * 0.28;
+      
+      // Apply the final 12-layer ultra-smooth position using rAF to avoid blocking events
+      requestAnimationFrame(() => {
+        if (element) {
+          element.scrollTop = smoothPosition12;
+          // Only update state during normal scrolling to avoid infinite loops
+          if (Math.abs(statePositionDiff) <= 10) {
+            setState(prev => ({ ...prev, currentPosition: element.scrollTop }));
+          }
+        }
+      });
+      
+      // Schedule next frame without blocking current event loop
+      setTimeout(() => {
+        animationRef.current = requestAnimationFrame(ultraSmoothScroll);
+      }, 0);
+    };
+    
+    animationRef.current = requestAnimationFrame(ultraSmoothScroll);
+  }, [settings, state.isPlaying]);
+
+  const stopScrolling = useCallback(() => {
+    if (scrollIntervalRef.current) {
+      clearInterval(scrollIntervalRef.current);
+      scrollIntervalRef.current = null;
+    }
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    }
   }, []);
 
   const resetPosition = useCallback(() => {
@@ -397,8 +388,6 @@ export function useTeleprompter() {
     togglePlay,
     toggleFlip,
     toggleTransparent,
-    startRecording,
-    stopRecording,
     adjustSpeed,
     adjustTextSize,
     adjustTextWidth,

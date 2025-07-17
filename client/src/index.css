@@ -4,26 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Smooth teleprompter scrolling styles */
-.teleprompter-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.scroll-content {
-  position: absolute;
-  width: 100%;
-  top: -100%;
-  transition: top 0.03s linear;
-  text-align: center;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
 :root {
   --background: hsl(0, 0%, 98%);
   --foreground: hsl(0, 0%, 15%);

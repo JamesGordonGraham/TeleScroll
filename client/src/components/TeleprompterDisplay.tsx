@@ -13,9 +13,7 @@ import {
   MoveHorizontal,
   Keyboard,
   Eye,
-  EyeOff,
-  Video,
-  VideoOff
+  EyeOff
 } from 'lucide-react';
 import { useTeleprompter } from '@/hooks/use-teleprompter';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
@@ -31,7 +29,6 @@ interface TeleprompterDisplayProps {
 export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProps) {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const queryClient = useQueryClient();
   
   // Fetch settings
@@ -53,8 +50,6 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
     togglePlay,
     toggleFlip,
     toggleTransparent,
-    startRecording,
-    stopRecording,
     adjustSpeed,
     adjustTextSize,
     adjustTextWidth,
@@ -125,14 +120,13 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
     onAddMarker: addMarker,
     onNextMarker: () => nextMarker(scrollContainerRef.current, content),
     onPreviousMarker: () => previousMarker(scrollContainerRef.current, content),
-    onToggleRecording: state.isRecording ? stopRecording : startRecording,
   });
 
   useEffect(() => {
     if (state.isPlaying && settings) {
       startScrolling(scrollContainerRef.current);
     } else {
-      stopScrolling(scrollContainerRef.current);
+      stopScrolling();
     }
   }, [state.isPlaying, settings?.scrollSpeed, startScrolling, stopScrolling]);
 
@@ -144,38 +138,6 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
       scrollContainerRef.current.focus();
     }
   }, [content, resetPosition]);
-
-  // Camera stream effect
-  useEffect(() => {
-    const video = videoRef.current;
-    if (state.cameraStream && video) {
-      console.log('Setting video srcObject to camera stream');
-      video.srcObject = state.cameraStream;
-      
-      // Ensure video is visible and playing
-      video.style.display = 'block';
-      video.style.opacity = '1';
-      
-      const playVideo = async () => {
-        try {
-          await video.play();
-          console.log('Video is now playing');
-        } catch (error) {
-          console.error('Video play error:', error);
-        }
-      };
-      
-      if (video.readyState >= 2) {
-        playVideo();
-      } else {
-        video.addEventListener('loadeddata', playVideo, { once: true });
-      }
-    } else if (!state.cameraStream && video) {
-      console.log('Clearing video srcObject');
-      video.srcObject = null;
-      video.style.display = 'none';
-    }
-  }, [state.cameraStream]);
 
   // Ensure teleprompter stays focused for keyboard events
   useEffect(() => {
@@ -210,78 +172,68 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
   }
 
   return (
-    <>
-      {/* Download Container temporarily removed during rebuild */}
-
-      {/* Camera Video temporarily removed during rebuild */}
-
-      {/* Teleprompter Text Overlay - CSS positioned above camera */}
-      <div 
-        id="teleprompter"
-        className={`fixed inset-0 ${state.isTransparent ? 'bg-transparent' : (state.cameraStream ? 'bg-transparent' : 'bg-black')}`}
-        style={{
-          zIndex: 1000, // High z-index to stay above camera video
-          pointerEvents: state.isTransparent ? 'none' : 'auto'
-        }}
-      >
-        <div 
-          className="h-full flex flex-col relative" 
-          style={{ 
-            pointerEvents: state.isTransparent ? 'none' : 'auto'
-          }}
-        >
-        {/* Teleprompter Text Area - Smooth JavaScript Scrolling */}
+    <section 
+      className={`fixed inset-0 z-50 ${state.isTransparent ? 'bg-transparent' : 'bg-black'}`} 
+      data-teleprompter-active="true"
+      style={state.isTransparent ? { pointerEvents: 'none' } : {}}
+    >
+      <div className="h-full flex flex-col" style={state.isTransparent ? { pointerEvents: 'none' } : {}}>
+        {/* Teleprompter Text Area */}
         <div 
           ref={scrollContainerRef}
-          className="teleprompter-container"
+          className="flex-1 overflow-hidden relative"
           style={{ 
             cursor: settings.hideCursor ? 'none' : 'auto',
-            pointerEvents: state.isTransparent ? 'none' : 'auto',
-            backgroundColor: 'transparent'
+            pointerEvents: state.isTransparent ? 'none' : 'auto'
           }}
           tabIndex={0}
           onFocus={() => {
+            // Ensure the teleprompter can receive keyboard events
             if (scrollContainerRef.current) {
               scrollContainerRef.current.focus();
             }
           }}
           onClick={() => {
+            // Ensure focus when clicking anywhere in the teleprompter
             if (scrollContainerRef.current) {
               scrollContainerRef.current.focus();
             }
           }}
           onMouseEnter={() => {
+            // Ensure focus when mouse enters the teleprompter
             if (scrollContainerRef.current) {
               scrollContainerRef.current.focus();
             }
           }}
         >
           <div 
-            className={`scroll-content text-white text-center ${state.isFlipped ? 'scale-x-[-1]' : ''}`}
+            className={`text-white text-center px-8 py-16 ${state.isFlipped ? 'scale-x-[-1]' : ''}`}
             style={{
               lineHeight: 1.6,
               letterSpacing: '0.02em',
-              fontSize: `${settings.fontSize}px`,
-              maxWidth: `${settings.textWidth}%`,
-              left: '50%',
-              transform: `translateX(-50%) ${state.isPlaying ? '' : 'translateY(-50%)'}`,
-              top: state.isPlaying ? '-100%' : '50%',
-              padding: '64px 32px'
             }}
           >
-            {content.split('\n').map((line, index) => (
-              <p key={index} className="mb-4 relative">
-                {/* Render line with violet square markers */}
-                {line.split('■').map((segment, segmentIndex) => (
-                  <span key={segmentIndex}>
-                    {segment}
-                    {segmentIndex < line.split('■').length - 1 && (
-                      <span className="inline-block w-3 h-3 bg-violet-500 rounded-sm mx-1 align-middle"></span>
-                    )}
-                  </span>
-                )) || '\u00A0'}
-              </p>
-            ))}
+            <div 
+              className="mx-auto leading-relaxed"
+              style={{ 
+                fontSize: `${settings.fontSize}px`,
+                maxWidth: `${settings.textWidth}%`,
+              }}
+            >
+              {content.split('\n').map((line, index) => (
+                <p key={index} className="mb-4 relative teleprompter-content">
+                  {/* Render line with violet square markers */}
+                  {line.split('■').map((segment, segmentIndex) => (
+                    <span key={segmentIndex}>
+                      {segment}
+                      {segmentIndex < line.split('■').length - 1 && (
+                        <span className="inline-block w-3 h-3 bg-violet-500 rounded-sm mx-1 align-middle"></span>
+                      )}
+                    </span>
+                  )) || '\u00A0'}
+                </p>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -398,18 +350,6 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
               {state.isTransparent ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </Button>
 
-            {/* Recording Toggle - Temporarily disabled during rebuild */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => console.log('Recording temporarily disabled for rebuild')}
-              className="text-gray-500 bg-gray-300/30 p-3 rounded-2xl cursor-not-allowed"
-              title="Video recording temporarily disabled during rebuild"
-              disabled
-            >
-              <Video className="h-5 w-5" />
-            </Button>
-
             {/* Shortcuts */}
             <Button
               variant="ghost"
@@ -505,7 +445,6 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
           </div>
         </div>
       )}
-      </div>
-    </>
+    </section>
   );
 }

@@ -215,47 +215,6 @@ Changelog:
   * Keyboard shortcuts now seamlessly integrate with requestAnimationFrame loop
   * Eliminated scroll freezing and text jittering during marker jumps
   * Smooth scrolling continues uninterrupted while navigating between positions
-- July 16, 2025. Video recording functionality completed:
-  * Added camera access using MediaDevices API (getUserMedia)
-  * Implemented MediaRecorder API for video capture with audio
-  * Video shows only speaker and background, teleprompter text remains overlay-only
-  * Camera video appears as background layer (z-index: -1) when recording
-  * Teleprompter text floats as invisible overlay that doesn't appear in recording
-  * Added recording toggle button with red pulsing animation when active
-  * R key shortcut for quick recording start/stop
-  * Automatic file download with timestamped filename (.webm format)
-  * Recording works with transparent background mode for OBS streaming
-  * Enhanced floating control panel remains interactive during transparent mode
-- July 17, 2025. Fixed video file naming and download system:
-  * Resolved browser filename caching issue causing file overwrites
-  * Implemented reliable unique filename generation using ISO timestamp format
-  * Fixed chunk accumulation bug that was causing incomplete recordings
-  * Added visible download links that persist in DOM for reliable downloads
-  * WebM files now save with format: teleprompter-recording-YYYY-MM-DDTHH-MM-SS-sssZ.webm
-  * Enhanced MediaRecorder setup with simplified local chunks array approach
-  * Each recording creates unique files that won't conflict with previous recordings
-- July 17, 2025. Clean removal of broken video recording system:
-  * Temporarily disabled video recording functionality for complete rebuild
-  * Removed problematic MediaRecorder implementation and file download system
-  * Unified teleprompter scrolling system (removed recording-specific performance splits)
-  * Cleaned up camera stream management and download container elements
-  * Isolated core teleprompter functionality from broken video recording features
-  * Prepared codebase for clean video recording implementation
-- July 17, 2025. Clean removal of jerky scrolling system:
-  * Temporarily disabled complex 12-layer interpolation scrolling system
-  * Removed problematic ultra-smooth scroll algorithm causing jerkiness
-  * Disabled play/pause functionality until clean scrolling is implemented
-  * Cleaned up animation frame management and position synchronization
-  * Isolated teleprompter display from broken scrolling performance issues
-  * Prepared codebase for simple, reliable scrolling implementation
-- July 17, 2025. Enhanced JavaScript scrolling implementation:
-  * Replaced CSS animation with JavaScript requestAnimationFrame for better control
-  * Text properly centered when paused (50% with translateY(-50%))
-  * Natural scrolling from top (-100%) to bottom (100%) - downward movement
-  * Ultra-smooth movement with 0.03s linear transition for 60fps performance
-  * Linear speed scaling: speed * 0.3 for consistent acceleration (higher numbers = faster)
-  * Auto-reset to top when reaching bottom for continuous scrolling
-  * Fixed horizontal centering with left: 50% and translateX(-50%)
 ```
 
 ## User Preferences

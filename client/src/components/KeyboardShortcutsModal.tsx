@@ -23,7 +23,6 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
     { action: 'Add Marker', key: 'M' },
     { action: 'Next Marker (Alt)', key: 'N' },
     { action: 'Previous Marker (Alt)', key: 'P' },
-    { action: 'Toggle Recording', key: 'R' },
     { action: 'Exit Teleprompter', key: 'Esc' },
   ];
 
