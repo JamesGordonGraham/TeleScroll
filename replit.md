@@ -241,6 +241,13 @@ Changelog:
   * Cleaned up camera stream management and download container elements
   * Isolated core teleprompter functionality from broken video recording features
   * Prepared codebase for clean video recording implementation
+- July 17, 2025. Clean removal of jerky scrolling system:
+  * Temporarily disabled complex 12-layer interpolation scrolling system
+  * Removed problematic ultra-smooth scroll algorithm causing jerkiness
+  * Disabled play/pause functionality until clean scrolling is implemented
+  * Cleaned up animation frame management and position synchronization
+  * Isolated teleprompter display from broken scrolling performance issues
+  * Prepared codebase for simple, reliable scrolling implementation
 ```
 
 ## User Preferences

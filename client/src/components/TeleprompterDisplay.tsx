@@ -296,13 +296,15 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
           style={state.isTransparent ? { pointerEvents: 'all' } : {}}
         >
           <div className="flex items-center space-x-6">
-            {/* Play/Pause */}
+            {/* Play/Pause - Temporarily disabled during scrolling rebuild */}
             <Button
-              onClick={togglePlay}
-              className="w-14 h-14 rounded-full gradient-bg-primary text-white shadow-xl hover:shadow-2xl transition-all duration-300"
+              onClick={() => console.log('Play/pause temporarily disabled for scrolling rebuild')}
+              className="w-14 h-14 rounded-full bg-gray-300/50 text-gray-500 cursor-not-allowed"
               size="sm"
+              disabled
+              title="Play/pause temporarily disabled during scrolling rebuild"
             >
-              {state.isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
+              <Play className="h-6 w-6" />
             </Button>
 
             {/* Speed Controls */}
