@@ -262,17 +262,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const credentialsEnv = process.env.GOOGLE_APPLICATION_CREDENTIALS;
         
         // Check if the environment variable looks like JSON content or a file path
-        if (credentialsEnv.trim().startsWith('{')) {
-          // It's JSON content - parse and use as credentials
-          try {
-            const credentials = JSON.parse(credentialsEnv);
-            client = new speech.SpeechClient({ credentials });
-          } catch (jsonError) {
-            console.error('Failed to parse Google Cloud credentials JSON:', jsonError);
-            return res.status(500).json({ message: "Invalid Google Cloud credentials configuration" });
-          }
-        } else {
-          // It's a file path
+        try {
+          // Try to parse as JSON first
+          const credentials = JSON.parse(credentialsEnv);
+          client = new speech.SpeechClient({ credentials });
+        } catch (jsonError) {
+          // If JSON parsing fails, treat as file path
           client = new speech.SpeechClient({
             keyFilename: credentialsEnv,
           });
@@ -441,24 +436,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const credentialsEnv = process.env.GOOGLE_APPLICATION_CREDENTIALS || '';
           
           // Check if the environment variable looks like JSON content or a file path
-          if (credentialsEnv.trim().startsWith('{')) {
-            // It's JSON content - parse and use as credentials
-            try {
-              const credentials = JSON.parse(credentialsEnv);
-              speechClient = new speech.SpeechClient({ credentials });
-            } catch (jsonError) {
-              console.error('Failed to parse Google Cloud credentials JSON:', jsonError);
-              if (ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
-                  type: 'error',
-                  message: 'Invalid Google Cloud credentials configuration'
-                }));
-                ws.close();
-              }
-              return;
-            }
-          } else {
-            // It's a file path
+          try {
+            // Try to parse as JSON first
+            const credentials = JSON.parse(credentialsEnv);
+            speechClient = new speech.SpeechClient({ credentials });
+          } catch (jsonError) {
+            // If JSON parsing fails, treat as file path
             speechClient = new speech.SpeechClient({
               keyFilename: credentialsEnv,
             });
