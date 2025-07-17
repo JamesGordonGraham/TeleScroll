@@ -174,47 +174,6 @@ Changelog:
   * Fixed all speed controls to enforce 0.1x-3.0x range limits
   * Fixed floating panel controls API integration with correct parameter order
   * All teleprompter controls now fully functional with database persistence
-- July 16, 2025. Real-time speech-to-text implementation completed:
-  * Added microphone button to the left of "Choose File" button
-  * Implemented WebSocket-based real-time speech-to-text using Google Speech API
-  * Live transcription appears in script editor as you speak
-  * Added visual feedback with pulsing red recording indicator
-  * Text appears instantly during speech and gets added to script when finalized
-  * Separate audio upload configuration for speech files with 50MB limit
-  * Support for various audio formats (webm, ogg, wav, mp3, m4a)
-  * Real-time audio streaming with 16kHz LINEAR16 encoding for optimal quality
-  * Enhanced WebSocket stability with keep-alive pings and auto-reconnection
-  * Improved stream management to handle speech pauses and continuous recording
-  * Reduced audio buffer size for more responsive real-time transcription
-  * Fixed text accumulation issues - sentences now properly append without overwriting
-  * Implemented proper state management with refs to prevent stale content issues
-  * Voice input now works continuously across speech pauses with automatic reconnection
-- July 16, 2025. File upload behavior updated:
-  * Changed file upload to append content instead of overwriting existing text
-  * Files are now added to the end of Script Editor content with proper spacing
-  * Maintains existing workflow while preserving user's current script content
-- July 16, 2025. Local database saving and loading functionality completed:
-  * Added script management with PostgreSQL database integration
-  * Implemented Save Script and Load Script buttons at bottom of script editor
-  * Scripts saved with unique ID, title, content, and timestamps (created/updated)
-  * Load dialog shows list of previously saved scripts with preview and metadata
-  * Users can save current script with custom title and load any previous script
-  * Delete functionality available for script management
-  * Scripts sorted by most recent modification date
-- July 16, 2025. Enhanced keyboard shortcuts during active scrolling:
-  * Keyboard shortcuts now work while teleprompter is actively scrolling
-  * Arrow keys (← →) navigate between markers without stopping playback
-  * Smooth marker navigation with temporary scroll behavior changes
-  * Updated keyboard shortcuts to include Shift+Arrow for text width adjustment
-  * All navigation functions (Go to Top/Bottom) work during active scrolling
-  * Position state properly synchronized with scroll during marker jumps
-- July 16, 2025. Fixed smooth scrolling interruption during keyboard navigation:
-  * Redesigned scroll animation to handle keyboard input without jittering
-  * Gradual position adjustments instead of instant resets during navigation
-  * Maintained 12-layer interpolation system for ultra-smooth transitions
-  * Keyboard shortcuts now seamlessly integrate with requestAnimationFrame loop
-  * Eliminated scroll freezing and text jittering during marker jumps
-  * Smooth scrolling continues uninterrupted while navigating between positions
 ```
 
 ## User Preferences

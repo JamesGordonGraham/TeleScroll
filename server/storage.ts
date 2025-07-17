@@ -69,13 +69,7 @@ export class MemStorage implements IStorage {
 
   async createScript(insertScript: InsertScript): Promise<Script> {
     const id = this.currentScriptId++;
-    const now = new Date();
-    const script: Script = { 
-      ...insertScript, 
-      id,
-      createdAt: now,
-      updatedAt: now
-    };
+    const script: Script = { ...insertScript, id };
     this.scripts.set(id, script);
     return script;
   }
@@ -85,11 +79,7 @@ export class MemStorage implements IStorage {
     if (!existing) {
       throw new Error('Script not found');
     }
-    const updated: Script = { 
-      ...existing, 
-      ...updateData,
-      updatedAt: new Date()
-    };
+    const updated: Script = { ...existing, ...updateData };
     this.scripts.set(id, updated);
     return updated;
   }
@@ -146,7 +136,7 @@ export class DatabaseStorage implements IStorage {
   async updateScript(id: number, updateData: Partial<InsertScript>): Promise<Script> {
     const [script] = await db
       .update(scripts)
-      .set({ ...updateData, updatedAt: new Date() })
+      .set(updateData)
       .where(eq(scripts.id, id))
       .returning();
     

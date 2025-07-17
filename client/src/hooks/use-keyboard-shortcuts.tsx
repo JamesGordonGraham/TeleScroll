@@ -23,16 +23,6 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
     if (!enabled) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Skip if user is typing in an input field
-      const activeElement = document.activeElement;
-      const isInputActive = activeElement && (
-        activeElement.tagName === 'INPUT' ||
-        activeElement.tagName === 'TEXTAREA' ||
-        activeElement.getAttribute('contenteditable') === 'true'
-      );
-      
-      if (isInputActive) return;
-
       // Prevent default behavior for our shortcuts
       const isOurShortcut = [
         'Space',
@@ -58,8 +48,6 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
 
       if (isOurShortcut) {
         event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
       }
 
       // Handle shortcuts
@@ -76,15 +64,11 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
         case 'ArrowLeft':
           if (event.shiftKey) {
             handlers.onTextWidthDown?.();
-          } else {
-            handlers.onPreviousMarker?.();
           }
           break;
         case 'ArrowRight':
           if (event.shiftKey) {
             handlers.onTextWidthUp?.();
-          } else {
-            handlers.onNextMarker?.();
           }
           break;
         case 'Equal':
@@ -131,51 +115,7 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers, enabled
       }
     };
 
-    // Add multiple event listeners to ensure we capture all keyboard events
-    const options = { capture: true, passive: false };
-    
-    // Listen on document, window, and body for maximum coverage
-    document.addEventListener('keydown', handleKeyDown, options);
-    window.addEventListener('keydown', handleKeyDown, options);
-    document.body.addEventListener('keydown', handleKeyDown, options);
-    
-    // Also listen for keypress as backup
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (isInputActive(event)) return;
-      
-      const key = event.key.toLowerCase();
-      if (['n', 'p', 'h', 'b', 'm'].includes(key)) {
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        
-        // Trigger the appropriate handler
-        if (key === 'n') handlers.onNextMarker?.();
-        if (key === 'p') handlers.onPreviousMarker?.();
-        if (key === 'h') handlers.onGoToTop?.();
-        if (key === 'b') handlers.onGoToBottom?.();
-        if (key === 'm') handlers.onAddMarker?.();
-      }
-    };
-    
-    const isInputActive = (event: KeyboardEvent) => {
-      const activeElement = document.activeElement;
-      return activeElement && (
-        activeElement.tagName === 'INPUT' ||
-        activeElement.tagName === 'TEXTAREA' ||
-        activeElement.getAttribute('contenteditable') === 'true'
-      );
-    };
-    
-    document.addEventListener('keypress', handleKeyPress, options);
-    window.addEventListener('keypress', handleKeyPress, options);
-    
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown, options);
-      window.removeEventListener('keydown', handleKeyDown, options);
-      document.body.removeEventListener('keydown', handleKeyDown, options);
-      document.removeEventListener('keypress', handleKeyPress, options);
-      window.removeEventListener('keypress', handleKeyPress, options);
-    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handlers, enabled]);
 }

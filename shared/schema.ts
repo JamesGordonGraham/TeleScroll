@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, real, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, real } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -18,8 +18,6 @@ export const scripts = pgTable("scripts", {
   userId: text("user_id").notNull(),
   title: text("title").notNull(),
   content: text("content").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const insertTeleprompterSettingsSchema = createInsertSchema(teleprompterSettings).omit({
@@ -28,8 +26,6 @@ export const insertTeleprompterSettingsSchema = createInsertSchema(teleprompterS
 
 export const insertScriptSchema = createInsertSchema(scripts).omit({
   id: true,
-  createdAt: true,
-  updatedAt: true,
 });
 
 export type TeleprompterSettings = typeof teleprompterSettings.$inferSelect;
