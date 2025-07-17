@@ -99,19 +99,26 @@ export function useTeleprompter() {
     try {
       console.log('Starting camera recording...');
       
-      // Generate unique filename at start of recording with extra randomness
+      // Generate completely unique filename to prevent browser caching
       const now = new Date();
-      const timestamp = now.toISOString().replace(/[:.]/g, "-");
-      const randomId = Math.random().toString(36).substr(2, 8);
-      const filename = `teleprompter-recording-${timestamp}-${randomId}.webm`;
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const ms = String(now.getMilliseconds()).padStart(3, '0');
+      const randomId = Math.random().toString(36).substr(2, 12);
+      
+      const filename = `teleprompter-${year}${month}${day}_${hours}${minutes}${seconds}${ms}_${randomId}.webm`;
       console.log('Recording filename generated:', filename);
       
-      // Request camera access - this captures the real camera including background
+      // Optimized camera settings for better performance during recording
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: { ideal: 1920, max: 1920 },
-          height: { ideal: 1080, max: 1080 },
-          frameRate: { ideal: 30, max: 60 },
+          width: { ideal: 1280, max: 1920 }, // Reduced resolution for better performance
+          height: { ideal: 720, max: 1080 },
+          frameRate: { ideal: 24, max: 30 }, // Reduced frame rate for smoother scrolling
           facingMode: 'user'
         },
         audio: {
@@ -124,31 +131,17 @@ export function useTeleprompter() {
       console.log('Camera stream obtained, tracks:', stream.getTracks().map(t => ({ kind: t.kind, enabled: t.enabled, readyState: t.readyState })));
       setState(prev => ({ ...prev, cameraStream: stream, isRecording: true }));
 
-      // Record in WebM format with high quality for macOS compatibility
-      let options: MediaRecorderOptions;
-      if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
-        options = { 
-          mimeType: 'video/webm;codecs=vp9,opus',
-          videoBitsPerSecond: 2500000 // 2.5 Mbps for good quality
-        };
-      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
-        options = { 
-          mimeType: 'video/webm;codecs=vp8,opus',
-          videoBitsPerSecond: 2500000
-        };
-      } else if (MediaRecorder.isTypeSupported('video/webm')) {
-        options = { 
-          mimeType: 'video/webm',
-          videoBitsPerSecond: 2500000
-        };
-      } else {
-        options = {};
-      }
-
-      console.log('Using MediaRecorder options:', options);
-
-      // Simple MediaRecorder setup (like your example)
-      const mediaRecorder = new MediaRecorder(stream);
+      // Optimized MediaRecorder setup for better performance during scrolling
+      const options: MediaRecorderOptions = {
+        mimeType: 'video/webm',
+        videoBitsPerSecond: 1000000 // Reduced bitrate for better performance
+      };
+      
+      console.log('Using optimized MediaRecorder options:', options);
+      
+      const mediaRecorder = new MediaRecorder(stream, 
+        MediaRecorder.isTypeSupported(options.mimeType) ? options : undefined
+      );
       mediaRecorderRef.current = mediaRecorder;
       
       // Use local chunks array (like your example)
@@ -209,8 +202,12 @@ export function useTeleprompter() {
         
         downloadContainer.appendChild(a);
         
+        // Force immediate download programmatically
+        a.click();
+        
         console.log('Download link created for:', filename);
         console.log('Added to container:', downloadContainer.id || 'body');
+        console.log('Immediate download triggered');
         
         // Clean up
         chunks = [];
@@ -450,11 +447,10 @@ export function useTeleprompter() {
       const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.016); // Cap at 16ms for stability
       lastTime = currentTime;
       
-      // Get current speed settings for instant real-time updates
+      // Get current speed settings for instant real-time updates with recording optimization
       const currentSpeed = Math.max(0.1, Math.min(3.0, settings.scrollSpeed));
-      // Doubled the base speed: 0.1x-1.0x range now twice as fast as before
-      // Current baseline (1.0x) = 160 pixels/sec, 3.0x will be significantly faster
-      const basePixelsPerSecond = 160;
+      // Adjust base speed based on recording state
+      const basePixelsPerSecond = state.isRecording ? 120 : 160; // Slower when recording
       const scaledSpeed = Math.pow(currentSpeed, 1.3); // Exponential scaling for dramatic differences
       const pixelsPerSecond = basePixelsPerSecond * scaledSpeed;
       
@@ -527,10 +523,12 @@ export function useTeleprompter() {
       let finalPosition;
       
       if (state.isRecording) {
-        // Simplified scrolling when recording for better performance - doubled speed
-        const speed = settings.scrollSpeed * 160; // pixels per second (doubled from 80)
+        // Simplified scrolling when recording for better performance
+        const speed = settings.scrollSpeed * 120; // Reduced speed for smoother recording
         targetPosition += speed * deltaTime;
         finalPosition = Math.max(0, Math.min(targetPosition, maxScroll));
+        
+        // Direct scroll without interpolation layers for better recording performance
         element.scrollTop = finalPosition;
       } else {
         // Full smooth scrolling when not recording
