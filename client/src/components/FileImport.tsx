@@ -22,25 +22,41 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Voice input functionality
+  const [interimText, setInterimText] = useState('');
+  const [lastCursorPosition, setLastCursorPosition] = useState(0);
+  
   const { isListening, isSupported, startListening, stopListening } = useVoiceInput({
-    onResult: (text) => {
+    onResult: (text, isFinal) => {
+      console.log('Voice result received:', text, 'isFinal:', isFinal);
       const textarea = textareaRef.current;
       if (textarea) {
-        const cursorPosition = textarea.selectionStart;
-        const beforeText = content.slice(0, cursorPosition);
-        const afterText = content.slice(cursorPosition);
-        const newContent = beforeText + (beforeText.length > 0 ? ' ' : '') + text + afterText;
-        onContentChange(newContent);
-        
-        // Move cursor to end of inserted text
-        setTimeout(() => {
-          const newPosition = cursorPosition + text.length + (beforeText.length > 0 ? 1 : 0);
-          textarea.focus();
-          textarea.setSelectionRange(newPosition, newPosition);
-        }, 0);
+        if (isFinal) {
+          // Final result - insert the text permanently
+          const cursorPosition = lastCursorPosition;
+          const beforeText = content.slice(0, cursorPosition);
+          const afterText = content.slice(cursorPosition);
+          const separator = beforeText.length > 0 && !beforeText.endsWith(' ') ? ' ' : '';
+          const newContent = beforeText + separator + text + ' ' + afterText;
+          onContentChange(newContent);
+          
+          // Update cursor position for next insertion
+          const newPosition = cursorPosition + separator.length + text.length + 1;
+          setLastCursorPosition(newPosition);
+          setInterimText('');
+          
+          setTimeout(() => {
+            textarea.focus();
+            textarea.setSelectionRange(newPosition, newPosition);
+          }, 0);
+        } else {
+          // Interim result - show preview but don't save yet
+          setInterimText(text);
+        }
       }
     },
     onError: (error) => {
+      console.error('Voice input error:', error);
+      setInterimText('');
       toast({
         title: "Voice input error",
         description: error,
@@ -52,6 +68,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
   const handleVoiceToggle = () => {
     if (isListening) {
       stopListening();
+      setInterimText('');
       toast({
         title: "Voice input stopped",
         description: "Speech recognition has been stopped",
@@ -65,6 +82,13 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
         });
         return;
       }
+      
+      // Get current cursor position before starting
+      const textarea = textareaRef.current;
+      if (textarea) {
+        setLastCursorPosition(textarea.selectionStart);
+      }
+      
       startListening();
       toast({
         title: "Voice input started",
@@ -241,24 +265,49 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
               </Button>
             </div>
           </div>
-          <Textarea
-            ref={textareaRef}
-            value={content}
-            onChange={(e) => onContentChange(e.target.value)}
-            onPaste={(e) => {
-              // Allow normal paste behavior - the textarea handles it automatically
-              // But also show a success message
-              setTimeout(() => {
-                toast({
-                  title: "Text pasted",
-                  description: "Content has been pasted into the script editor",
-                });
-              }, 100);
-            }}
-            placeholder="Type or paste your script here... (You can also drag & drop .txt, .doc, .docx, .rtf, .html, .htm, .md files)"
-            className="h-[600px] resize-none rounded-2xl border-gray-200 focus:border-purple-400 focus:ring-purple-400 text-lg leading-relaxed bg-gray-50/50"
-            style={{ aspectRatio: '1/1.414' }}
-          />
+          <div className="relative">
+            <Textarea
+              ref={textareaRef}
+              value={content + (interimText ? ` ${interimText}` : '')}
+              onChange={(e) => {
+                // Only update content if it's not just interim text being shown
+                const newValue = e.target.value;
+                if (!interimText || !newValue.endsWith(interimText)) {
+                  onContentChange(newValue);
+                }
+              }}
+              onPaste={(e) => {
+                // Allow normal paste behavior - the textarea handles it automatically
+                // But also show a success message
+                setTimeout(() => {
+                  toast({
+                    title: "Text pasted",
+                    description: "Content has been pasted into the script editor",
+                  });
+                }, 100);
+              }}
+              onFocus={() => {
+                // Update cursor position when textarea is focused
+                const textarea = textareaRef.current;
+                if (textarea && !isListening) {
+                  setLastCursorPosition(textarea.selectionStart);
+                }
+              }}
+              placeholder="Type or paste your script here... (You can also drag & drop .txt, .doc, .docx, .rtf, .html, .htm, .md files)"
+              className="h-[600px] resize-none rounded-2xl border-gray-200 focus:border-purple-400 focus:ring-purple-400 text-lg leading-relaxed bg-gray-50/50"
+              style={{ aspectRatio: '1/1.414' }}
+            />
+            {isListening && (
+              <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold animate-pulse">
+                🎤 Listening...
+              </div>
+            )}
+            {interimText && (
+              <div className="absolute bottom-4 left-4 bg-blue-100 text-blue-800 px-3 py-1 rounded-lg text-sm">
+                Interim: "{interimText}"
+              </div>
+            )}
+          </div>
         </CardContent>
       </div>
     </section>
