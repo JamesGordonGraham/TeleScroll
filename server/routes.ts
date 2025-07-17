@@ -251,14 +251,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Initialize Google Speech client with proper credentials handling
       let client: speech.SpeechClient;
-      try {
-        // Try to parse as JSON first (for service account key content)
-        const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
-        client = new speech.SpeechClient({ credentials });
-      } catch (jsonError) {
-        // If not JSON, treat as file path
+      const credentialsEnv = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+      
+      // Check if the environment variable looks like JSON content or a file path
+      if (credentialsEnv.trim().startsWith('{')) {
+        // It's JSON content - parse and use as credentials
+        try {
+          const credentials = JSON.parse(credentialsEnv);
+          client = new speech.SpeechClient({ credentials });
+        } catch (jsonError) {
+          console.error('Failed to parse Google Cloud credentials JSON:', jsonError);
+          return res.status(500).json({ message: "Invalid Google Cloud credentials configuration" });
+        }
+      } else {
+        // It's a file path
         client = new speech.SpeechClient({
-          keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+          keyFilename: credentialsEnv,
         });
       }
 
@@ -414,14 +422,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // Initialize Google Speech client with proper credentials handling
-        try {
-          // Try to parse as JSON first (for service account key content)
-          const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS || '{}');
-          speechClient = new speech.SpeechClient({ credentials });
-        } catch (jsonError) {
-          // If not JSON, treat as file path
+        const credentialsEnv = process.env.GOOGLE_APPLICATION_CREDENTIALS || '';
+        
+        // Check if the environment variable looks like JSON content or a file path
+        if (credentialsEnv.trim().startsWith('{')) {
+          // It's JSON content - parse and use as credentials
+          try {
+            const credentials = JSON.parse(credentialsEnv);
+            speechClient = new speech.SpeechClient({ credentials });
+          } catch (jsonError) {
+            console.error('Failed to parse Google Cloud credentials JSON:', jsonError);
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Invalid Google Cloud credentials configuration'
+              }));
+              ws.close();
+            }
+            return;
+          }
+        } else {
+          // It's a file path
           speechClient = new speech.SpeechClient({
-            keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+            keyFilename: credentialsEnv,
           });
         }
         
