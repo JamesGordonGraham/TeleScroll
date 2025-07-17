@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { CloudUpload, Trash2, Play, FileText, Bookmark, Mic, MicOff } from 'lucide-react';
 import { parseFile, validateFile } from '@/lib/file-parser';
 import { useToast } from '@/hooks/use-toast';
-import { useVoiceInput } from '@/hooks/use-voice-input';
+import { useGoogleVoiceInput } from '@/hooks/use-google-voice-input';
 
 interface FileImportProps {
   onStartTeleprompter: (content: string) => void;
@@ -21,42 +21,39 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Voice input functionality
-  const [interimText, setInterimText] = useState('');
+  // Google Voice input functionality
   const [lastCursorPosition, setLastCursorPosition] = useState(0);
   
-  const { isListening, isSupported, startListening, stopListening } = useVoiceInput({
+  const { isListening, isSupported, startListening, stopListening } = useGoogleVoiceInput({
     onResult: (text, isFinal) => {
-      console.log('Voice result received:', text, 'isFinal:', isFinal);
+      console.log('Google Voice result received:', text, 'isFinal:', isFinal);
       const textarea = textareaRef.current;
-      if (textarea) {
-        if (isFinal) {
-          // Final result - insert the text permanently
-          const cursorPosition = lastCursorPosition;
-          const beforeText = content.slice(0, cursorPosition);
-          const afterText = content.slice(cursorPosition);
-          const separator = beforeText.length > 0 && !beforeText.endsWith(' ') ? ' ' : '';
-          const newContent = beforeText + separator + text + ' ' + afterText;
-          onContentChange(newContent);
-          
-          // Update cursor position for next insertion
-          const newPosition = cursorPosition + separator.length + text.length + 1;
-          setLastCursorPosition(newPosition);
-          setInterimText('');
-          
-          setTimeout(() => {
-            textarea.focus();
-            textarea.setSelectionRange(newPosition, newPosition);
-          }, 0);
-        } else {
-          // Interim result - show preview but don't save yet
-          setInterimText(text);
-        }
+      if (textarea && isFinal && text.trim()) {
+        // Insert the transcribed text at the cursor position
+        const cursorPosition = lastCursorPosition;
+        const beforeText = content.slice(0, cursorPosition);
+        const afterText = content.slice(cursorPosition);
+        const separator = beforeText.length > 0 && !beforeText.endsWith(' ') ? ' ' : '';
+        const newContent = beforeText + separator + text + ' ' + afterText;
+        onContentChange(newContent);
+        
+        // Update cursor position for next insertion
+        const newPosition = cursorPosition + separator.length + text.length + 1;
+        setLastCursorPosition(newPosition);
+        
+        setTimeout(() => {
+          textarea.focus();
+          textarea.setSelectionRange(newPosition, newPosition);
+        }, 0);
+
+        toast({
+          title: "Voice input successful",
+          description: `Added: "${text}"`,
+        });
       }
     },
     onError: (error) => {
-      console.error('Voice input error:', error);
-      setInterimText('');
+      console.error('Google Voice input error:', error);
       toast({
         title: "Voice input error",
         description: error,
@@ -68,16 +65,15 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
   const handleVoiceToggle = () => {
     if (isListening) {
       stopListening();
-      setInterimText('');
       toast({
-        title: "Voice input stopped",
-        description: "Speech recognition has been stopped",
+        title: "Voice recording stopped",
+        description: "Processing your speech...",
       });
     } else {
       if (!isSupported) {
         toast({
           title: "Voice input not supported",
-          description: "Your browser doesn't support speech recognition",
+          description: "Your browser doesn't support voice recording",
           variant: "destructive",
         });
         return;
@@ -91,8 +87,8 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
       
       startListening();
       toast({
-        title: "Voice input started",
-        description: "Speak now to add text to your script",
+        title: "Voice recording started",
+        description: "Speak clearly for up to 10 seconds. Your speech will be transcribed using Google Speech API.",
       });
     }
   };
@@ -268,14 +264,8 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
           <div className="relative">
             <Textarea
               ref={textareaRef}
-              value={content + (interimText ? ` ${interimText}` : '')}
-              onChange={(e) => {
-                // Only update content if it's not just interim text being shown
-                const newValue = e.target.value;
-                if (!interimText || !newValue.endsWith(interimText)) {
-                  onContentChange(newValue);
-                }
-              }}
+              value={content}
+              onChange={(e) => onContentChange(e.target.value)}
               onPaste={(e) => {
                 // Allow normal paste behavior - the textarea handles it automatically
                 // But also show a success message
@@ -299,12 +289,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
             />
             {isListening && (
               <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold animate-pulse">
-                🎤 Listening...
-              </div>
-            )}
-            {interimText && (
-              <div className="absolute bottom-4 left-4 bg-blue-100 text-blue-800 px-3 py-1 rounded-lg text-sm">
-                Interim: "{interimText}"
+                🎤 Recording... (Google Speech API)
               </div>
             )}
           </div>

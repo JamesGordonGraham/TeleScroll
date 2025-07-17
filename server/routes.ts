@@ -8,6 +8,7 @@ import { z } from "zod";
 // import pdf from "pdf-parse";
 import { JSDOM } from "jsdom";
 import MarkdownIt from "markdown-it";
+import { transcribeAudio } from "./speech";
 
 interface MulterRequest extends Request {
   file?: any;
@@ -205,6 +206,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('File upload error:', error);
       res.status(500).json({ message: "Failed to process file" });
+    }
+  });
+
+  // Speech transcription endpoint
+  app.post("/api/transcribe", upload.single('audio'), async (req: MulterRequest, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No audio file provided" });
+      }
+
+      console.log('Received audio file:', req.file.originalname, 'Size:', req.file.size);
+      
+      const result = await transcribeAudio(req.file.buffer, req.body.language || 'en-US');
+      
+      if (result.success) {
+        res.json({ 
+          transcript: result.transcript,
+          confidence: result.confidence 
+        });
+      } else {
+        res.status(500).json({ 
+          message: "Transcription failed", 
+          error: result.error 
+        });
+      }
+    } catch (error) {
+      console.error('Transcription endpoint error:', error);
+      res.status(500).json({ message: "Failed to transcribe audio" });
+    }
+  });
+
+  // Test Google Speech API connectivity
+  app.get("/api/speech/test", async (req, res) => {
+    try {
+      // Test with a simple empty audio buffer to check connectivity
+      const testResult = await transcribeAudio(Buffer.alloc(0));
+      res.json({ 
+        status: "Google Speech API is configured", 
+        hasCredentials: !!(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON || process.env.GOOGLE_SPEECH_API_KEY)
+      });
+    } catch (error) {
+      console.error('Speech API test error:', error);
+      res.status(500).json({ 
+        status: "Google Speech API configuration error", 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        hasCredentials: !!(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON || process.env.GOOGLE_SPEECH_API_KEY)
+      });
     }
   });
 

@@ -176,11 +176,13 @@ Changelog:
   * All teleprompter controls now fully functional with database persistence
 - July 17, 2025. Voice input functionality added:
   * Added voice input button to the left of "Choose File" button
-  * Implemented browser-based speech recognition for voice-to-text input
-  * Green/red gradient button styling: green when inactive, red when listening
+  * Implemented Google Cloud Speech-to-Text API integration for accurate transcription
+  * Green/red gradient button styling: green when inactive, red when recording
   * Voice text automatically inserted at cursor position in Script Editor
-  * Real-time voice input with error handling and toast notifications
-  * Supports continuous speech recognition with interim results
+  * Real-time audio recording with 10-second auto-stop for optimal processing
+  * Backend speech transcription using Google Cloud Speech API with service account credentials
+  * Error handling for microphone permissions and API failures
+  * Toast notifications for recording status and transcription results
 ```
 
 ## User Preferences
