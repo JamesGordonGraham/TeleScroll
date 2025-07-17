@@ -239,16 +239,16 @@ export function useTeleprompter() {
     const scrollContent = element.querySelector('.scroll-content') as HTMLElement;
     if (!scrollContent) return;
     
-    let scrollPos = 100; // Start at 100% (bottom)
+    let scrollPos = -100; // Start at -100% (top)
     const speed = settings.scrollSpeed;
     
     const scrollLoop = () => {
       if (!state.isPlaying) return;
       
-      // Enhanced speed control for ultra-smooth scrolling
-      const speedMultiplier = speed <= 1.0 ? speed * 0.3 : speed * 0.1;
-      scrollPos -= speedMultiplier; // Negative for upward scrolling
-      if (scrollPos < -100) scrollPos = 100; // Reset to bottom when reaching top
+      // Linear speed scaling - higher numbers = faster scrolling
+      const speedMultiplier = speed * 0.3;
+      scrollPos += speedMultiplier; // Positive for downward scrolling from top
+      if (scrollPos > 100) scrollPos = -100; // Reset to top when reaching bottom
       
       scrollContent.style.top = scrollPos + '%';
       
