@@ -7,54 +7,38 @@ function initializeSpeechClient() {
   if (speechClient) return speechClient;
 
   try {
-    const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+    const apiKey = process.env.GOOGLE_SPEECH_API_KEY;
     
-    if (credentialsJson) {
-      // Use service account credentials from environment
-      console.log('Raw credentials length:', credentialsJson.length);
-      console.log('First 50 chars:', credentialsJson.substring(0, 50));
-      
-      let credentials;
-      try {
-        // First try to parse as JSON
-        credentials = JSON.parse(credentialsJson.trim());
-      } catch (parseError) {
-        console.log('Not valid JSON, attempting to parse tab-separated format...');
-        
-        // Parse tab-separated format
-        const lines = credentialsJson.trim().split('\n');
-        credentials = {};
-        
-        for (const line of lines) {
-          const [key, ...valueParts] = line.split('\t');
-          if (key && valueParts.length > 0) {
-            let value = valueParts.join('\t').trim();
-            // Remove quotes if present
-            if (value.startsWith('"') && value.endsWith('"')) {
-              value = value.slice(1, -1);
-            }
-            credentials[key] = value;
-          }
-        }
-        
-        console.log('Parsed credentials keys:', Object.keys(credentials));
-      }
-
-      if (!credentials.project_id) {
-        throw new Error('Invalid credentials: missing project_id');
-      }
-
+    if (apiKey) {
+      // Use API key (preferred method)
+      console.log('Using Google Speech API key');
       speechClient = new SpeechClient({
-        credentials,
-        projectId: credentials.project_id,
-      });
-    } else if (process.env.GOOGLE_SPEECH_API_KEY) {
-      // Use API key
-      speechClient = new SpeechClient({
-        apiKey: process.env.GOOGLE_SPEECH_API_KEY,
+        apiKey: apiKey,
       });
     } else {
-      throw new Error('No Google Speech credentials found');
+      // Fallback to service account credentials
+      const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+      
+      if (credentialsJson) {
+        console.log('Using service account credentials');
+        let credentials;
+        try {
+          credentials = JSON.parse(credentialsJson.trim());
+        } catch (parseError) {
+          throw new Error('Invalid JSON format for service account credentials');
+        }
+
+        if (!credentials.project_id) {
+          throw new Error('Invalid credentials: missing project_id');
+        }
+
+        speechClient = new SpeechClient({
+          credentials,
+          projectId: credentials.project_id,
+        });
+      } else {
+        throw new Error('No Google Speech credentials found. Please provide either GOOGLE_SPEECH_API_KEY or GOOGLE_APPLICATION_CREDENTIALS_JSON');
+      }
     }
     
     console.log('Google Speech client initialized successfully');
