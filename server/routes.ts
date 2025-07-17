@@ -244,35 +244,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No audio file uploaded" });
       }
 
-      // Check if Google Cloud credentials are available
-      if (!process.env.GOOGLE_SPEECH_API_KEY && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-        return res.status(503).json({ message: "Speech-to-text service is not configured. Please contact support." });
-      }
-
-      // Initialize Google Speech client with API key or credentials
-      let client: speech.SpeechClient;
-      
-      if (process.env.GOOGLE_SPEECH_API_KEY) {
-        // Use API key for authentication
-        client = new speech.SpeechClient({
-          apiKey: process.env.GOOGLE_SPEECH_API_KEY,
-        });
-      } else {
-        // Fallback to service account credentials
-        const credentialsEnv = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-        
-        // Check if the environment variable looks like JSON content or a file path
-        try {
-          // Try to parse as JSON first
-          const credentials = JSON.parse(credentialsEnv);
-          client = new speech.SpeechClient({ credentials });
-        } catch (jsonError) {
-          // If JSON parsing fails, treat as file path
-          client = new speech.SpeechClient({
-            keyFilename: credentialsEnv,
-          });
-        }
-      }
+      // Initialize Google Speech client
+      const client = new speech.SpeechClient({
+        keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+      });
 
       const audio = {
         content: req.file.buffer.toString('base64'),
@@ -397,19 +372,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   wss.on('connection', (ws: WebSocket) => {
     console.log('Speech WebSocket client connected');
     
-    // Check if Google Cloud credentials are available
-    if (!process.env.GOOGLE_SPEECH_API_KEY && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      console.log('Google Cloud credentials not configured, speech features disabled');
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-          type: 'error',
-          message: 'Speech-to-text service is not configured. Please contact support.'
-        }));
-        ws.close();
-      }
-      return;
-    }
-    
     let speechClient: speech.SpeechClient | null = null;
     let recognizeStream: any = null;
     let streamStartTime: number = 0;
@@ -425,28 +387,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           recognizeStream.end();
         }
         
-        // Initialize Google Speech client with API key or credentials
-        if (process.env.GOOGLE_SPEECH_API_KEY) {
-          // Use API key for authentication
-          speechClient = new speech.SpeechClient({
-            apiKey: process.env.GOOGLE_SPEECH_API_KEY,
-          });
-        } else {
-          // Fallback to service account credentials
-          const credentialsEnv = process.env.GOOGLE_APPLICATION_CREDENTIALS || '';
-          
-          // Check if the environment variable looks like JSON content or a file path
-          try {
-            // Try to parse as JSON first
-            const credentials = JSON.parse(credentialsEnv);
-            speechClient = new speech.SpeechClient({ credentials });
-          } catch (jsonError) {
-            // If JSON parsing fails, treat as file path
-            speechClient = new speech.SpeechClient({
-              keyFilename: credentialsEnv,
-            });
-          }
-        }
+        speechClient = new speech.SpeechClient({
+          keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+        });
         
         const request = {
           config: {
