@@ -20,11 +20,12 @@ function initializeSpeechClient() {
       const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
       
       if (credentialsJson) {
-        console.log('Using service account credentials');
+        console.log('Using service account credentials from JSON');
         let credentials;
         try {
           credentials = JSON.parse(credentialsJson.trim());
         } catch (parseError) {
+          console.error('JSON parse error:', parseError);
           throw new Error('Invalid JSON format for service account credentials');
         }
 
@@ -32,6 +33,7 @@ function initializeSpeechClient() {
           throw new Error('Invalid credentials: missing project_id');
         }
 
+        console.log('Creating SpeechClient with credentials for project:', credentials.project_id);
         speechClient = new SpeechClient({
           credentials,
           projectId: credentials.project_id,
