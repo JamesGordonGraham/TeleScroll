@@ -240,7 +240,7 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
         {/* Floating Control Panel */}
         <div 
           className="fixed bottom-8 left-1/2 transform -translate-x-1/2 control-panel rounded-3xl px-8 py-4"
-          style={state.isTransparent ? { pointerEvents: 'all' } : {}}
+          style={state.isTransparent ? { pointerEvents: 'auto' } : {}}
         >
           <div className="flex items-center space-x-6">
             {/* Play/Pause */}
@@ -333,6 +333,21 @@ export function TeleprompterDisplay({ content, onExit }: TeleprompterDisplayProp
               }`}
             >
               <ArrowLeftRight className="h-5 w-5" />
+            </Button>
+
+            {/* Background Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleTransparent}
+              className={`p-3 rounded-2xl transition-all duration-200 ${
+                state.isTransparent 
+                  ? 'bg-blue-500 text-white shadow-lg' 
+                  : 'text-white hover:text-blue-200 hover:bg-white/20 bg-black/30'
+              }`}
+              title={state.isTransparent ? 'Switch to Black Background' : 'Switch to Transparent Background'}
+            >
+              {state.isTransparent ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
             </Button>
 
             {/* Background Toggle */}

@@ -246,7 +246,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Initialize Google Speech client
       const client = new speech.SpeechClient({
-        apiKey: process.env.GOOGLE_SPEECH_API_KEY,
+        keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
       });
 
       const audio = {
@@ -388,7 +388,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         speechClient = new speech.SpeechClient({
-          apiKey: process.env.GOOGLE_SPEECH_API_KEY,
+          keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
         });
         
         const request = {
