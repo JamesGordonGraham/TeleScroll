@@ -139,21 +139,37 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
       };
 
       mediaRecorder.onstop = async () => {
-        console.log('Recording stopped, processing audio...');
+        console.log('Recording stopped, processing final audio...');
         
         if (chunksRef.current.length === 0) {
           console.log('No audio data recorded');
           return;
         }
 
+        // Create final audio blob from all chunks
         const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
-        console.log('Audio blob size:', audioBlob.size);
+        console.log('Final audio blob size:', audioBlob.size, 'chunks:', chunksRef.current.length);
 
-        // Send to Google Speech API
+        // Check if we already have text from interim results - if so, use the best available
+        if (currentTextRef.current && currentTextRef.current.trim()) {
+          console.log('Using accumulated interim text as final result:', currentTextRef.current);
+          // Clear typing animation and show final result
+          if (typingIntervalRef.current) {
+            clearInterval(typingIntervalRef.current);
+            typingIntervalRef.current = null;
+          }
+          onResult(currentTextRef.current, true);
+          chunksRef.current = [];
+          setIsListening(false);
+          return;
+        }
+
+        // If no interim text, try processing the full recording
         try {
           const formData = new FormData();
-          formData.append('audio', audioBlob, 'recording.webm');
+          formData.append('audio', audioBlob, 'final-recording.webm');
           formData.append('language', language);
+          formData.append('final', 'true'); // Flag for final processing
 
           const response = await fetch('/api/transcribe', {
             method: 'POST',
@@ -166,9 +182,9 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
           }
 
           const result = await response.json();
-          console.log('Transcription result:', result);
+          console.log('Final transcription result:', result);
           
-          if (result.transcript) {
+          if (result.transcript && result.transcript.trim()) {
             // Clear typing animation and show final result
             if (typingIntervalRef.current) {
               clearInterval(typingIntervalRef.current);
@@ -176,11 +192,23 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
             }
             onResult(result.transcript, true);
           } else {
-            onError?.('No speech detected in the recording');
+            // If no transcript from full recording but we had interim text, fall back to last interim
+            if (displayedTextRef.current && displayedTextRef.current.trim()) {
+              console.log('Falling back to last interim text:', displayedTextRef.current);
+              onResult(displayedTextRef.current, true);
+            } else {
+              onError?.('No speech detected in the recording');
+            }
           }
         } catch (error) {
-          console.error('Transcription error:', error);
-          onError?.(error instanceof Error ? error.message : 'Failed to transcribe audio');
+          console.error('Final transcription error:', error);
+          // Try to salvage with interim text if available
+          if (displayedTextRef.current && displayedTextRef.current.trim()) {
+            console.log('Error occurred, using last interim text:', displayedTextRef.current);
+            onResult(displayedTextRef.current, true);
+          } else {
+            onError?.(error instanceof Error ? error.message : 'Failed to transcribe audio');
+          }
         }
 
         chunksRef.current = [];

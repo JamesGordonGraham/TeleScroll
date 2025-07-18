@@ -38,12 +38,9 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
           // Final transcription - clean up and add final text
           let baseContent = content;
           
-          // Remove any accumulated interim text
-          if (accumulatedText) {
-            const accumulatedStart = baseContent.lastIndexOf(accumulatedText);
-            if (accumulatedStart !== -1) {
-              baseContent = baseContent.slice(0, accumulatedStart) + baseContent.slice(accumulatedStart + accumulatedText.length);
-            }
+          // If we have accumulated text showing, replace it with the final text
+          if (accumulatedText && baseContent.includes(accumulatedText)) {
+            baseContent = baseContent.replace(accumulatedText, '');
           }
           
           const finalBeforeText = baseContent.slice(0, cursorPosition);
@@ -71,7 +68,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
 
           toast({
             title: "Voice input complete",
-            description: `Added: "${text}"`,
+            description: `Added: "${text.slice(0, 50)}${text.length > 50 ? '...' : ''}"`,
           });
         } else {
           // Interim transcription - show progressive updates
