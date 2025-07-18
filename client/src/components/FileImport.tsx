@@ -25,6 +25,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
   const [lastCursorPosition, setLastCursorPosition] = useState(0);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [lastInterimText, setLastInterimText] = useState('');
+  const [accumulatedText, setAccumulatedText] = useState('');
   
   const { isListening, isSupported, startListening, stopListening } = useGoogleVoiceInput({
     onResult: (text, isFinal) => {
@@ -32,27 +33,26 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
       
       if (text.trim()) {
         const cursorPosition = lastCursorPosition;
-        const beforeText = content.slice(0, cursorPosition);
-        const afterText = content.slice(cursorPosition);
-        const separator = beforeText.length > 0 && !beforeText.endsWith(' ') ? ' ' : '';
         
         if (isFinal) {
-          // Final transcription - remove any interim text and add final text
+          // Final transcription - clean up and add final text
           let baseContent = content;
-          if (lastInterimText) {
-            // Remove the last interim text that was temporarily added
-            const tempTextStart = baseContent.lastIndexOf(lastInterimText);
-            if (tempTextStart !== -1) {
-              baseContent = baseContent.slice(0, tempTextStart) + baseContent.slice(tempTextStart + lastInterimText.length);
+          
+          // Remove any accumulated interim text
+          if (accumulatedText) {
+            const accumulatedStart = baseContent.lastIndexOf(accumulatedText);
+            if (accumulatedStart !== -1) {
+              baseContent = baseContent.slice(0, accumulatedStart) + baseContent.slice(accumulatedStart + accumulatedText.length);
             }
           }
           
           const finalBeforeText = baseContent.slice(0, cursorPosition);
           const finalAfterText = baseContent.slice(cursorPosition);
-          const finalSeparator = finalBeforeText.length > 0 && !finalBeforeText.endsWith(' ') ? ' ' : '';
+          const finalSeparator = finalBeforeText.length > 0 && !finalBeforeText.endsWith(' ') && !finalBeforeText.endsWith('\n') ? ' ' : '';
           const newContent = finalBeforeText + finalSeparator + text + ' ' + finalAfterText;
           
           onContentChange(newContent);
+          setAccumulatedText('');
           setLastInterimText('');
           setIsTranscribing(false);
           
@@ -74,27 +74,29 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
             description: `Added: "${text}"`,
           });
         } else {
-          // Interim transcription - show real-time updates
+          // Interim transcription - show progressive updates
           setIsTranscribing(true);
           
-          // For interim results, just append and replace as we go
           let baseContent = content;
           
-          // Remove previous interim text if exists
-          if (lastInterimText && baseContent.includes(lastInterimText)) {
-            baseContent = baseContent.replace(lastInterimText, '');
+          // Remove previous accumulated text
+          if (accumulatedText) {
+            const accumulatedStart = baseContent.lastIndexOf(accumulatedText);
+            if (accumulatedStart !== -1) {
+              baseContent = baseContent.slice(0, accumulatedStart) + baseContent.slice(accumulatedStart + accumulatedText.length);
+            }
           }
           
           // Add new interim text
           const beforeText = baseContent.slice(0, cursorPosition);
           const afterText = baseContent.slice(cursorPosition);
           const separator = beforeText.length > 0 && !beforeText.endsWith(' ') && !beforeText.endsWith('\n') ? ' ' : '';
-          const interimContent = beforeText + separator + text + afterText;
+          const newAccumulatedText = separator + text;
+          const interimContent = beforeText + newAccumulatedText + afterText;
           
           onContentChange(interimContent);
-          setLastInterimText(separator + text);
+          setAccumulatedText(newAccumulatedText);
           
-          // Visual feedback for interim transcription
           console.log('Interim transcription:', text);
         }
       }
@@ -135,6 +137,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
       
       // Reset states
       setLastInterimText('');
+      setAccumulatedText('');
       setIsTranscribing(false);
       
       startListening();

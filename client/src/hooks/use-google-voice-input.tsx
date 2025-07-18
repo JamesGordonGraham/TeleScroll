@@ -13,11 +13,52 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const currentTextRef = useRef<string>('');
+  const displayedTextRef = useRef<string>('');
+
+  // Simulate typing effect for better UX
+  const simulateTyping = useCallback((targetText: string, isFinal: boolean) => {
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+    }
+    
+    currentTextRef.current = targetText;
+    let displayedLength = displayedTextRef.current.length;
+    
+    // If new text is shorter, immediately replace
+    if (targetText.length < displayedLength) {
+      displayedTextRef.current = targetText;
+      onResult(targetText, false);
+      return;
+    }
+    
+    // If text is the same or we need to add more, type it out
+    typingIntervalRef.current = setInterval(() => {
+      if (displayedLength < currentTextRef.current.length) {
+        displayedLength += Math.min(3, currentTextRef.current.length - displayedLength); // Type 1-3 chars at a time
+        displayedTextRef.current = currentTextRef.current.slice(0, displayedLength);
+        onResult(displayedTextRef.current, false);
+      } else {
+        if (typingIntervalRef.current) {
+          clearInterval(typingIntervalRef.current);
+          typingIntervalRef.current = null;
+        }
+        if (isFinal) {
+          onResult(currentTextRef.current, true);
+        }
+      }
+    }, 50); // Type characters every 50ms for smooth effect
+  }, [onResult]);
 
   const stopListening = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
+    }
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
     }
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
@@ -26,6 +67,8 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
+    currentTextRef.current = '';
+    displayedTextRef.current = '';
     setIsListening(false);
   }, []);
 
@@ -83,7 +126,7 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
           if (response.ok) {
             const result = await response.json();
             if (result.transcript && result.transcript.trim()) {
-              onResult(result.transcript, false); // interim result
+              simulateTyping(result.transcript, false); // interim result with typing effect
             }
           }
         } catch (error) {
@@ -126,6 +169,11 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
           console.log('Transcription result:', result);
           
           if (result.transcript) {
+            // Clear typing animation and show final result
+            if (typingIntervalRef.current) {
+              clearInterval(typingIntervalRef.current);
+              typingIntervalRef.current = null;
+            }
             onResult(result.transcript, true);
           } else {
             onError?.('No speech detected in the recording');
