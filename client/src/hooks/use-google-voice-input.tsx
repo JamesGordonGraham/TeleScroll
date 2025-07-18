@@ -12,8 +12,13 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const stopListening = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
     }
@@ -55,6 +60,39 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
         if (event.data.size > 0) {
           chunksRef.current.push(event.data);
         }
+      };
+
+      // Process audio chunks for real-time transcription
+      const processChunks = async () => {
+        if (chunksRef.current.length === 0) return;
+
+        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
+        if (audioBlob.size < 1000) return; // Skip very small chunks
+
+        try {
+          const formData = new FormData();
+          formData.append('audio', audioBlob, 'chunk.webm');
+          formData.append('language', language);
+          formData.append('interim', 'true'); // Flag for interim results
+
+          const response = await fetch('/api/transcribe', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            if (result.transcript) {
+              onResult(result.transcript, false); // interim result
+            }
+          }
+        } catch (error) {
+          console.error('Interim transcription error:', error);
+          // Continue without showing error to user during real-time
+        }
+
+        // Clear processed chunks but keep recent ones for context
+        chunksRef.current = chunksRef.current.slice(-2);
       };
 
       mediaRecorder.onstop = async () => {
@@ -107,9 +145,12 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
         setIsListening(false);
       };
 
-      // Record in 3-second chunks for real-time processing
-      mediaRecorder.start();
+      // Start recording with small timeslices for real-time processing
+      mediaRecorder.start(1000); // Record in 1-second chunks
       console.log('Recording started');
+
+      // Process chunks every 2 seconds for real-time feedback
+      intervalRef.current = setInterval(processChunks, 2000);
 
       // Stop recording after 10 seconds to prevent too long recordings
       setTimeout(() => {

@@ -23,41 +23,78 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
 
   // Google Voice input functionality
   const [lastCursorPosition, setLastCursorPosition] = useState(0);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [lastInterimText, setLastInterimText] = useState('');
   
   const { isListening, isSupported, startListening, stopListening } = useGoogleVoiceInput({
     onResult: (text, isFinal) => {
       console.log('Google Voice result received:', text, 'isFinal:', isFinal);
-      console.log('Current content:', content);
-      console.log('Last cursor position:', lastCursorPosition);
       
-      if (isFinal && text.trim()) {
-        // Insert the transcribed text at the cursor position
+      if (text.trim()) {
         const cursorPosition = lastCursorPosition;
         const beforeText = content.slice(0, cursorPosition);
         const afterText = content.slice(cursorPosition);
         const separator = beforeText.length > 0 && !beforeText.endsWith(' ') ? ' ' : '';
-        const newContent = beforeText + separator + text + ' ' + afterText;
         
-        console.log('New content to set:', newContent);
-        onContentChange(newContent);
-        
-        // Update cursor position for next insertion
-        const newPosition = cursorPosition + separator.length + text.length + 1;
-        setLastCursorPosition(newPosition);
-        
-        // Focus textarea and set cursor position
-        const textarea = textareaRef.current;
-        if (textarea) {
-          setTimeout(() => {
-            textarea.focus();
-            textarea.setSelectionRange(newPosition, newPosition);
-          }, 100);
-        }
+        if (isFinal) {
+          // Final transcription - remove any interim text and add final text
+          let baseContent = content;
+          if (lastInterimText) {
+            // Remove the last interim text that was temporarily added
+            const tempTextStart = baseContent.lastIndexOf(lastInterimText);
+            if (tempTextStart !== -1) {
+              baseContent = baseContent.slice(0, tempTextStart) + baseContent.slice(tempTextStart + lastInterimText.length);
+            }
+          }
+          
+          const finalBeforeText = baseContent.slice(0, cursorPosition);
+          const finalAfterText = baseContent.slice(cursorPosition);
+          const finalSeparator = finalBeforeText.length > 0 && !finalBeforeText.endsWith(' ') ? ' ' : '';
+          const newContent = finalBeforeText + finalSeparator + text + ' ' + finalAfterText;
+          
+          onContentChange(newContent);
+          setLastInterimText('');
+          setIsTranscribing(false);
+          
+          // Update cursor position for next insertion
+          const newPosition = cursorPosition + finalSeparator.length + text.length + 1;
+          setLastCursorPosition(newPosition);
+          
+          // Focus textarea and set cursor position
+          const textarea = textareaRef.current;
+          if (textarea) {
+            setTimeout(() => {
+              textarea.focus();
+              textarea.setSelectionRange(newPosition, newPosition);
+            }, 100);
+          }
 
-        toast({
-          title: "Voice input successful",
-          description: `Added: "${text}"`,
-        });
+          toast({
+            title: "Voice input complete",
+            description: `Added: "${text}"`,
+          });
+        } else {
+          // Interim transcription - show real-time updates
+          setIsTranscribing(true);
+          
+          // Remove previous interim text if any
+          let baseContent = content;
+          if (lastInterimText) {
+            const tempTextStart = baseContent.lastIndexOf(lastInterimText);
+            if (tempTextStart !== -1) {
+              baseContent = baseContent.slice(0, tempTextStart) + baseContent.slice(tempTextStart + lastInterimText.length);
+            }
+          }
+          
+          // Add new interim text
+          const interimBeforeText = baseContent.slice(0, cursorPosition);
+          const interimAfterText = baseContent.slice(cursorPosition);
+          const interimSeparator = interimBeforeText.length > 0 && !interimBeforeText.endsWith(' ') ? ' ' : '';
+          const interimContent = interimBeforeText + interimSeparator + text + interimAfterText;
+          
+          onContentChange(interimContent);
+          setLastInterimText(interimSeparator + text);
+        }
       }
     },
     onError: (error) => {
@@ -73,9 +110,10 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
   const handleVoiceToggle = () => {
     if (isListening) {
       stopListening();
+      setIsTranscribing(false);
       toast({
         title: "Voice recording stopped",
-        description: "Processing your speech with Google Speech API...",
+        description: "Processing final transcription...",
       });
     } else {
       if (!isSupported) {
@@ -93,10 +131,14 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
         setLastCursorPosition(textarea.selectionStart);
       }
       
+      // Reset states
+      setLastInterimText('');
+      setIsTranscribing(false);
+      
       startListening();
       toast({
         title: "Voice recording started",
-        description: "Speak clearly for up to 10 seconds. Using Google Speech API for transcription.",
+        description: "Speak clearly - you'll see text appear in real-time!",
       });
     }
   };
@@ -313,7 +355,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
             />
             {isListening && (
               <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold animate-pulse">
-                🎤 Recording... (Google Speech API)
+                🎤 {isTranscribing ? 'Transcribing...' : 'Recording...'} (Real-time)
               </div>
             )}
           </div>

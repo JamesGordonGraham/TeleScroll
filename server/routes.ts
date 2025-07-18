@@ -242,13 +242,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log('Received audio file:', req.file.originalname, 'Size:', req.file.size);
+      const isInterim = req.body.interim === 'true';
       
       const result = await transcribeAudio(req.file.buffer, req.body.language || 'en-US');
       
       if (result.success) {
         res.json({ 
           transcript: result.transcript,
-          confidence: result.confidence 
+          confidence: result.confidence,
+          interim: isInterim
         });
       } else {
         res.status(500).json({ 
