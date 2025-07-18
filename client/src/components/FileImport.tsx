@@ -77,23 +77,25 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
           // Interim transcription - show real-time updates
           setIsTranscribing(true);
           
-          // Remove previous interim text if any
+          // For interim results, just append and replace as we go
           let baseContent = content;
-          if (lastInterimText) {
-            const tempTextStart = baseContent.lastIndexOf(lastInterimText);
-            if (tempTextStart !== -1) {
-              baseContent = baseContent.slice(0, tempTextStart) + baseContent.slice(tempTextStart + lastInterimText.length);
-            }
+          
+          // Remove previous interim text if exists
+          if (lastInterimText && baseContent.includes(lastInterimText)) {
+            baseContent = baseContent.replace(lastInterimText, '');
           }
           
           // Add new interim text
-          const interimBeforeText = baseContent.slice(0, cursorPosition);
-          const interimAfterText = baseContent.slice(cursorPosition);
-          const interimSeparator = interimBeforeText.length > 0 && !interimBeforeText.endsWith(' ') ? ' ' : '';
-          const interimContent = interimBeforeText + interimSeparator + text + interimAfterText;
+          const beforeText = baseContent.slice(0, cursorPosition);
+          const afterText = baseContent.slice(cursorPosition);
+          const separator = beforeText.length > 0 && !beforeText.endsWith(' ') && !beforeText.endsWith('\n') ? ' ' : '';
+          const interimContent = beforeText + separator + text + afterText;
           
           onContentChange(interimContent);
-          setLastInterimText(interimSeparator + text);
+          setLastInterimText(separator + text);
+          
+          // Visual feedback for interim transcription
+          console.log('Interim transcription:', text);
         }
       }
     },
@@ -138,7 +140,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
       startListening();
       toast({
         title: "Voice recording started",
-        description: "Speak clearly - you'll see text appear in real-time!",
+        description: "Speak clearly - text will appear as you speak (up to 30 seconds)!",
       });
     }
   };

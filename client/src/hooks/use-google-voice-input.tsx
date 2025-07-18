@@ -64,10 +64,10 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
 
       // Process audio chunks for real-time transcription
       const processChunks = async () => {
-        if (chunksRef.current.length === 0) return;
+        if (chunksRef.current.length < 3) return; // Wait for enough audio data
 
         const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
-        if (audioBlob.size < 1000) return; // Skip very small chunks
+        if (audioBlob.size < 15000) return; // Skip chunks smaller than 15KB
 
         try {
           const formData = new FormData();
@@ -82,7 +82,7 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
 
           if (response.ok) {
             const result = await response.json();
-            if (result.transcript) {
+            if (result.transcript && result.transcript.trim()) {
               onResult(result.transcript, false); // interim result
             }
           }
@@ -91,8 +91,8 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
           // Continue without showing error to user during real-time
         }
 
-        // Clear processed chunks but keep recent ones for context
-        chunksRef.current = chunksRef.current.slice(-2);
+        // Keep more chunks for better context in next transcription
+        chunksRef.current = chunksRef.current.slice(-4);
       };
 
       mediaRecorder.onstop = async () => {
@@ -145,19 +145,19 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
         setIsListening(false);
       };
 
-      // Start recording with small timeslices for real-time processing
-      mediaRecorder.start(1000); // Record in 1-second chunks
+      // Start recording with larger timeslices for better quality
+      mediaRecorder.start(2000); // Record in 2-second chunks
       console.log('Recording started');
 
-      // Process chunks every 2 seconds for real-time feedback
-      intervalRef.current = setInterval(processChunks, 2000);
+      // Process chunks every 3 seconds for real-time feedback
+      intervalRef.current = setInterval(processChunks, 3000);
 
-      // Stop recording after 10 seconds to prevent too long recordings
+      // Stop recording after 30 seconds to allow longer speech
       setTimeout(() => {
         if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
           mediaRecorderRef.current.stop();
         }
-      }, 10000);
+      }, 30000);
 
     } catch (error) {
       console.error('Error starting voice input:', error);
