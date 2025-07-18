@@ -7,6 +7,7 @@ import { CloudUpload, Trash2, Play, FileText, Bookmark, Mic, MicOff } from 'luci
 import { parseFile, validateFile } from '@/lib/file-parser';
 import { useToast } from '@/hooks/use-toast';
 import { useGoogleVoiceInput } from '@/hooks/use-google-voice-input';
+import { useVoiceInput } from '@/hooks/use-voice-input';
 
 interface FileImportProps {
   onStartTeleprompter: (content: string) => void;
@@ -21,56 +22,82 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Google Voice input functionality
+  // Voice input functionality
   const [lastCursorPosition, setLastCursorPosition] = useState(0);
+  const [useGoogleSpeech, setUseGoogleSpeech] = useState(false); // Default to browser speech API
   
-  const { isListening, isSupported, startListening, stopListening } = useGoogleVoiceInput({
+  // Google Speech API hook
+  const googleVoice = useGoogleVoiceInput({
     onResult: (text, isFinal) => {
       console.log('Google Voice result received:', text, 'isFinal:', isFinal);
-      const textarea = textareaRef.current;
-      if (textarea && isFinal && text.trim()) {
-        // Insert the transcribed text at the cursor position
-        const cursorPosition = lastCursorPosition;
-        const beforeText = content.slice(0, cursorPosition);
-        const afterText = content.slice(cursorPosition);
-        const separator = beforeText.length > 0 && !beforeText.endsWith(' ') ? ' ' : '';
-        const newContent = beforeText + separator + text + ' ' + afterText;
-        onContentChange(newContent);
-        
-        // Update cursor position for next insertion
-        const newPosition = cursorPosition + separator.length + text.length + 1;
-        setLastCursorPosition(newPosition);
-        
-        setTimeout(() => {
-          textarea.focus();
-          textarea.setSelectionRange(newPosition, newPosition);
-        }, 0);
-
-        toast({
-          title: "Voice input successful",
-          description: `Added: "${text}"`,
-        });
-      }
+      handleVoiceResult(text, isFinal, 'Google Speech API');
     },
     onError: (error) => {
       console.error('Google Voice input error:', error);
       toast({
-        title: "Voice input error",
+        title: "Google Speech API error",
         description: error,
         variant: "destructive",
       });
     },
   });
 
+  // Browser Speech API hook
+  const browserVoice = useVoiceInput({
+    onResult: (text, isFinal) => {
+      console.log('Browser Voice result received:', text, 'isFinal:', isFinal);
+      handleVoiceResult(text, isFinal, 'Browser Speech API');
+    },
+    onError: (error) => {
+      console.error('Browser Voice input error:', error);
+      toast({
+        title: "Browser Speech API error",
+        description: error,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Common voice result handler
+  const handleVoiceResult = (text: string, isFinal: boolean, source: string) => {
+    const textarea = textareaRef.current;
+    if (textarea && isFinal && text.trim()) {
+      // Insert the transcribed text at the cursor position
+      const cursorPosition = lastCursorPosition;
+      const beforeText = content.slice(0, cursorPosition);
+      const afterText = content.slice(cursorPosition);
+      const separator = beforeText.length > 0 && !beforeText.endsWith(' ') ? ' ' : '';
+      const newContent = beforeText + separator + text + ' ' + afterText;
+      onContentChange(newContent);
+      
+      // Update cursor position for next insertion
+      const newPosition = cursorPosition + separator.length + text.length + 1;
+      setLastCursorPosition(newPosition);
+      
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(newPosition, newPosition);
+      }, 0);
+
+      toast({
+        title: "Voice input successful",
+        description: `${source}: "${text}"`,
+      });
+    }
+  };
+
+  // Current active voice system
+  const currentVoice = useGoogleSpeech ? googleVoice : browserVoice;
+
   const handleVoiceToggle = () => {
-    if (isListening) {
-      stopListening();
+    if (currentVoice.isListening) {
+      currentVoice.stopListening();
       toast({
         title: "Voice recording stopped",
         description: "Processing your speech...",
       });
     } else {
-      if (!isSupported) {
+      if (!currentVoice.isSupported) {
         toast({
           title: "Voice input not supported",
           description: "Your browser doesn't support voice recording",
@@ -85,10 +112,11 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
         setLastCursorPosition(textarea.selectionStart);
       }
       
-      startListening();
+      currentVoice.startListening();
+      const apiName = useGoogleSpeech ? "Google Speech API" : "Browser Speech API";
       toast({
         title: "Voice recording started",
-        description: "Speak clearly for up to 10 seconds. Your speech will be transcribed using Google Speech API.",
+        description: `Speak clearly. Using ${apiName} for transcription.`,
       });
     }
   };
@@ -204,9 +232,19 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
             <h3 className="text-2xl font-semibold gradient-text-accent">Script Editor</h3>
             <div className="flex space-x-3">
               {/* Voice Input Button */}
+              {/* Voice Method Selector */}
+              <select
+                value={useGoogleSpeech ? 'google' : 'browser'}
+                onChange={(e) => setUseGoogleSpeech(e.target.value === 'google')}
+                className="bg-gradient-to-r from-gray-100 to-gray-200 border border-gray-300 rounded-xl px-3 py-1 text-sm font-medium mr-2"
+              >
+                <option value="browser">Browser Speech</option>
+                <option value="google">Google Speech API</option>
+              </select>
+
               <Button
                 className={`${
-                  isListening 
+                  currentVoice.isListening 
                     ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700' 
                     : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
                 } text-white px-4 py-2 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300`}
@@ -214,10 +252,10 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
                   e.stopPropagation();
                   handleVoiceToggle();
                 }}
-                disabled={!isSupported}
+                disabled={!currentVoice.isSupported}
               >
-                {isListening ? <MicOff className="h-4 w-4 mr-2" /> : <Mic className="h-4 w-4 mr-2" />}
-                {isListening ? 'Stop Voice' : 'Voice Input'}
+                {currentVoice.isListening ? <MicOff className="h-4 w-4 mr-2" /> : <Mic className="h-4 w-4 mr-2" />}
+                {currentVoice.isListening ? 'Stop Voice' : 'Voice Input'}
               </Button>
 
               <Button
@@ -279,7 +317,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
               onFocus={() => {
                 // Update cursor position when textarea is focused
                 const textarea = textareaRef.current;
-                if (textarea && !isListening) {
+                if (textarea && !currentVoice.isListening) {
                   setLastCursorPosition(textarea.selectionStart);
                 }
               }}
@@ -287,9 +325,9 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
               className="h-[600px] resize-none rounded-2xl border-gray-200 focus:border-purple-400 focus:ring-purple-400 text-lg leading-relaxed bg-gray-50/50"
               style={{ aspectRatio: '1/1.414' }}
             />
-            {isListening && (
+            {currentVoice.isListening && (
               <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold animate-pulse">
-                🎤 Recording... (Google Speech API)
+                🎤 Recording... ({useGoogleSpeech ? 'Google Speech API' : 'Browser Speech API'})
               </div>
             )}
           </div>
