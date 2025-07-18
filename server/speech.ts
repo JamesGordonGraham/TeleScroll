@@ -75,7 +75,7 @@ export async function transcribeAudio(audioBuffer: Buffer, languageCode = 'en-US
         enableAutomaticPunctuation: true,
         enableWordTimeOffsets: false,
         model: 'latest_long', // Use latest_long model for better accuracy
-        model: 'latest_long',
+        useEnhanced: true, // Enable enhanced models for better accuracy
       },
     };
 

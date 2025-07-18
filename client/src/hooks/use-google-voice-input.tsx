@@ -107,10 +107,10 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
 
       // Process audio chunks for real-time transcription
       const processChunks = async () => {
-        if (chunksRef.current.length < 3) return; // Wait for enough audio data
+        if (chunksRef.current.length < 2) return; // Wait for enough audio data
 
         const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
-        if (audioBlob.size < 15000) return; // Skip chunks smaller than 15KB
+        if (audioBlob.size < 20000) return; // Skip chunks smaller than 20KB for better quality
 
         try {
           const formData = new FormData();
@@ -150,19 +150,7 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
         const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
         console.log('Final audio blob size:', audioBlob.size, 'chunks:', chunksRef.current.length);
 
-        // Check if we already have text from interim results - if so, use the best available
-        if (currentTextRef.current && currentTextRef.current.trim()) {
-          console.log('Using accumulated interim text as final result:', currentTextRef.current);
-          // Clear typing animation and show final result
-          if (typingIntervalRef.current) {
-            clearInterval(typingIntervalRef.current);
-            typingIntervalRef.current = null;
-          }
-          onResult(currentTextRef.current, true);
-          chunksRef.current = [];
-          setIsListening(false);
-          return;
-        }
+        // Store the interim text as backup, but always try final processing first
 
         // If no interim text, try processing the full recording
         try {
@@ -185,27 +173,37 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
           console.log('Final transcription result:', result);
           
           if (result.transcript && result.transcript.trim()) {
-            // Clear typing animation and show final result
+            // Use final transcription result
             if (typingIntervalRef.current) {
               clearInterval(typingIntervalRef.current);
               typingIntervalRef.current = null;
             }
             onResult(result.transcript, true);
           } else {
-            // If no transcript from full recording but we had interim text, fall back to last interim
-            if (displayedTextRef.current && displayedTextRef.current.trim()) {
-              console.log('Falling back to last interim text:', displayedTextRef.current);
-              onResult(displayedTextRef.current, true);
+            // Final API failed - use best available interim text
+            const bestInterimText = currentTextRef.current || displayedTextRef.current;
+            if (bestInterimText && bestInterimText.trim()) {
+              console.log('Final API failed, using interim text:', bestInterimText);
+              if (typingIntervalRef.current) {
+                clearInterval(typingIntervalRef.current);
+                typingIntervalRef.current = null;
+              }
+              onResult(bestInterimText, true);
             } else {
               onError?.('No speech detected in the recording');
             }
           }
         } catch (error) {
           console.error('Final transcription error:', error);
-          // Try to salvage with interim text if available
-          if (displayedTextRef.current && displayedTextRef.current.trim()) {
-            console.log('Error occurred, using last interim text:', displayedTextRef.current);
-            onResult(displayedTextRef.current, true);
+          // Try to salvage with best available interim text
+          const bestInterimText = currentTextRef.current || displayedTextRef.current;
+          if (bestInterimText && bestInterimText.trim()) {
+            console.log('Error occurred, using interim text:', bestInterimText);
+            if (typingIntervalRef.current) {
+              clearInterval(typingIntervalRef.current);
+              typingIntervalRef.current = null;
+            }
+            onResult(bestInterimText, true);
           } else {
             onError?.(error instanceof Error ? error.message : 'Failed to transcribe audio');
           }
@@ -222,11 +220,11 @@ export function useGoogleVoiceInput({ onResult, onError, language = 'en-US' }: G
       };
 
       // Start recording with larger timeslices for better quality
-      mediaRecorder.start(2000); // Record in 2-second chunks
+      mediaRecorder.start(3000); // Record in 3-second chunks for better audio integrity
       console.log('Recording started');
 
-      // Process chunks every 3 seconds for real-time feedback
-      intervalRef.current = setInterval(processChunks, 3000);
+      // Process chunks every 4 seconds for real-time feedback
+      intervalRef.current = setInterval(processChunks, 4000);
 
       // Stop recording after 30 seconds to allow longer speech
       setTimeout(() => {
