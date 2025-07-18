@@ -27,24 +27,32 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
   const { isListening, isSupported, startListening, stopListening } = useGoogleVoiceInput({
     onResult: (text, isFinal) => {
       console.log('Google Voice result received:', text, 'isFinal:', isFinal);
-      const textarea = textareaRef.current;
-      if (textarea && isFinal && text.trim()) {
+      console.log('Current content:', content);
+      console.log('Last cursor position:', lastCursorPosition);
+      
+      if (isFinal && text.trim()) {
         // Insert the transcribed text at the cursor position
         const cursorPosition = lastCursorPosition;
         const beforeText = content.slice(0, cursorPosition);
         const afterText = content.slice(cursorPosition);
         const separator = beforeText.length > 0 && !beforeText.endsWith(' ') ? ' ' : '';
         const newContent = beforeText + separator + text + ' ' + afterText;
+        
+        console.log('New content to set:', newContent);
         onContentChange(newContent);
         
         // Update cursor position for next insertion
         const newPosition = cursorPosition + separator.length + text.length + 1;
         setLastCursorPosition(newPosition);
         
-        setTimeout(() => {
-          textarea.focus();
-          textarea.setSelectionRange(newPosition, newPosition);
-        }, 0);
+        // Focus textarea and set cursor position
+        const textarea = textareaRef.current;
+        if (textarea) {
+          setTimeout(() => {
+            textarea.focus();
+            textarea.setSelectionRange(newPosition, newPosition);
+          }, 100);
+        }
 
         toast({
           title: "Voice input successful",
@@ -278,6 +286,22 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
               }}
               onFocus={() => {
                 // Update cursor position when textarea is focused
+                const textarea = textareaRef.current;
+                if (textarea && !isListening) {
+                  setLastCursorPosition(textarea.selectionStart);
+                }
+              }}
+              onClick={() => {
+                // Update cursor position when clicking in textarea
+                const textarea = textareaRef.current;
+                if (textarea && !isListening) {
+                  setTimeout(() => {
+                    setLastCursorPosition(textarea.selectionStart);
+                  }, 10);
+                }
+              }}
+              onKeyUp={() => {
+                // Update cursor position when navigating with keyboard
                 const textarea = textareaRef.current;
                 if (textarea && !isListening) {
                   setLastCursorPosition(textarea.selectionStart);
