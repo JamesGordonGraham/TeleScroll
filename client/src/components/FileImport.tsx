@@ -3,18 +3,17 @@ import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { CloudUpload, Trash2, Play, FileText, Bookmark, Mic, MicOff } from 'lucide-react';
+import { CloudUpload, Trash2, FileText, Bookmark, Mic, MicOff } from 'lucide-react';
 import { parseFile, validateFile } from '@/lib/file-parser';
 import { useToast } from '@/hooks/use-toast';
 import { useGoogleVoiceInput } from '@/hooks/use-google-voice-input';
 
 interface FileImportProps {
-  onStartTeleprompter: (content: string) => void;
   content: string;
-  onContentChange: (content: string) => void;
+  setContent: (content: string) => void;
 }
 
-export function FileImport({ onStartTeleprompter, content, onContentChange }: FileImportProps) {
+export function FileImport({ content, setContent }: FileImportProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const { toast } = useToast();
@@ -48,7 +47,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
           const finalSeparator = finalBeforeText.length > 0 && !finalBeforeText.endsWith(' ') && !finalBeforeText.endsWith('\n') ? ' ' : '';
           const newContent = finalBeforeText + finalSeparator + text + ' ' + finalAfterText;
           
-          onContentChange(newContent);
+          setContent(newContent);
           setAccumulatedText('');
           setLastInterimText('');
           setIsTranscribing(false);
@@ -91,7 +90,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
           const newAccumulatedText = separator + text;
           const interimContent = beforeText + newAccumulatedText + afterText;
           
-          onContentChange(interimContent);
+          setContent(interimContent);
           setAccumulatedText(newAccumulatedText);
           
           console.log('Interim transcription:', text);
@@ -167,7 +166,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
       // Append to existing content instead of replacing
       const separator = content.length > 0 && !content.endsWith('\n') && !content.endsWith(' ') ? '\n\n' : '';
       const newContent = content + separator + result.content;
-      onContentChange(newContent);
+      setContent(newContent);
       
       toast({
         title: "File uploaded successfully",
@@ -182,7 +181,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
     } finally {
       setIsUploading(false);
     }
-  }, [toast, onContentChange]);
+  }, [toast, setContent]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: handleFileUpload,
@@ -203,20 +202,10 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
     noClick: true, // We'll handle clicks manually for better UX
   });
 
-  const handleStartTeleprompter = () => {
-    if (!content.trim()) {
-      toast({
-        title: "No content",
-        description: "Please enter some text first.",
-        variant: "destructive",
-      });
-      return;
-    }
-    onStartTeleprompter(content);
-  };
+  // Remove this function as it's handled by parent component
 
   const handleClearText = () => {
-    onContentChange('');
+    setContent('');
   };
 
   const handleAddMarker = () => {
@@ -227,7 +216,7 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
     const markerSymbol = '■'; // Violet square marker (will be styled with CSS)
     
     const newContent = content.slice(0, cursorPosition) + markerSymbol + content.slice(cursorPosition);
-    onContentChange(newContent);
+    setContent(newContent);
     
     // Move cursor after the marker
     setTimeout(() => {
@@ -309,20 +298,14 @@ export function FileImport({ onStartTeleprompter, content, onContentChange }: Fi
                 <Trash2 className="h-4 w-4 mr-2" />
                 Clear
               </Button>
-              <Button 
-                onClick={handleStartTeleprompter}
-                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-2 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <Play className="h-4 w-4 mr-2" />
-                Start Teleprompter
-              </Button>
+
             </div>
           </div>
           <div className="relative">
             <Textarea
               ref={textareaRef}
               value={content}
-              onChange={(e) => onContentChange(e.target.value)}
+              onChange={(e) => setContent(e.target.value)}
               onPaste={(e) => {
                 // Allow normal paste behavior - the textarea handles it automatically
                 // But also show a success message

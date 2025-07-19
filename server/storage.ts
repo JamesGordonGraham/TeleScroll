@@ -1,8 +1,27 @@
-import { teleprompterSettings, scripts, type TeleprompterSettings, type InsertTeleprompterSettings, type Script, type InsertScript } from "@shared/schema";
+import {
+  users,
+  teleprompterSettings,
+  scripts,
+  usageLogs,
+  type User,
+  type UpsertUser,
+  type TeleprompterSettings,
+  type InsertTeleprompterSettings,
+  type Script,
+  type InsertScript,
+  type UsageLog,
+  type InsertUsageLog,
+} from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, sum } from "drizzle-orm";
 
 export interface IStorage {
+  // User operations (required for authentication)
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
+  updateUserStripeInfo(userId: string, customerId: string, subscriptionId: string): Promise<User>;
+  updateUserSubscription(userId: string, tier: string, status: string): Promise<User>;
+  
   // Settings
   getTeleprompterSettings(userId: string): Promise<TeleprompterSettings | undefined>;
   createTeleprompterSettings(settings: InsertTeleprompterSettings): Promise<TeleprompterSettings>;
@@ -14,6 +33,11 @@ export interface IStorage {
   createScript(script: InsertScript): Promise<Script>;
   updateScript(id: number, script: Partial<InsertScript>): Promise<Script>;
   deleteScript(id: number): Promise<void>;
+  
+  // Usage tracking
+  logUsage(usage: InsertUsageLog): Promise<UsageLog>;
+  getUserUsage(userId: string, feature?: string): Promise<number>; // returns total minutes used
+  canUseFeature(userId: string, feature: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -90,6 +114,62 @@ export class MemStorage implements IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // User operations (required for authentication)
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  }
+
+  async updateUserStripeInfo(userId: string, customerId: string, subscriptionId: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscriptionId,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return user;
+  }
+
+  async updateUserSubscription(userId: string, tier: string, status: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({
+        subscriptionTier: tier,
+        subscriptionStatus: status,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return user;
+  }
+
+  // Settings
   async getTeleprompterSettings(userId: string): Promise<TeleprompterSettings | undefined> {
     const [settings] = await db.select().from(teleprompterSettings).where(eq(teleprompterSettings.userId, userId));
     return settings || undefined;
@@ -116,6 +196,7 @@ export class DatabaseStorage implements IStorage {
     return settings;
   }
 
+  // Scripts
   async getScripts(userId: string): Promise<Script[]> {
     return await db.select().from(scripts).where(eq(scripts.userId, userId));
   }
@@ -148,6 +229,50 @@ export class DatabaseStorage implements IStorage {
 
   async deleteScript(id: number): Promise<void> {
     await db.delete(scripts).where(eq(scripts.id, id));
+  }
+
+  // Usage tracking
+  async logUsage(insertUsage: InsertUsageLog): Promise<UsageLog> {
+    const [usage] = await db
+      .insert(usageLogs)
+      .values(insertUsage)
+      .returning();
+    return usage;
+  }
+
+  async getUserUsage(userId: string, feature?: string): Promise<number> {
+    const query = db
+      .select({ totalDuration: sum(usageLogs.duration) })
+      .from(usageLogs)
+      .where(eq(usageLogs.userId, userId));
+
+    if (feature) {
+      query.where(eq(usageLogs.feature, feature));
+    }
+
+    const [result] = await query;
+    return Math.floor((result.totalDuration || 0) / 60); // Convert seconds to minutes
+  }
+
+  async canUseFeature(userId: string, feature: string): Promise<boolean> {
+    const user = await this.getUser(userId);
+    if (!user) return false;
+
+    // Premium users have unlimited access
+    if (user.subscriptionTier === 'premium') return true;
+
+    // Pro users have access to voice input but not AI features
+    if (user.subscriptionTier === 'pro') {
+      return feature === 'voice_input';
+    }
+
+    // Free users are limited to 1 hour total usage
+    if (user.subscriptionTier === 'free') {
+      const totalUsage = await this.getUserUsage(userId);
+      return totalUsage < 60; // 60 minutes limit
+    }
+
+    return false;
   }
 }
 

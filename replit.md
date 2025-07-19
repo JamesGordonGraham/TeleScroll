@@ -1,15 +1,19 @@
-# Teleprompter - Replit Project Guide
+# Teleprompter - Subscription-Based Professional Platform
 
 ## Overview
 
-Teleprompter is a modern web application built for professional teleprompter functionality. It features a clean, Apple-style interface with light blue pastel gradient background and minimalist design using Inter font. The app provides an intuitive interface for importing scripts (text/Word documents) and displaying them in a white Script Editor box with real-time controls for speed, text size, and display preferences. The application successfully supports Bluetooth keyboard controls for hands-free operation and horizontal text flipping functionality.
+Teleprompter is a comprehensive subscription-based web application designed for professional speakers, content creators, and media professionals. The platform features three tiers (Free, Pro £1.99/month, Premium £4.99/month) with advanced features including AI-powered script generation, real-time speech-to-text transcription, professional video recording with transparent backgrounds, and sophisticated usage tracking. The application integrates Stripe for payment processing, Replit Auth for user management, and OpenAI's GPT-4 for intelligent script assistance.
 
 ## System Architecture
 
 ### Full-Stack Architecture
 - **Frontend**: React 18 with TypeScript, built using Vite
 - **Backend**: Express.js server with TypeScript
-- **Database**: PostgreSQL with Drizzle ORM
+- **Database**: PostgreSQL with Drizzle ORM for comprehensive user and subscription management
+- **Authentication**: Replit Auth with OpenID Connect integration
+- **Payment Processing**: Stripe integration with subscription management and webhooks
+- **AI Integration**: OpenAI GPT-4 for script generation and improvement
+- **Speech Recognition**: Google Cloud Speech-to-Text API
 - **Styling**: Tailwind CSS with shadcn/ui components
 - **State Management**: TanStack Query for server state, React hooks for local state
 
@@ -36,9 +40,13 @@ The project uses a monorepo approach with clear separation:
 - **Storage Abstraction**: Interface-based storage system supporting both memory and database storage
 
 ### Database Schema
-Two main entities:
-- **teleprompter_settings**: User preferences (font size, scroll speed, display options)
-- **scripts**: User-uploaded content with metadata
+Comprehensive subscription-based system with multiple entities:
+- **users**: User profiles with Replit Auth integration (OAuth claims, profile data)
+- **subscriptions**: Stripe subscription management (tiers, billing, status)
+- **usage_logs**: Detailed usage tracking and time monitoring
+- **scripts**: User-created content with AI-generated metadata
+- **teleprompter_settings**: Personalized user preferences
+- **sessions**: Secure session storage for authentication
 
 ## Data Flow
 
@@ -52,6 +60,10 @@ Two main entities:
 
 ### Core Dependencies
 - **Neon Database**: Serverless PostgreSQL database (@neondatabase/serverless)
+- **Stripe**: Payment processing and subscription management (@stripe/stripe-js, @stripe/react-stripe-js)
+- **OpenAI**: AI script generation and improvement (openai)
+- **Google Cloud**: Speech-to-Text API (@google-cloud/speech)
+- **Replit Auth**: OpenID Connect authentication (openid-client, passport)
 - **shadcn/ui**: Component library with Radix UI primitives
 - **TanStack Query**: Server state management and caching
 - **Drizzle**: Type-safe ORM with schema validation
@@ -77,15 +89,19 @@ Two main entities:
 
 ### Key Design Decisions
 
-**Storage Strategy**: Implemented interface-based storage abstraction with PostgreSQL database using Drizzle ORM. The application now persists user settings and scripts across sessions, providing a professional-grade data layer.
+**Subscription Architecture**: Implemented comprehensive three-tier subscription model (Free/Pro/Premium) with Stripe integration, usage tracking, and feature gating to support sustainable business model while providing value at each tier.
 
-**File Processing**: Chose mammoth for Word document parsing due to its reliability and ease of use, while maintaining support for plain text files for maximum compatibility.
+**Authentication Strategy**: Chose Replit Auth for seamless integration with the platform ecosystem, providing OAuth-based authentication with user profile management and session persistence.
 
-**Component Architecture**: Selected shadcn/ui over other component libraries for its excellent TypeScript support, accessibility features, and customization capabilities without vendor lock-in.
+**AI Integration**: Integrated OpenAI GPT-4 for intelligent script generation with contextual prompts for different speech types (news, presentations, weddings, etc.) and script improvement capabilities.
 
-**State Management**: Used TanStack Query for server state to leverage its caching, error handling, and optimistic updates, while keeping local component state simple with React hooks.
+**Payment Processing**: Implemented Stripe for secure payment handling with subscription management, automatic billing, upgrade/downgrade flows, and comprehensive webhook integration.
 
-**Fullscreen Experience**: Designed teleprompter display to support native fullscreen API with comprehensive keyboard shortcuts for professional use cases.
+**Storage Strategy**: Enhanced interface-based storage abstraction with PostgreSQL database using Drizzle ORM, supporting user accounts, subscription data, usage analytics, and script persistence.
+
+**Speech Recognition**: Integrated Google Cloud Speech-to-Text API for professional-grade voice input with real-time transcription and intelligent text insertion.
+
+**Video Capabilities**: Added advanced video recording with transparent background support for professional content creation and compositing workflows.
 
 ## Changelog
 
@@ -183,6 +199,20 @@ Changelog:
   * Backend speech transcription using Google Cloud Speech API with service account credentials
   * Error handling for microphone permissions and API failures
   * Toast notifications for recording status and transcription results
+- July 19, 2025. Complete subscription-based platform implementation:
+  * Implemented comprehensive three-tier subscription system (Free 1hr, Pro £1.99, Premium £4.99)
+  * Integrated Replit Auth with full user management and session persistence
+  * Added Stripe payment processing with subscription management and upgrade/downgrade flows
+  * Created AI Script Assistant with OpenAI GPT-4 integration for generating various speech types
+  * Built professional video recording component with transparent background toggle
+  * Implemented usage tracking and time-based limitations for Free tier
+  * Created comprehensive authentication-protected routing system
+  * Added subscription plans UI with feature comparison and payment integration
+  * Built dashboard-style home page with tabbed interface for different features
+  * Integrated landing page for non-authenticated users with feature showcase
+  * Enhanced database schema with user subscriptions, usage logs, and script storage
+  * Implemented feature gating system to control access based on subscription tier
+  * Added comprehensive error handling and unauthorized access management
 ```
 
 ## User Preferences

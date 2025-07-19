@@ -1,14 +1,24 @@
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
+import Stripe from "stripe";
 import { storage } from "./storage";
-import { insertTeleprompterSettingsSchema, insertScriptSchema } from "@shared/schema";
+import { setupAuth, isAuthenticated } from "./replitAuth";
+import { generateScript, improveScript } from "./openai";
+import { insertTeleprompterSettingsSchema, insertScriptSchema, insertUsageLogSchema } from "@shared/schema";
 import mammoth from "mammoth";
 import { z } from "zod";
-// import pdf from "pdf-parse";
 import { JSDOM } from "jsdom";
 import MarkdownIt from "markdown-it";
 import { transcribeAudio } from "./speech";
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2023-10-16",
+});
 
 interface MulterRequest extends Request {
   file?: any;
@@ -65,11 +75,186 @@ const audioUpload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  const userId = "default-user"; // For this demo, using a default user
+  // Setup authentication middleware
+  await setupAuth(app);
+
+  // Authentication routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Subscription and billing routes
+  app.post('/api/create-subscription', isAuthenticated, async (req: any, res) => {
+    const userId = req.user.claims.sub;
+    const { priceId } = req.body;
+    
+    if (!priceId) {
+      return res.status(400).json({ error: 'Price ID is required' });
+    }
+
+    try {
+      let user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // If user already has active subscription, return existing
+      if (user.stripeSubscriptionId) {
+        const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+        if (subscription.status === 'active') {
+          return res.json({
+            subscriptionId: subscription.id,
+            clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
+          });
+        }
+      }
+
+      let customerId = user.stripeCustomerId;
+      
+      // Create Stripe customer if doesn't exist
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: user.email || undefined,
+          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : undefined,
+          metadata: { userId: userId }
+        });
+        customerId = customer.id;
+      }
+
+      // Create subscription
+      const subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [{ price: priceId }],
+        payment_behavior: 'default_incomplete',
+        expand: ['latest_invoice.payment_intent'],
+      });
+
+      // Update user with Stripe info
+      await storage.updateUserStripeInfo(userId, customerId, subscription.id);
+      
+      // Update subscription tier based on price
+      let tier = 'free';
+      if (priceId.includes('pro')) tier = 'pro';
+      if (priceId.includes('premium')) tier = 'premium';
+      
+      await storage.updateUserSubscription(userId, tier, subscription.status);
+
+      res.json({
+        subscriptionId: subscription.id,
+        clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
+      });
+    } catch (error: any) {
+      console.error('Subscription creation error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get user subscription status
+  app.get('/api/subscription-status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const usage = await storage.getUserUsage(userId);
+      
+      res.json({
+        tier: user.subscriptionTier,
+        status: user.subscriptionStatus,
+        usage: usage,
+        usageLimit: user.subscriptionTier === 'free' ? 60 : null
+      });
+    } catch (error) {
+      console.error('Error fetching subscription status:', error);
+      res.status(500).json({ error: 'Failed to fetch subscription status' });
+    }
+  });
+
+  // AI Script Generation (Premium feature)
+  app.post('/api/generate-script', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const canUse = await storage.canUseFeature(userId, 'ai_assistant');
+      
+      if (!canUse) {
+        return res.status(403).json({ 
+          error: 'AI Script Assistant requires Premium subscription',
+          upgrade: true 
+        });
+      }
+
+      const { scriptType, topic, duration, tone, audience, keyPoints, additionalInstructions } = req.body;
+      
+      if (!scriptType || !topic || !duration) {
+        return res.status(400).json({ error: 'Missing required fields: scriptType, topic, duration' });
+      }
+
+      const script = await generateScript({
+        scriptType,
+        topic,
+        duration,
+        tone,
+        audience,
+        keyPoints,
+        additionalInstructions
+      });
+
+      // Log usage
+      await storage.logUsage({
+        userId,
+        feature: 'ai_assistant',
+        duration: 0 // AI generation doesn't count towards time usage
+      });
+
+      res.json({ script });
+    } catch (error: any) {
+      console.error('Script generation error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // AI Script Improvement (Premium feature)
+  app.post('/api/improve-script', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const canUse = await storage.canUseFeature(userId, 'ai_assistant');
+      
+      if (!canUse) {
+        return res.status(403).json({ 
+          error: 'AI Script Assistant requires Premium subscription',
+          upgrade: true 
+        });
+      }
+
+      const { content, instructions } = req.body;
+      
+      if (!content || !instructions) {
+        return res.status(400).json({ error: 'Missing required fields: content, instructions' });
+      }
+
+      const improvedScript = await improveScript(content, instructions);
+
+      res.json({ script: improvedScript });
+    } catch (error: any) {
+      console.error('Script improvement error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
 
   // Get teleprompter settings
-  app.get("/api/settings", async (req, res) => {
+  app.get("/api/settings", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       let settings = await storage.getTeleprompterSettings(userId);
       if (!settings) {
         // Create default settings if none exist
@@ -90,8 +275,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update teleprompter settings
-  app.patch("/api/settings", async (req, res) => {
+  app.patch("/api/settings", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const updateData = insertTeleprompterSettingsSchema.partial().parse(req.body);
       const settings = await storage.updateTeleprompterSettings(userId, updateData);
       res.json(settings);
@@ -105,8 +291,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all scripts
-  app.get("/api/scripts", async (req, res) => {
+  app.get("/api/scripts", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const scripts = await storage.getScripts(userId);
       res.json(scripts);
     } catch (error) {
@@ -115,7 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get specific script
-  app.get("/api/scripts/:id", async (req, res) => {
+  app.get("/api/scripts/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const script = await storage.getScript(id);
@@ -129,8 +316,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create script
-  app.post("/api/scripts", async (req, res) => {
+  app.post("/api/scripts", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const scriptData = insertScriptSchema.parse({ ...req.body, userId });
       const script = await storage.createScript(scriptData);
       res.json(script);
@@ -144,7 +332,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update script
-  app.patch("/api/scripts/:id", async (req, res) => {
+  app.patch("/api/scripts/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const updateData = insertScriptSchema.partial().parse(req.body);
@@ -160,7 +348,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete script
-  app.delete("/api/scripts/:id", async (req, res) => {
+  app.delete("/api/scripts/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteScript(id);
@@ -171,7 +359,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File upload endpoint
-  app.post("/api/upload", upload.single('file'), async (req: MulterRequest, res) => {
+  app.post("/api/upload", isAuthenticated, upload.single('file'), async (req: MulterRequest, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
@@ -234,19 +422,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Speech transcription endpoint
-  app.post("/api/transcribe", audioUpload.single('audio'), async (req: MulterRequest, res) => {
+  // Speech transcription endpoint with usage tracking
+  app.post("/api/transcribe", isAuthenticated, audioUpload.single('audio'), async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
+      
+      // Check if user can use voice input (Free users have 1 hour limit, Pro/Premium unlimited)
+      const canUse = await storage.canUseFeature(userId, 'voice_input');
+      if (!canUse) {
+        return res.status(403).json({ 
+          message: "You've reached the 1-hour limit for the Free plan. Upgrade to Pro for unlimited voice input.",
+          upgrade: true
+        });
+      }
+
       if (!req.file) {
         return res.status(400).json({ message: "No audio file provided" });
       }
 
       console.log('Received audio file:', req.file.originalname, 'Size:', req.file.size);
       const isInterim = req.body.interim === 'true';
+      const startTime = Date.now();
       
       const result = await transcribeAudio(req.file.buffer, req.body.language || 'en-US');
       
       if (result.success) {
+        // Log usage time (estimate 10 seconds per transcription)
+        const duration = Math.max(10, Math.floor((Date.now() - startTime) / 1000));
+        await storage.logUsage({
+          userId,
+          feature: 'voice_input',
+          duration
+        });
+
         res.json({ 
           transcript: result.transcript,
           confidence: result.confidence,
