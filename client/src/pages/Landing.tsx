@@ -14,11 +14,16 @@ import {
   Play,
   Users
 } from "lucide-react";
+import { SiGoogle } from "react-icons/si";
 import logo from "@assets/Vibe prompting logo 10 jul 2025_1752180754763.png";
 
 export default function Landing() {
   const handleLogin = () => {
     window.location.href = "/api/login";
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = "/api/auth/google";
   };
 
   const features = [
@@ -110,9 +115,19 @@ export default function Landing() {
               Teleprompter / Autocue
             </h1>
           </div>
-          <Button onClick={handleLogin} className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
-            Sign In
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              onClick={handleGoogleLogin} 
+              variant="outline"
+              className="border-gray-300 hover:bg-gray-50 flex items-center gap-2"
+            >
+              <SiGoogle className="h-4 w-4 text-red-500" />
+              Google
+            </Button>
+            <Button onClick={handleLogin} className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
+              Sign In
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -127,18 +142,28 @@ export default function Landing() {
             Create, improve, and present scripts with our advanced teleprompter featuring AI assistance, 
             voice input, and professional video recording capabilities.
           </p>
-          <div className="flex gap-4 justify-center">
-            <Button 
-              size="lg" 
-              onClick={handleLogin}
-              className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-            >
-              <Play className="h-5 w-5 mr-2" />
-              Start Free Trial
-            </Button>
-            <Button size="lg" variant="outline">
-              Watch Demo
-            </Button>
+          <div className="flex flex-col items-center gap-6">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button 
+                onClick={handleGoogleLogin}
+                size="lg" 
+                variant="outline"
+                className="border-2 border-gray-300 hover:bg-gray-50 text-gray-700 px-8 py-4 text-lg font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3"
+              >
+                <SiGoogle className="h-5 w-5 text-red-500" />
+                Continue with Google
+              </Button>
+              <div className="text-gray-400 text-sm">or</div>
+              <Button 
+                onClick={handleLogin}
+                size="lg" 
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 text-lg font-semibold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300"
+              >
+                <Play className="h-5 w-5 mr-2" />
+                Get Started Free
+              </Button>
+            </div>
+            <p className="text-gray-600">No credit card required</p>
           </div>
         </div>
       </section>
