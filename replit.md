@@ -213,6 +213,15 @@ Changelog:
   * Enhanced database schema with user subscriptions, usage logs, and script storage
   * Implemented feature gating system to control access based on subscription tier
   * Added comprehensive error handling and unauthorized access management
+- July 21, 2025. Teleprompter rewrite and floating dock enhancement:
+  * Completely rewrote teleprompter using React, shadcn/ui, Lucide React icons, and Tailwind CSS
+  * Redesigned floating control dock with professional sliders for Speed (1-10), Text Size (12-72px), and Text Width (40-100%)
+  * Enhanced button clarity with text labels instead of icon-only controls
+  * Improved visual design with better contrast and readability on black background
+  * Updated speed system from 0.1x-3.0x to simplified 1-10 scale for better user experience
+  * Added comprehensive keyboard controls and smooth scrolling animation system
+  * Implemented marker navigation system with violet square markers
+  * Fixed all React integration issues and established stable teleprompter foundation
 ```
 
 ## User Preferences
