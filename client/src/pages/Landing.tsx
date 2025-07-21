@@ -15,7 +15,7 @@ import {
   Users
 } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
-import logo from "@assets/Vibe prompting logo 10 jul 2025_1752180754763.png";
+import logo from "@assets/Vibe Prompting teleprompter autocue logo_1753095967610.png";
 
 export default function Landing() {
   const handleLogin = () => {
@@ -110,7 +110,7 @@ export default function Landing() {
       <header className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="Teleprompter" className="h-12 w-auto" />
+            <img src={logo} alt="Teleprompter" className="h-16 w-auto" />
             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
               Teleprompter / Autocue
             </h1>
