@@ -262,12 +262,6 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
               </div>
 
               <Card className="max-w-4xl mx-auto">
-                <CardHeader>
-                  <CardTitle>Script Editor</CardTitle>
-                  <CardDescription>
-                    Import your script or create content for your teleprompter presentation
-                  </CardDescription>
-                </CardHeader>
                 <CardContent>
                   <FileImport content={content} setContent={setContent} />
                   
