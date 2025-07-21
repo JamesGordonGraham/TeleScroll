@@ -220,3 +220,13 @@ textarea .marker::before {
   margin-right: 4px;
   vertical-align: middle;
 }
+
+/* Hide scrollbars for teleprompter */
+.teleprompter-container::-webkit-scrollbar {
+  display: none;
+}
+
+.teleprompter-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

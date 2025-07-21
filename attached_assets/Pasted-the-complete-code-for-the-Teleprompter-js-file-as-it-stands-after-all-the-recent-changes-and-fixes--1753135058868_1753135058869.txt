@@ -1,0 +1,629 @@
+the complete code for the Teleprompter.js file as it stands after all the recent changes and fixes. This file encapsulates all the logic for the teleprompter display, controls, marker navigation, and video recording capabilities.
+
+Here is the full code for pages/Teleprompter.js:
+
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { Script } from "@/entities/Script";
+import { User } from "@/entities/User";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { 
+  Play, Pause, Square, Maximize, Minimize, RotateCcw, Video, VideoOff, Minus, Plus, FlipHorizontal, Download
+} from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+
+export default function Teleprompter() {
+  const navigate = useNavigate();
+  const [script, setScript] = useState(null);
+  const [user, setUser] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [scrollSpeed, setScrollSpeed] = useState(50);
+  const [fontSize, setFontSize] = useState(72);
+  const [textWidth, setTextWidth] = useState(80);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [isTransparent, setIsTransparent] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentMarkerIndex, setCurrentMarkerIndex] = useState(-1);
+  const [recordedChunks, setRecordedChunks] = useState([]);
+  const [cameraDevices, setCameraDevices] = useState([]);
+  const [selectedCamera, setSelectedCamera] = useState('');
+
+  const containerRef = useRef(null);
+  const textRef = useRef(null);
+  const animationRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const streamRef = useRef(null);
+  const controlsTimeoutRef = useRef(null);
+  const markerRefs = useRef([]);
+
+  const { displayContent, navMarkers } = useMemo(() => {
+    if (!script?.content) {
+      return { displayContent: '', navMarkers: [] };
+    }
+    const markerChar = '■';
+    const markers = [];
+    const parts = script.content.split(markerChar);
+    let currentPosition = 0;
+    
+    // For each part, a marker existed before it. Calculate the position in the cleaned string.
+    parts.slice(0, -1).forEach((part) => {
+        currentPosition += part.length;
+        markers.push({ position: currentPosition });
+    });
+
+    const cleanContent = parts.join('');
+    return { displayContent: cleanContent, navMarkers: markers };
+  }, [script?.content]);
+
+  useEffect(() => {
+    loadData();
+    loadCameraDevices();
+    
+    const handleKeyPress = (e) => {
+      e.preventDefault();
+      switch (e.key.toLowerCase()) {
+        case ' ': togglePlayPause(); break;
+        case 'f': toggleFullscreen(); break;
+        case 'm': toggleFlip(); break;
+        case 'h': jumpToTop(); break;
+        case 'b': jumpToBottom(); break;
+        case 'n': jumpToNextMarker(); break;
+        case 'p': jumpToPrevMarker(); break;
+        case 'r': if (user?.subscription === 'premium') toggleRecording(); break;
+        case 'escape': if (document.fullscreenElement) exitFullscreen(); break;
+      }
+    };
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, [script, currentMarkerIndex, user, navMarkers]);
+
+  useEffect(() => {
+    if (isPlaying && script) startScrolling();
+    else stopScrolling();
+    return () => stopScrolling();
+  }, [isPlaying, scrollSpeed, script, isFlipped]);
+
+  useEffect(() => {
+    if (isFullscreen) {
+      const handleMouseMove = () => {
+        setShowControls(true);
+        clearTimeout(controlsTimeoutRef.current);
+        controlsTimeoutRef.current = setTimeout(() => setShowControls(false), 3000);
+      };
+      document.addEventListener('mousemove', handleMouseMove);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        clearTimeout(controlsTimeoutRef.current);
+      };
+    }
+  }, [isFullscreen]);
+
+  const fetchScriptById = async (scriptId) => {
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    while (retryCount < maxRetries) {
+      try {
+        const scriptResult = (await Script.list()).find(s => s.id === scriptId);
+        if (scriptResult) {
+          setScript(scriptResult);
+          setScrollSpeed(scriptResult.settings?.scrollSpeed || 50);
+          setFontSize(scriptResult.settings?.fontSize || 72);
+          return; // Exit after successful fetch
+        } else {
+          // If script not found by ID after fetching list, throw an error
+          throw new Error("Script not found."); 
+        }
+      } catch (error) {
+        if (error.response?.status === 429 && retryCount < maxRetries - 1) {
+          retryCount++;
+          await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
+          continue;
+        }
+        throw error; // Re-throw if all retries fail or it's not a rate-limit error
+      }
+    }
+  };
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const userData = await User.me();
+      setUser(userData);
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const scriptDataParam = urlParams.get('scriptData');
+      const scriptId = urlParams.get('scriptId'); // Kept for fallback
+
+      if (scriptDataParam) {
+        // PRIORITY: Always load from the passed data first for speed.
+        try {
+          const parsedScript = JSON.parse(decodeURIComponent(scriptDataParam));
+          setScript(parsedScript);
+          setScrollSpeed(parsedScript.settings?.scrollSpeed || 50);
+          setFontSize(parsedScript.settings?.fontSize || 72);
+        } catch (error) {
+          console.error("Error parsing script data from URL:", error);
+          // If parsing fails, try the old fetch method as a fallback.
+          if (scriptId) {
+            await fetchScriptById(scriptId);
+          } else {
+            navigate(createPageUrl('Dashboard'));
+          }
+        }
+      } else if (scriptId) {
+        // FALLBACK: If only an ID is present (e.g., old bookmark), fetch from server.
+        await fetchScriptById(scriptId);
+      } else {
+        // No script info provided, go back.
+        navigate(createPageUrl('Dashboard'));
+      }
+    } catch (error) { 
+      console.error("Error loading data:", error);
+      if (error.response?.status === 429) {
+        alert("Too many requests. Please wait a moment and try again.");
+      } else if (error.message === "Script not found.") {
+        alert("The script you are trying to access was not found.");
+        navigate(createPageUrl('Dashboard'));
+      } else {
+        alert("Failed to load script data. Please try again or go to your Dashboard.");
+        navigate(createPageUrl('Dashboard'));
+      }
+    } finally { 
+      setIsLoading(false); 
+    }
+  };
+
+  const loadCameraDevices = async () => {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+        console.warn("navigator.mediaDevices.enumerateDevices() not supported.");
+        return;
+      }
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const cameras = devices.filter(device => device.kind === 'videoinput');
+      setCameraDevices(cameras);
+      if (cameras.length > 0 && !selectedCamera) {
+        setSelectedCamera(cameras[0].deviceId);
+      }
+    } catch (error) {
+      console.error("Error loading camera devices:", error);
+    }
+  };
+
+  const requestCameraPermission = async (deviceId) => {
+    try {
+      const constraints = {
+        video: {
+          deviceId: deviceId ? { exact: deviceId } : undefined,
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          frameRate: { ideal: 30 }
+        },
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 44100
+        }
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      return stream;
+    } catch (error) {
+      console.error("Error requesting camera/audio permission:", error);
+      
+      if (error.name === 'NotAllowedError') {
+        alert("Camera and microphone access denied. Please allow camera and microphone access to record video with audio.");
+      } else if (error.name === 'NotFoundError') {
+        alert("No camera or microphone found. Please check your devices are connected.");
+      } else if (error.name === 'NotReadableError') {
+        alert("Camera or microphone is being used by another application. Please close other applications and try again.");
+      } else {
+        alert("Failed to access camera and microphone. Please check your permissions and try again.");
+      }
+      return null;
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await requestCameraPermission(selectedCamera);
+      if (!stream) {
+        setIsRecording(false);
+        return;
+      }
+
+      streamRef.current = stream;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const video = document.createElement('video');
+      
+      video.srcObject = stream;
+      video.autoplay = true;
+      video.muted = true;
+
+      canvas.width = 1920;
+      canvas.height = 1080;
+
+      const canvasStream = canvas.captureStream(30);
+      const audioTracks = stream.getAudioTracks();
+      audioTracks.forEach(track => canvasStream.addTrack(track));
+
+      const options = {
+        mimeType: 'video/webm;codecs=vp9,opus',
+        videoBitsPerSecond: 5000000
+      };
+
+      mediaRecorderRef.current = new MediaRecorder(canvasStream, options);
+      setRecordedChunks([]);
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          setRecordedChunks(prev => [...prev, event.data]);
+        }
+      };
+
+      mediaRecorderRef.current.onstop = () => {
+        downloadRecording();
+      };
+
+      const drawFrame = () => {
+        if (!isRecording) return;
+        if (video.videoWidth > 0 && video.videoHeight > 0) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        }
+        animationRef.current = requestAnimationFrame(drawFrame);
+      };
+
+      video.onloadedmetadata = () => {
+        video.play();
+        drawFrame();
+      };
+
+      mediaRecorderRef.current.start(100);
+      setIsRecording(true);
+      
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      alert("Failed to start recording. Please check camera and microphone permissions or try another camera.");
+      setIsRecording(false);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+      cancelAnimationFrame(animationRef.current);
+    }
+  };
+
+  const downloadRecording = () => {
+    if (recordedChunks.length === 0) {
+      console.warn("No recorded chunks to download.");
+      return;
+    }
+
+    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    
+    a.href = url;
+    a.download = `teleprompter-recording-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.webm`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    
+    URL.revokeObjectURL(url);
+    setRecordedChunks([]);
+  };
+
+  const toggleRecording = async () => {
+    if (!user || user.subscription !== 'premium') {
+      alert("Video recording is a premium feature. Please upgrade to access this functionality.");
+      return;
+    }
+
+    if (isRecording) {
+      stopRecording();
+    } else {
+      await startRecording();
+    }
+  };
+
+  const startScrolling = () => {
+    const container = containerRef.current;
+    if (!container || !isPlaying) return;
+    
+    const scroll = () => {
+      if (!containerRef.current || !isPlaying) return;
+      
+      const speedFactor = 0.5;
+      const scrollAmount = (scrollSpeed / 100) * speedFactor;
+      
+      if (isFlipped) {
+        container.scrollTop -= scrollAmount;
+        if (container.scrollTop <= 0) {
+          setIsPlaying(false);
+          return;
+        }
+      } else {
+        container.scrollTop += scrollAmount;
+        if (container.scrollTop >= container.scrollHeight - container.clientHeight) {
+          setIsPlaying(false);
+          return;
+        }
+      }
+      
+      animationRef.current = requestAnimationFrame(scroll);
+    };
+    
+    animationRef.current = requestAnimationFrame(scroll);
+  };
+
+  const stopScrolling = () => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    }
+  };
+
+  const togglePlayPause = () => setIsPlaying(prev => !prev);
+  const toggleFlip = () => setIsFlipped(prev => !prev);
+
+  const resetScript = () => {
+    setIsPlaying(false);
+    if (containerRef.current) {
+      containerRef.current.scrollTop = isFlipped ? containerRef.current.scrollHeight : 0;
+    }
+  };
+  
+  const jumpToPosition = (pos) => {
+    if (containerRef.current) {
+      // Fix: Use proper ScrollToOptions object
+      containerRef.current.scrollTo({ 
+        top: pos, 
+        behavior: 'smooth' 
+      });
+    }
+  };
+  
+  const jumpToTop = () => jumpToPosition(isFlipped ? containerRef.current?.scrollHeight : 0);
+  const jumpToBottom = () => jumpToPosition(isFlipped ? 0 : containerRef.current?.scrollHeight);
+  
+  const jumpToMarker = (index) => {
+    const markerEl = markerRefs.current[index];
+    if (markerEl && containerRef.current) {
+      const pos = markerEl.offsetTop - (containerRef.current.clientHeight / 2);
+      jumpToPosition(pos);
+      setCurrentMarkerIndex(index);
+    }
+  };
+  
+  const jumpToNextMarker = () => {
+    if (!navMarkers.length) return;
+    const nextIndex = (currentMarkerIndex + 1) % navMarkers.length;
+    jumpToMarker(nextIndex);
+  };
+  
+  const jumpToPrevMarker = () => {
+    if (!navMarkers.length) return;
+    const prevIndex = (currentMarkerIndex - 1 + navMarkers.length) % navMarkers.length;
+    jumpToMarker(prevIndex);
+  };
+
+  const renderContentWithMarkers = () => {
+    if (!navMarkers.length) {
+        return displayContent;
+    }
+    
+    let lastIndex = 0;
+    const parts = [];
+    markerRefs.current = [];
+
+    navMarkers.forEach((marker, index) => {
+      parts.push(displayContent.substring(lastIndex, marker.position));
+      parts.push(<span key={`marker-${index}`} ref__={el => markerRefs.current[index] = el} />);
+      lastIndex = marker.position;
+    });
+    parts.push(displayContent.substring(lastIndex));
+    
+    return parts;
+  };
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+        setIsFullscreen(true);
+      } else {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    } catch (error) {
+      console.error("Fullscreen error:", error);
+    }
+  };
+
+  const exitFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
+      setIsFullscreen(false);
+    } catch (error) {
+      console.error("Exit fullscreen error:", error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="w-full h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      </div>
+    );
+  }
+
+  if (!script) {
+    return (
+      <div className="w-full h-screen bg-black flex items-center justify-center text-white">
+        <div className="text-center">
+          <p className="mb-4">Script not found.</p>
+          <Button onClick={() => navigate(createPageUrl('Dashboard'))} className="bg-white text-black hover:bg-gray-200">
+            Go to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full h-screen overflow-hidden relative">
+      <div 
+        ref__={containerRef} 
+        className="w-full h-full overflow-y-scroll scrollbar-hide"
+        style={{
+          backgroundColor: isTransparent ? 'transparent' : 'black',
+          color: 'white'
+        }}
+      >
+        <div 
+          ref__={textRef} 
+          className="mx-auto py-[50vh] px-8 transition-all duration-300 text-center"
+          style={{
+            fontSize: `${fontSize}px`,
+            width: `${textWidth}%`,
+            transform: isFlipped ? 'scaleX(-1)' : 'none',
+            lineHeight: '1.4',
+            fontFamily: 'system-ui, -apple-system, sans-serif'
+          }}
+        >
+          {renderContentWithMarkers()}
+        </div>
+      </div>
+      
+      {showControls && (
+        <div className="fixed inset-0 pointer-events-none z-10">
+          {/* Top Controls */}
+          <div className="absolute top-0 left-0 right-0 p-4 pointer-events-auto">
+            <div className="flex justify-between items-start">
+              <div className="p-3 bg-black/60 backdrop-blur-sm rounded-lg flex items-center gap-3">
+                <label htmlFor="transparent-toggle" className="text-sm text-white font-medium">
+                  Transparent Background
+                </label>
+                <Switch 
+                  id="transparent-toggle" 
+                  checked={isTransparent} 
+                  onCheckedChange={setIsTransparent} 
+                />
+              </div>
+              <div className="flex gap-2">
+                {user?.subscription === 'premium' && cameraDevices.length > 0 && (
+                  <Select value={selectedCamera} onValueChange={setSelectedCamera}>
+                    <SelectTrigger className="w-48 bg-black/60 backdrop-blur-sm border-white/20 text-white">
+                      <SelectValue placeholder="Select Camera" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cameraDevices.map(device => (
+                        <SelectItem key={device.deviceId} value={device.deviceId}>
+                          {device.label || `Camera ${device.deviceId.slice(0, 8)}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                <Button 
+                  onClick={toggleFullscreen} 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-white bg-black/60 backdrop-blur-sm hover:bg-white/20 border border-white/20"
+                >
+                  {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          {/* Bottom Controls */}
+          <div className="absolute bottom-0 left-0 right-0 p-6 pointer-events-auto">
+            <div className="max-w-4xl mx-auto space-y-6">
+              
+              {/* Sliders */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-white text-sm font-medium">Font Size: {fontSize}px</label>
+                  <Slider 
+                    value={[fontSize]} 
+                    onValueChange={([v]) => setFontSize(v)} 
+                    min={32} 
+                    max={104} 
+                    step={2}
+                    className="w-full" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-white text-sm font-medium">Scroll Speed: {scrollSpeed}%</label>
+                  <Slider 
+                    value={[scrollSpeed]} 
+                    onValueChange={([v]) => setScrollSpeed(v)} 
+                    min={10}
+                    max={200}
+                    step={5}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+              
+              {/* Main Controls */}
+              <div className="flex items-center justify-center gap-3">
+                <Button 
+                  onClick={resetScript} 
+                  variant="outline" 
+                  size="icon"
+                  className="w-12 h-12 text-white bg-black/60 backdrop-blur-sm border-white/30 hover:bg-white/20"
+                >
+                  <RotateCcw className="w-5 h-5" />
+                </Button>
+                
+                <Button 
+                  onClick={() => setTextWidth(w => Math.max(20, w - 10))} 
+                  variant="outline" 
+                  size="icon"
+                  className="w-12 h-12 text-white bg-black/60 backdrop-blur-sm border-white/30 hover:bg-white/20"
+                >
+                  <Minus className="w-5 h-5" />
+                </Button>
+                
+                <Button 
+                  onClick={togglePlayPause} 
+                  size="lg" 
+                  className="w-20 h-20 rounded-full bg-white text-black hover:bg-gray-200 shadow-xl border-4 border-white/20"
+                >
+                  {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8 ml-1" />}
+                </Button>
+                
+                <Button 
+                  onClick={() => setTextWidth(w => Math.min(100, w + 10))} 
+                  variant="outline" 
+                  size="icon"
+                  className="w-12 h-12 text-white bg-black/60 backdrop-blur-sm border-white/30 hover:bg-white/20"
+                >
+                  <Plus className="w-5 h-5" />
+                </Button>
+                
+                <Button 
+                  onClick={toggleFlip} 
+                  variant="outline" 
+                  size="icon"
+                  className="w-12 h-12 text-white bg-black/60 backdrop-blur-sm border-white/30 hover:bg-

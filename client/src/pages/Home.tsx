@@ -24,21 +24,22 @@ import { VideoRecorder } from "@/components/VideoRecorder";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import Teleprompter from "./Teleprompter";
 import logo from "@assets/Vibe prompting logo v1 18 jul 2025_1753096193955.png";
 
 interface HomeProps {
   content: string;
   setContent: (content: string) => void;
-  onStartTeleprompter: () => void;
 }
 
-export default function Home({ content, setContent, onStartTeleprompter }: HomeProps) {
+export default function Home({ content, setContent }: HomeProps) {
   const { user } = useAuth();
   const { subscription, isLoading: subscriptionLoading } = useSubscription();
   const { toast } = useToast();
   
   const [showVideoRecorder, setShowVideoRecorder] = useState(false);
   const [activeSection, setActiveSection] = useState("scripts");
+  const [showTeleprompter, setShowTeleprompter] = useState(false);
 
   const handleLogout = () => {
     window.location.href = "/api/logout";
@@ -94,6 +95,26 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
       default: return 'from-gray-600 to-gray-800';
     }
   };
+
+  const handleStartTeleprompter = () => {
+    if (!content.trim()) {
+      toast({
+        title: "No Content",
+        description: "Please add some text before starting the teleprompter",
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowTeleprompter(true);
+  };
+
+  const handleExitTeleprompter = () => {
+    setShowTeleprompter(false);
+  };
+
+  if (showTeleprompter) {
+    return <Teleprompter content={content} onExit={handleExitTeleprompter} />;
+  }
 
   if (subscriptionLoading) {
     return (
@@ -284,7 +305,7 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
                   <FileImport 
                     content={content} 
                     setContent={setContent} 
-                    onStartTeleprompter={onStartTeleprompter}
+                    onStartTeleprompter={handleStartTeleprompter}
                   />
                   
                   <div className="mt-6 flex gap-3 justify-end">

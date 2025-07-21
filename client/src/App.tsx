@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import Home from "@/pages/Home";
 import Landing from "@/pages/Landing";
-import TeleprompterPage from "@/pages/teleprompter";
+
 import NotFound from "@/pages/not-found";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useToast } from "@/hooks/use-toast";
@@ -16,27 +16,6 @@ import { useEffect } from "react";
 
 function AuthenticatedApp() {
   const [content, setContent] = useState("");
-  const [showTeleprompter, setShowTeleprompter] = useState(false);
-
-  const handleStartTeleprompter = () => {
-    if (!content.trim()) {
-      return;
-    }
-    setShowTeleprompter(true);
-  };
-
-  const handleExitTeleprompter = () => {
-    setShowTeleprompter(false);
-  };
-
-  if (showTeleprompter) {
-    return (
-      <TeleprompterPage 
-        content={content} 
-        onExit={handleExitTeleprompter}
-      />
-    );
-  }
 
   return (
     <Switch>
@@ -44,7 +23,6 @@ function AuthenticatedApp() {
         <Home 
           content={content}
           setContent={setContent}
-          onStartTeleprompter={handleStartTeleprompter}
         />
       </Route>
       <Route component={NotFound} />
