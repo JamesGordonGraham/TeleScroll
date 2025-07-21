@@ -257,8 +257,8 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
           {activeSection === "scripts" && (
             <div className="space-y-6">
               <div className="text-center">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">Import Your Script</h2>
-                <p className="text-gray-600 mb-8">Upload a file, cut and paste, use voice input or start typing to begin your teleprompter session</p>
+                <h2 className="text-3xl font-bold text-blue-700 mb-2">Import Your Script</h2>
+                <p className="text-blue-600 mb-8">Upload a file, cut and paste, use voice input or start typing to begin your teleprompter session</p>
               </div>
 
               <Card className="max-w-4xl mx-auto">
@@ -293,7 +293,7 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
 
               {/* AI Assistant under script editor */}
               <div className="max-w-4xl mx-auto">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">AI Script Assistant - get help in Writing new Scripts</h3>
+                <h3 className="text-xl font-semibold text-blue-700 mb-4">AI Script Assistant - get help in Writing new Scripts</h3>
                 <AIScriptAssistant onScriptGenerated={handleScriptGenerated} />
               </div>
             </div>
@@ -303,8 +303,8 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
           {activeSection === "settings" && (
             <div className="space-y-6">
               <div className="text-center">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">Settings</h2>
-                <p className="text-gray-600 mb-8">Configure your teleprompter preferences</p>
+                <h2 className="text-3xl font-bold text-blue-700 mb-2">Settings</h2>
+                <p className="text-blue-600 mb-8">Configure your teleprompter preferences</p>
               </div>
 
               <Card className="max-w-2xl mx-auto">
@@ -325,8 +325,8 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
           {activeSection === "ai-assistant" && (
             <div className="space-y-6">
               <div className="text-center">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">AI Script Assistant</h2>
-                <p className="text-gray-600 mb-8">Generate professional scripts for any occasion with AI</p>
+                <h2 className="text-3xl font-bold text-blue-700 mb-2">AI Script Assistant</h2>
+                <p className="text-blue-600 mb-8">Generate professional scripts for any occasion with AI</p>
               </div>
               <AIScriptAssistant onScriptGenerated={handleScriptGenerated} />
             </div>
@@ -336,8 +336,8 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
           {activeSection === "video-capture" && (
             <div className="space-y-6">
               <div className="text-center">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">Video Capture</h2>
-                <p className="text-gray-600 mb-8">Record yourself presenting with optional transparent background</p>
+                <h2 className="text-3xl font-bold text-blue-700 mb-2">Video Capture</h2>
+                <p className="text-blue-600 mb-8">Record yourself presenting with optional transparent background</p>
               </div>
               
               <Card className="max-w-2xl mx-auto">
@@ -371,8 +371,8 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
           {activeSection === "captions" && (
             <div className="space-y-6">
               <div className="text-center">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">AI Captions</h2>
-                <p className="text-gray-600 mb-8">Generate automatic captions for your presentations</p>
+                <h2 className="text-3xl font-bold text-blue-700 mb-2">AI Captions</h2>
+                <p className="text-blue-600 mb-8">Generate automatic captions for your presentations</p>
               </div>
               
               <Card className="max-w-2xl mx-auto">
@@ -400,8 +400,8 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
           {activeSection === "upgrade" && (
             <div className="space-y-6">
               <div className="text-center">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">Upgrade Your Plan</h2>
-                <p className="text-gray-600 mb-8">Unlock powerful features with Pro or Premium</p>
+                <h2 className="text-3xl font-bold text-blue-700 mb-2">Upgrade Your Plan</h2>
+                <p className="text-blue-600 mb-8">Unlock powerful features with Pro or Premium</p>
               </div>
               <SubscriptionPlans />
             </div>
