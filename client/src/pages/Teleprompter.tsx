@@ -141,32 +141,39 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       const deltaTime = Math.min(currentTime - lastTimeRef.current, 100); // Cap at 100ms
       lastTimeRef.current = currentTime;
       
-      // Ultra-smooth scrolling with 12-layer interpolation
-      const baseSpeed = 80; // pixels per second at speed level 1
-      const speedMultiplier = scrollSpeed; // Direct speed multiplier (1-10)
-      const targetScrollAmount = (baseSpeed * speedMultiplier * deltaTime) / 1000;
+      // Ultra-smooth scrolling with refined speed curve
+      const baseSpeed = 20; // Much slower base speed - 20 pixels per second at speed level 1
+      const speedCurve = Math.pow(scrollSpeed, 1.8); // Exponential curve for better control
+      const targetScrollAmount = (baseSpeed * speedCurve * deltaTime) / 1000;
       
-      // Multi-layer smoothing with optimized factors
-      const smoothingLayers = [0.28, 0.25, 0.22, 0.19, 0.16, 0.13, 0.10, 0.08, 0.06, 0.05, 0.04, 0.03];
-      let smoothedAmount = targetScrollAmount;
+      // Enhanced multi-layer smoothing for ultra-smooth animation
+      const smoothingFactors = [0.15, 0.12, 0.10, 0.08, 0.06, 0.05, 0.04, 0.03, 0.025, 0.02, 0.015, 0.01];
+      let currentAmount = targetScrollAmount;
       
-      smoothingLayers.forEach(factor => {
-        smoothScrollRef.current += (smoothedAmount - smoothScrollRef.current) * factor;
-        smoothedAmount = smoothScrollRef.current;
+      // Apply progressive smoothing layers
+      smoothingFactors.forEach((factor, index) => {
+        const weight = 1 - (index * 0.08); // Decreasing weight for each layer
+        smoothScrollRef.current += (currentAmount - smoothScrollRef.current) * factor * weight;
+        currentAmount = smoothScrollRef.current;
       });
       
+      // Apply final smoothed scroll amount with sub-pixel precision
+      const finalScrollAmount = Math.max(0.1, smoothScrollRef.current);
+      
       if (isFlipped) {
-        container.scrollTop -= smoothedAmount;
+        container.scrollTop -= finalScrollAmount;
         if (container.scrollTop <= 0) {
           setIsPlaying(false);
           container.scrollTop = 0;
+          smoothScrollRef.current = 0; // Reset smooth scroll reference
           return;
         }
       } else {
-        container.scrollTop += smoothedAmount;
+        container.scrollTop += finalScrollAmount;
         if (container.scrollTop >= container.scrollHeight - container.clientHeight) {
           setIsPlaying(false);
           container.scrollTop = container.scrollHeight - container.clientHeight;
+          smoothScrollRef.current = 0; // Reset smooth scroll reference
           return;
         }
       }
@@ -182,6 +189,9 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       cancelAnimationFrame(animationRef.current);
       animationRef.current = undefined;
     }
+    // Reset smooth scroll reference for clean restart
+    smoothScrollRef.current = 0;
+    lastTimeRef.current = 0;
   };
 
   const togglePlayPause = () => {
