@@ -11,9 +11,10 @@ import { useGoogleVoiceInput } from '@/hooks/use-google-voice-input';
 interface FileImportProps {
   content: string;
   setContent: (content: string) => void;
+  onStartTeleprompter?: () => void;
 }
 
-export function FileImport({ content, setContent }: FileImportProps) {
+export function FileImport({ content, setContent, onStartTeleprompter }: FileImportProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const { toast } = useToast();
@@ -284,6 +285,20 @@ export function FileImport({ content, setContent }: FileImportProps) {
               >
                 <Bookmark className="h-4 w-4 mr-2" />
                 Add Marker
+              </Button>
+
+              <Button
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-4 py-2 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // Call parent component's teleprompter function
+                  if (content && onStartTeleprompter) {
+                    onStartTeleprompter();
+                  }
+                }}
+                disabled={!content}
+              >
+                Run Teleprompter
               </Button>
 
 

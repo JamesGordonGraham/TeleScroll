@@ -258,7 +258,11 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
             <div className="space-y-6">
               <Card className="max-w-4xl mx-auto">
                 <CardContent>
-                  <FileImport content={content} setContent={setContent} />
+                  <FileImport 
+                    content={content} 
+                    setContent={setContent} 
+                    onStartTeleprompter={onStartTeleprompter}
+                  />
                   
                   <div className="mt-6 flex gap-3 justify-end">
                     <Button 
@@ -268,13 +272,6 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
                       disabled={!content}
                     >
                       Clear
-                    </Button>
-                    <Button 
-                      onClick={onStartTeleprompter}
-                      className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 flex items-center gap-2"
-                      disabled={!content}
-                    >
-                      Run Teleprompter
                     </Button>
                   </div>
                 </CardContent>
