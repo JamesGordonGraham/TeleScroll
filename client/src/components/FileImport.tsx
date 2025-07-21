@@ -227,12 +227,7 @@ export function FileImport({ content, setContent }: FileImportProps) {
   };
 
   return (
-    <section className="max-w-5xl mx-auto px-6 sm:px-8 lg:px-10 py-12">
-      <div className="text-center mb-12 animate-slide-up">
-        <h2 className="text-4xl font-bold gradient-text mb-6">Import Your Script</h2>
-        <p className="text-xl text-gray-600 font-light">Upload a file, cut and paste, use voice or start typing to begin your teleprompter session</p>
-      </div>
-
+    <div>
       {/* Script Editor */}
       <div
         {...getRootProps()}
@@ -339,6 +334,6 @@ export function FileImport({ content, setContent }: FileImportProps) {
           </div>
         </CardContent>
       </div>
-    </section>
+    </div>
   );
 }
