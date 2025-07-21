@@ -23,6 +23,7 @@ import { AIScriptAssistant } from "@/components/AIScriptAssistant";
 import { VideoRecorder } from "@/components/VideoRecorder";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import logo from "@assets/Vibe prompting logo v1 18 jul 2025_1753096193955.png";
 
 interface HomeProps {
@@ -54,6 +55,28 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
 
   const clearContent = () => {
     setContent("");
+  };
+
+  const handleSaveScript = async () => {
+    if (!content.trim()) return;
+    
+    try {
+      const response = await apiRequest('POST', '/api/scripts', {
+        title: `Script ${new Date().toLocaleDateString()}`,
+        content: content,
+      });
+      
+      toast({
+        title: "Script saved",
+        description: "Your script has been saved successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Save failed",
+        description: "Failed to save script. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getTierIcon = (tier: string) => {
@@ -272,6 +295,14 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
                       disabled={!content}
                     >
                       Clear
+                    </Button>
+                    <Button 
+                      onClick={handleSaveScript}
+                      variant="outline"
+                      className="flex items-center gap-2 border-blue-500 text-blue-600 hover:bg-blue-50"
+                      disabled={!content}
+                    >
+                      Save Script
                     </Button>
                   </div>
                 </CardContent>
