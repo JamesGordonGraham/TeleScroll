@@ -256,11 +256,6 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
           {/* Scripts Section */}
           {activeSection === "scripts" && (
             <div className="space-y-6">
-              <div className="text-center">
-                <h2 className="text-3xl font-bold text-blue-700 mb-2">Import Your Script</h2>
-                <p className="text-blue-600 mb-8">Upload a file, cut and paste, use voice input or start typing to begin your teleprompter session</p>
-              </div>
-
               <Card className="max-w-4xl mx-auto">
                 <CardContent>
                   <FileImport content={content} setContent={setContent} />
