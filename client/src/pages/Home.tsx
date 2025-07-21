@@ -22,7 +22,7 @@ import { AIScriptAssistant } from "@/components/AIScriptAssistant";
 import { VideoRecorder } from "@/components/VideoRecorder";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { useToast } from "@/hooks/use-toast";
-import logo from "@assets/Vibe Prompting teleprompter autocue logo_1753095967610.png";
+import logo from "@assets/Vibe prompting logo v1 18 jul 2025_1753096193955.png";
 
 interface HomeProps {
   content: string;

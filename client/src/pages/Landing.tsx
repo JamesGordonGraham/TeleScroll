@@ -15,7 +15,7 @@ import {
   Users
 } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
-import logo from "@assets/Vibe Prompting teleprompter autocue logo_1753095967610.png";
+import logo from "@assets/Vibe prompting logo v1 18 jul 2025_1753096193955.png";
 
 export default function Landing() {
   const handleLogin = () => {
