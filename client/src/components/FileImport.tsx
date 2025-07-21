@@ -239,12 +239,12 @@ export function FileImport({ content, setContent }: FileImportProps) {
         <CardContent className="p-8">
           {/* Blue heading text */}
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-blue-700 mb-2">Import Your Script</h2>
-            <p className="text-blue-600">Upload a file, cut and paste, use voice input or start typing to begin your teleprompter session</p>
+            <h2 className="text-3xl font-bold mb-2" style={{ color: 'rgb(5, 128, 205)' }}>Import Your Script</h2>
+            <p style={{ color: 'rgb(5, 128, 205)' }}>Upload a file, cut and paste, use voice input or start typing to begin your teleprompter session</p>
           </div>
           
           <div className="flex justify-between items-center mb-6">
-            <div></div>
+            <h3 className="text-2xl font-semibold text-gray-700">Script Editor</h3>
             <div className="flex space-x-3">
               {/* Google Speech API Voice Input Button */}
               <Button
