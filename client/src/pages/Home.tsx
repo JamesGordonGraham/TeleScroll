@@ -271,23 +271,23 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
                 <CardContent>
                   <FileImport content={content} setContent={setContent} />
                   
-                  {content && (
-                    <div className="mt-6 flex gap-3 justify-end">
-                      <Button 
-                        onClick={clearContent}
-                        variant="outline"
-                        className="flex items-center gap-2"
-                      >
-                        Clear
-                      </Button>
-                      <Button 
-                        onClick={onStartTeleprompter}
-                        className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 flex items-center gap-2"
-                      >
-                        Run Teleprompter
-                      </Button>
-                    </div>
-                  )}
+                  <div className="mt-6 flex gap-3 justify-end">
+                    <Button 
+                      onClick={clearContent}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                      disabled={!content}
+                    >
+                      Clear
+                    </Button>
+                    <Button 
+                      onClick={onStartTeleprompter}
+                      className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 flex items-center gap-2"
+                      disabled={!content}
+                    >
+                      Run Teleprompter
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
 
