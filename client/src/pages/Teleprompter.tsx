@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { 
   Play, 
   Pause, 
@@ -37,8 +37,8 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [scrollSpeed, setScrollSpeed] = useState(1.0);
-  const [fontSize, setFontSize] = useState(72);
+  const [scrollSpeed, setScrollSpeed] = useState(5);
+  const [fontSize, setFontSize] = useState(24);
   const [textWidth, setTextWidth] = useState(80);
   const [isFlipped, setIsFlipped] = useState(false);
   const [showControls, setShowControls] = useState(true);
@@ -82,8 +82,7 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
         case ' ': togglePlayPause(); break;
         case 'f': toggleFullscreen(); break;
         case 'm': toggleFlip(); break;
-        case 'h': 
-        case 'home': jumpToTop(); break;
+        case 'h': jumpToTop(); break;
         case 'b': jumpToBottom(); break;
         case 'n': jumpToNextMarker(); break;
         case 'p': jumpToPrevMarker(); break;
@@ -95,8 +94,8 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
           }
           break;
         case '+':
-        case '=': adjustSpeed(0.1); break;
-        case '-': adjustSpeed(-0.1); break;
+        case '=': setScrollSpeed(Math.min(10, scrollSpeed + 1)); break;
+        case '-': setScrollSpeed(Math.max(1, scrollSpeed - 1)); break;
       }
     };
 
@@ -143,9 +142,9 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       lastTimeRef.current = currentTime;
       
       // Ultra-smooth scrolling with 12-layer interpolation
-      const baseSpeed = 160; // pixels per second at 1.0x
-      const exponentialFactor = Math.pow(scrollSpeed, 1.5); // Exponential scaling
-      const targetScrollAmount = (baseSpeed * exponentialFactor * deltaTime) / 1000;
+      const baseSpeed = 80; // pixels per second at speed level 1
+      const speedMultiplier = scrollSpeed; // Direct speed multiplier (1-10)
+      const targetScrollAmount = (baseSpeed * speedMultiplier * deltaTime) / 1000;
       
       // Multi-layer smoothing with optimized factors
       const smoothingLayers = [0.28, 0.25, 0.22, 0.19, 0.16, 0.13, 0.10, 0.08, 0.06, 0.05, 0.04, 0.03];
@@ -190,16 +189,13 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
   };
 
   const resetToDefault = () => {
-    setScrollSpeed(1.0);
+    setScrollSpeed(5);
+    setFontSize(24);
+    setTextWidth(80);
     toast({
-      title: "Speed Reset",
-      description: "Scroll speed reset to default (1.0x)",
+      title: "Settings Reset",
+      description: "All settings reset to default values",
     });
-  };
-
-  const adjustSpeed = (delta: number) => {
-    const newSpeed = Math.max(0.1, Math.min(3.0, scrollSpeed + delta));
-    setScrollSpeed(newSpeed);
   };
 
   const toggleFullscreen = async () => {
@@ -337,86 +333,131 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       {/* Floating Controls */}
       {(!isFullscreen || showControls) && (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-black/80 backdrop-blur-sm rounded-2xl px-6 py-4 border border-white/20">
-            <div className="flex items-center gap-4">
-              {/* Exit Button */}
+          <div className="bg-black/90 backdrop-blur-sm rounded-2xl px-6 py-4 border border-white/20 shadow-2xl">
+            <div className="flex items-center gap-6">
+              {/* Back Button */}
               <Button
                 onClick={onExit}
                 size="sm"
-                variant="outline"
-                className="border-white/20 text-white hover:bg-white/10"
+                variant="ghost"
+                className="text-white hover:bg-white/10 px-3"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                <span className="text-sm font-medium">Back</span>
               </Button>
 
-              {/* Speed Reset */}
-              <Button
-                onClick={resetToDefault}
-                size="sm"
-                variant="outline"
-                className="border-white/20 text-white hover:bg-white/10"
-              >
-                1.0x
-              </Button>
-
-              {/* Speed Controls */}
+              {/* Navigation Controls */}
               <div className="flex items-center gap-2">
                 <Button
-                  onClick={() => adjustSpeed(-0.1)}
+                  onClick={() => jumpToPrevMarker()}
                   size="sm"
-                  variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10"
+                  variant="ghost"
+                  className="text-white hover:bg-white/10 px-2"
                 >
-                  <Minus className="h-4 w-4" />
+                  <SkipBack className="h-4 w-4" />
                 </Button>
-                <span className="text-sm min-w-[50px] text-center">{formatSpeed(scrollSpeed)}</span>
                 <Button
-                  onClick={() => adjustSpeed(0.1)}
+                  onClick={jumpToTop}
                   size="sm"
-                  variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10"
+                  variant="ghost"
+                  className="text-white hover:bg-white/10 px-2"
                 >
-                  <Plus className="h-4 w-4" />
+                  <span className="text-xs">Top</span>
                 </Button>
               </div>
 
-              {/* Play/Pause */}
+              {/* Play/Pause with white background */}
               <Button
                 onClick={togglePlayPause}
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-white text-black hover:bg-gray-200 px-4"
               >
-                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                {isPlaying ? <Pause className="h-4 w-4 mr-1" /> : <Play className="h-4 w-4 mr-1" />}
+                <span className="text-sm font-medium">{isPlaying ? 'Pause' : 'Play'}</span>
               </Button>
 
-              {/* Flip */}
+              {/* Stop Button */}
               <Button
-                onClick={toggleFlip}
+                onClick={() => {
+                  setIsPlaying(false);
+                  if (containerRef.current) {
+                    containerRef.current.scrollTop = 0;
+                  }
+                }}
                 size="sm"
-                variant="outline"
-                className={`border-white/20 text-white hover:bg-white/10 ${isFlipped ? 'bg-white/20' : ''}`}
+                variant="ghost"
+                className="text-white hover:bg-white/10 px-3"
               >
-                <FlipHorizontal className="h-4 w-4" />
+                <Square className="h-4 w-4 mr-1" />
+                <span className="text-sm font-medium">Stop</span>
               </Button>
 
-              {/* Fullscreen */}
+              {/* Speed Control */}
+              <div className="flex items-center gap-3">
+                <span className="text-white text-sm font-medium">Speed {scrollSpeed}</span>
+                <div className="w-24">
+                  <Slider
+                    value={[scrollSpeed]}
+                    onValueChange={(value) => setScrollSpeed(value[0])}
+                    min={1}
+                    max={10}
+                    step={1}
+                    className="slider-white"
+                  />
+                </div>
+              </div>
+
+              {/* Font Size Control */}
+              <div className="flex items-center gap-3">
+                <span className="text-white text-sm font-medium">Size {fontSize}</span>
+                <div className="w-24">
+                  <Slider
+                    value={[fontSize]}
+                    onValueChange={(value) => setFontSize(value[0])}
+                    min={12}
+                    max={72}
+                    step={2}
+                    className="slider-white"
+                  />
+                </div>
+              </div>
+
+              {/* Text Width Control */}
+              <div className="flex items-center gap-3">
+                <FlipHorizontal className="h-4 w-4 text-white" />
+                <span className="text-white text-sm font-medium">Width {textWidth}</span>
+                <div className="w-24">
+                  <Slider
+                    value={[textWidth]}
+                    onValueChange={(value) => setTextWidth(value[0])}
+                    min={40}
+                    max={100}
+                    step={5}
+                    className="slider-white"
+                  />
+                </div>
+              </div>
+
+              {/* Record Button */}
+              <Button
+                onClick={() => setIsRecording(!isRecording)}
+                size="sm"
+                variant="ghost"
+                className="text-white hover:bg-white/10 px-3"
+              >
+                <Video className="h-4 w-4 mr-1" />
+                <span className="text-sm font-medium">Record</span>
+              </Button>
+
+              {/* Fullscreen Button */}
               <Button
                 onClick={toggleFullscreen}
                 size="sm"
-                variant="outline"
-                className="border-white/20 text-white hover:bg-white/10"
+                variant="ghost"
+                className="text-white hover:bg-white/10 px-3"
               >
-                {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
-              </Button>
-
-              {/* Shortcuts */}
-              <Button
-                onClick={() => setShowShortcuts(!showShortcuts)}
-                size="sm"
-                variant="outline"
-                className="border-white/20 text-white hover:bg-white/10"
-              >
-                <Keyboard className="h-4 w-4" />
+                <Maximize className="h-4 w-4 mr-1" />
+                <span className="text-sm font-medium">Fullscreen</span>
               </Button>
             </div>
           </div>

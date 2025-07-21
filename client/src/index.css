@@ -230,3 +230,21 @@ textarea .marker::before {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* White slider styling for teleprompter */
+.slider-white [data-orientation="horizontal"] {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.slider-white [data-orientation="horizontal"] [data-slider-track] {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.slider-white [data-orientation="horizontal"] [data-slider-range] {
+  background: #3b82f6;
+}
+
+.slider-white [data-orientation="horizontal"] [data-slider-thumb] {
+  background: white;
+  border: 2px solid #3b82f6;
+}
