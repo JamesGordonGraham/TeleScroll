@@ -438,6 +438,17 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                 </div>
               </div>
 
+              {/* Mirror Text Button */}
+              <Button
+                onClick={toggleFlip}
+                size="sm"
+                variant="ghost"
+                className={`text-white hover:bg-white/10 px-3 ${isFlipped ? 'bg-white/20' : ''}`}
+              >
+                <FlipHorizontal className="h-4 w-4 mr-1" />
+                <span className="text-sm font-medium">Mirror</span>
+              </Button>
+
               {/* Record Button */}
               <Button
                 onClick={() => setIsRecording(!isRecording)}
