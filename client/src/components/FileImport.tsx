@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { CloudUpload, Trash2, FileText, Bookmark, Mic, MicOff } from 'lucide-react';
+import { CloudUpload, FileText, Bookmark, Mic, MicOff } from 'lucide-react';
 import { parseFile, validateFile } from '@/lib/file-parser';
 import { useToast } from '@/hooks/use-toast';
 import { useGoogleVoiceInput } from '@/hooks/use-google-voice-input';
@@ -202,11 +202,7 @@ export function FileImport({ content, setContent }: FileImportProps) {
     noClick: true, // We'll handle clicks manually for better UX
   });
 
-  // Remove this function as it's handled by parent component
-
-  const handleClearText = () => {
-    setContent('');
-  };
+  // Clear functionality is now handled by parent component
 
   const handleAddMarker = () => {
     const textarea = textareaRef.current;
@@ -289,15 +285,7 @@ export function FileImport({ content, setContent }: FileImportProps) {
                 Add Marker
               </Button>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleClearText}
-                className="btn-apple rounded-2xl px-4 py-2 text-gray-500 hover:text-red-500 border-0"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Clear
-              </Button>
+
 
             </div>
           </div>
