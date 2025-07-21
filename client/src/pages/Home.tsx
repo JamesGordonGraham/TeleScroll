@@ -13,7 +13,8 @@ import {
   Settings,
   Clock,
   Zap,
-  Star
+  Star,
+  Type
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -36,7 +37,7 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
   const { toast } = useToast();
   
   const [showVideoRecorder, setShowVideoRecorder] = useState(false);
-  const [activeTab, setActiveTab] = useState("script");
+  const [activeSection, setActiveSection] = useState("scripts");
 
   const handleLogout = () => {
     window.location.href = "/api/logout";
@@ -44,11 +45,15 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
 
   const handleScriptGenerated = (script: string) => {
     setContent(script);
-    setActiveTab("script");
+    setActiveSection("scripts");
     toast({
       title: "Script Generated",
       description: "Your AI-generated script is ready in the editor!",
     });
+  };
+
+  const clearContent = () => {
+    setContent("");
   };
 
   const getTierIcon = (tier: string) => {
@@ -81,7 +86,7 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 to-blue-100">
       {/* Header */}
-      <header className="container mx-auto px-4 py-6">
+      <header className="px-6 py-4 border-b border-white/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src={logo} alt="Teleprompter" className="h-16 w-auto" />
@@ -133,242 +138,281 @@ export default function Home({ content, setContent, onStartTeleprompter }: HomeP
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 pb-8">
-        {/* Usage Progress (Free tier) */}
-        {subscription?.tier === 'free' && (
-          <Card className="mb-6 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-amber-600" />
-                  <span className="text-sm font-medium text-amber-800">Free Plan Usage</span>
-                </div>
-                <span className="text-sm text-amber-700">
-                  {subscription.usage || 0} / {subscription.usageLimit || 60} minutes
-                </span>
-              </div>
-              <Progress 
-                value={((subscription.usage || 0) / (subscription.usageLimit || 60)) * 100} 
-                className="mb-3"
-              />
-              <p className="text-xs text-amber-700">
-                Upgrade to Pro for unlimited usage or Premium for AI features
+      <div className="flex h-[calc(100vh-80px)]">
+        {/* Left Navigation Panel */}
+        <div className="w-64 bg-white/50 backdrop-blur-sm border-r border-white/20 p-4">
+          <nav className="space-y-2">
+            <button 
+              onClick={() => setActiveSection("scripts")}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                activeSection === "scripts" 
+                  ? "bg-blue-100 text-blue-700 font-medium" 
+                  : "text-gray-700 hover:bg-blue-50"
+              }`}
+            >
+              <FileText className="h-5 w-5" />
+              Scripts
+            </button>
+            
+            <button 
+              onClick={() => setActiveSection("settings")}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                activeSection === "settings" 
+                  ? "bg-blue-100 text-blue-700 font-medium" 
+                  : "text-gray-700 hover:bg-blue-50"
+              }`}
+            >
+              <Settings className="h-5 w-5" />
+              Settings
+            </button>
+
+            <div className="pt-2 border-t border-gray-200">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-2">
+                Premium Features
               </p>
-            </CardContent>
-          </Card>
-        )}
+              
+              <button 
+                onClick={() => setActiveSection("ai-assistant")}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                  activeSection === "ai-assistant" 
+                    ? "bg-purple-100 text-purple-700 font-medium" 
+                    : "text-gray-700 hover:bg-purple-50"
+                }`}
+              >
+                <Sparkles className="h-5 w-5" />
+                AI Script Assistant
+                <Badge variant="secondary" className="ml-auto bg-purple-100 text-purple-700 text-xs">
+                  Premium
+                </Badge>
+              </button>
+              
+              <button 
+                onClick={() => setActiveSection("video-capture")}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                  activeSection === "video-capture" 
+                    ? "bg-red-100 text-red-700 font-medium" 
+                    : "text-gray-700 hover:bg-red-50"
+                }`}
+              >
+                <Video className="h-5 w-5" />
+                Video Capture
+                <Badge variant="secondary" className="ml-auto bg-red-100 text-red-700 text-xs">
+                  Premium
+                </Badge>
+              </button>
+              
+              <button 
+                onClick={() => setActiveSection("captions")}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                  activeSection === "captions" 
+                    ? "bg-green-100 text-green-700 font-medium" 
+                    : "text-gray-700 hover:bg-green-50"
+                }`}
+              >
+                <Type className="h-5 w-5" />
+                Captions
+                <Badge variant="secondary" className="ml-auto bg-green-100 text-green-700 text-xs">
+                  Premium
+                </Badge>
+              </button>
+            </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Panel */}
-          <div className="lg:col-span-2">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="script" className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Script Editor
-                </TabsTrigger>
-                <TabsTrigger value="ai" className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4" />
-                  AI Assistant
-                  <Badge variant="secondary" className="ml-1 bg-purple-100 text-purple-700">
-                    Premium
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="video" className="flex items-center gap-2">
-                  <Video className="h-4 w-4" />
-                  Recording
-                  <Badge variant="secondary" className="ml-1 bg-red-100 text-red-700">
-                    Premium
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="upgrade">
-                  <Crown className="h-4 w-4" />
-                  Upgrade
-                </TabsTrigger>
-              </TabsList>
+            <button 
+              onClick={() => setActiveSection("upgrade")}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-700 hover:from-yellow-200 hover:to-orange-200 font-medium mt-4`}
+            >
+              <Crown className="h-5 w-5" />
+              Upgrade to Premium
+            </button>
+          </nav>
+        </div>
 
-              <TabsContent value="script" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Script Editor</CardTitle>
-                    <CardDescription>
-                      Import your script or use voice input to create content
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <FileImport content={content} setContent={setContent} />
-                  </CardContent>
-                </Card>
+        {/* Main Content Area */}
+        <div className="flex-1 p-6 overflow-auto">
+          {/* Usage Progress (Free tier) */}
+          {subscription?.tier === 'free' && (
+            <Card className="mb-6 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-amber-600" />
+                    <span className="text-sm font-medium text-amber-800">Free Plan Usage</span>
+                  </div>
+                  <span className="text-sm text-amber-700">
+                    {subscription.usage || 0} / {subscription.usageLimit || 60} minutes
+                  </span>
+                </div>
+                <Progress 
+                  value={((subscription.usage || 0) / (subscription.usageLimit || 60)) * 100} 
+                  className="mb-3"
+                />
+                <p className="text-xs text-amber-700">
+                  Upgrade to Pro for unlimited usage or Premium for AI features
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
-                {content && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Ready to Present</CardTitle>
-                      <CardDescription>
-                        Your script is loaded and ready for the teleprompter
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
+          {/* Scripts Section */}
+          {activeSection === "scripts" && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">Import Your Script</h2>
+                <p className="text-gray-600 mb-8">Upload a file, cut and paste, use voice input or start typing to begin your teleprompter session</p>
+              </div>
+
+              <Card className="max-w-4xl mx-auto">
+                <CardHeader>
+                  <CardTitle>Script Editor</CardTitle>
+                  <CardDescription>
+                    Import your script or create content for your teleprompter presentation
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FileImport content={content} setContent={setContent} />
+                  
+                  {content && (
+                    <div className="mt-6 flex gap-3 justify-end">
+                      <Button 
+                        onClick={clearContent}
+                        variant="outline"
+                        className="flex items-center gap-2"
+                      >
+                        Clear
+                      </Button>
                       <Button 
                         onClick={onStartTeleprompter}
-                        size="lg"
-                        className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                        className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 flex items-center gap-2"
                       >
-                        Start Teleprompter
+                        Run Teleprompter
                       </Button>
-                    </CardContent>
-                  </Card>
-                )}
-              </TabsContent>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-              <TabsContent value="ai">
+              {/* AI Assistant under script editor */}
+              <div className="max-w-4xl mx-auto">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">AI Script Assistant - get help in Writing new Scripts</h3>
                 <AIScriptAssistant onScriptGenerated={handleScriptGenerated} />
-              </TabsContent>
+              </div>
+            </div>
+          )}
 
-              <TabsContent value="video">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Video className="h-5 w-5 text-red-600" />
-                      Video Recording
-                      <Badge variant="secondary" className="bg-red-100 text-red-700">
-                        <Crown className="h-3 w-3 mr-1" />
-                        Premium
-                      </Badge>
-                    </CardTitle>
-                    <CardDescription>
-                      Record yourself presenting with optional transparent background
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button 
-                      onClick={() => setShowVideoRecorder(true)}
-                      className="w-full bg-gradient-to-r from-red-600 to-purple-600 hover:from-red-700 hover:to-purple-700"
-                    >
-                      <Video className="h-4 w-4 mr-2" />
-                      Open Video Recorder
-                    </Button>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+          {/* Settings Section */}
+          {activeSection === "settings" && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">Settings</h2>
+                <p className="text-gray-600 mb-8">Configure your teleprompter preferences</p>
+              </div>
 
-              <TabsContent value="upgrade">
-                <div className="space-y-6">
-                  <div className="text-center">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Upgrade Your Plan</h3>
-                    <p className="text-gray-600">Unlock powerful features with Pro or Premium</p>
-                  </div>
-                  <SubscriptionPlans />
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
+              <Card className="max-w-2xl mx-auto">
+                <CardHeader>
+                  <CardTitle>Teleprompter Settings</CardTitle>
+                  <CardDescription>
+                    Customize font size, scroll speed, and display preferences
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">Settings panel will be displayed here with font size, scroll speed, text orientation, and other preferences.</p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {content && (
+          {/* AI Assistant Section */}
+          {activeSection === "ai-assistant" && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">AI Script Assistant</h2>
+                <p className="text-gray-600 mb-8">Generate professional scripts for any occasion with AI</p>
+              </div>
+              <AIScriptAssistant onScriptGenerated={handleScriptGenerated} />
+            </div>
+          )}
+
+          {/* Video Capture Section */}
+          {activeSection === "video-capture" && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">Video Capture</h2>
+                <p className="text-gray-600 mb-8">Record yourself presenting with optional transparent background</p>
+              </div>
+              
+              <Card className="max-w-2xl mx-auto">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Video className="h-5 w-5 text-red-600" />
+                    Video Recording
+                    <Badge variant="secondary" className="bg-red-100 text-red-700">
+                      <Crown className="h-3 w-3 mr-1" />
+                      Premium
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription>
+                    Record yourself presenting with optional transparent background
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
                   <Button 
-                    onClick={onStartTeleprompter}
-                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                    onClick={() => setShowVideoRecorder(true)}
+                    className="w-full bg-gradient-to-r from-red-600 to-purple-600 hover:from-red-700 hover:to-purple-700"
                   >
-                    <FileText className="h-4 w-4 mr-2" />
-                    Start Teleprompter
+                    <Video className="h-4 w-4 mr-2" />
+                    Open Video Recorder
                   </Button>
-                )}
-                
-                <Button 
-                  onClick={() => setShowVideoRecorder(true)}
-                  variant="outline"
-                  className="w-full"
-                  disabled={!subscription || subscription.tier !== 'premium'}
-                >
-                  <Video className="h-4 w-4 mr-2" />
-                  Record Video
-                  {subscription?.tier !== 'premium' && (
-                    <Crown className="h-3 w-3 ml-2 text-purple-600" />
-                  )}
-                </Button>
-                
-                <Button 
-                  onClick={() => setActiveTab("ai")}
-                  variant="outline"
-                  className="w-full"
-                  disabled={!subscription || subscription.tier !== 'premium'}
-                >
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  AI Assistant
-                  {subscription?.tier !== 'premium' && (
-                    <Crown className="h-3 w-3 ml-2 text-purple-600" />
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
-            {/* Account Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Account</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Plan</span>
-                  <Badge 
-                    variant="secondary" 
-                    className={`bg-gradient-to-r ${getTierColor(subscription?.tier || 'free')} text-white border-none`}
-                  >
-                    {React.createElement(getTierIcon(subscription?.tier || 'free'), { className: "h-3 w-3 mr-1" })}
-                    {(subscription?.tier || 'free').charAt(0).toUpperCase() + (subscription?.tier || 'free').slice(1)}
-                  </Badge>
-                </div>
-                
-                {subscription?.tier === 'free' && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Usage</span>
-                    <span className="text-sm text-gray-900">
-                      {subscription.usage || 0}/{subscription.usageLimit || 60}min
-                    </span>
-                  </div>
-                )}
-                
-                <Button 
-                  onClick={() => setActiveTab("upgrade")}
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full"
-                >
-                  <Crown className="h-4 w-4 mr-2" />
-                  Upgrade Plan
-                </Button>
-              </CardContent>
-            </Card>
+          {/* Captions Section */}
+          {activeSection === "captions" && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">AI Captions</h2>
+                <p className="text-gray-600 mb-8">Generate automatic captions for your presentations</p>
+              </div>
+              
+              <Card className="max-w-2xl mx-auto">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Type className="h-5 w-5 text-green-600" />
+                    AI Caption Generation
+                    <Badge variant="secondary" className="bg-green-100 text-green-700">
+                      <Crown className="h-3 w-3 mr-1" />
+                      Premium
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription>
+                    Automatically generate captions and subtitles for your content
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">AI-powered caption generation feature coming soon for Premium subscribers.</p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
-            {/* Tips */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Tips</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm text-gray-600">
-                <p>• Use keyboard shortcuts in the teleprompter for hands-free control</p>
-                <p>• Voice input works best in quiet environments</p>
-                <p>• AI Assistant can create scripts for any occasion</p>
-                <p>• Video recording captures only you, not the text</p>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Upgrade Section */}
+          {activeSection === "upgrade" && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">Upgrade Your Plan</h2>
+                <p className="text-gray-600 mb-8">Unlock powerful features with Pro or Premium</p>
+              </div>
+              <SubscriptionPlans />
+            </div>
+          )}
         </div>
       </div>
 
       {/* Video Recorder Modal */}
       <VideoRecorder 
         isVisible={showVideoRecorder}
-        onClose={() => setShowVideoRecorder(false)}
+        onClose={() => setShowVideoRecorder(false)} 
       />
     </div>
   );
