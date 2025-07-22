@@ -15,6 +15,7 @@ export default function VoiceInput({ onVoiceInput, onClose }: VoiceInputProps) {
   const [isSupported, setIsSupported] = useState(false);
   const [shouldContinueListening, setShouldContinueListening] = useState(false);
   const recognitionRef = useRef<any>(null);
+  const finalTranscriptRef = useRef<string>("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -32,30 +33,39 @@ export default function VoiceInput({ onVoiceInput, onClose }: VoiceInputProps) {
       
       // Event handler for when speech is recognized - provides real-time updates
       recognitionRef.current.onresult = (event: any) => {
-        let finalTranscript = '';
+        let currentFinalTranscript = '';
         let interimTranscript = '';
 
-        // Process all results from the last processed index
-        for (let i = event.resultIndex; i < event.results.length; i++) {
+        // Process all results to get the complete final and interim transcripts
+        for (let i = 0; i < event.results.length; i++) {
           const result = event.results[i];
           if (result.isFinal) {
-            finalTranscript += result[0].transcript; // Finalized speech
+            currentFinalTranscript += result[0].transcript;
           } else {
-            interimTranscript += result[0].transcript; // Interim (still being spoken) speech
+            interimTranscript += result[0].transcript;
           }
         }
 
-        // Update transcript - preserve existing text and add new content
-        setTranscript(prev => {
-          // Add new final transcript to existing content
-          if (finalTranscript) {
-            const newContent = prev + (prev ? ' ' : '') + finalTranscript;
-            return newContent + (interimTranscript ? ' ' + interimTranscript : '');
-          } else {
-            // Just show interim results after existing content
-            return prev + (prev && interimTranscript ? ' ' : '') + interimTranscript;
-          }
-        });
+        // Only add new final content that hasn't been processed before
+        const newFinalContent = currentFinalTranscript.replace(finalTranscriptRef.current, '').trim();
+        
+        if (newFinalContent) {
+          // Update the stored final transcript
+          finalTranscriptRef.current = currentFinalTranscript;
+          
+          // Add only the new content to the display
+          setTranscript(prev => {
+            const updatedContent = prev + (prev ? ' ' : '') + newFinalContent;
+            return updatedContent + (interimTranscript ? ' ' + interimTranscript : '');
+          });
+        } else {
+          // Just update with interim results
+          setTranscript(prev => {
+            // Remove any previous interim results and add current ones
+            const baseContent = finalTranscriptRef.current || prev.replace(/\s+[^\s]*$/, '');
+            return baseContent + (interimTranscript ? ' ' + interimTranscript : '');
+          });
+        }
       };
 
       // Event handler for when listening stops - auto-restart to maintain continuous listening
@@ -111,7 +121,9 @@ export default function VoiceInput({ onVoiceInput, onClose }: VoiceInputProps) {
   const startListening = () => {
     if (recognitionRef.current && isSupported) {
       setShouldContinueListening(true); // Enable continuous listening
-      // Don't clear transcript on restart - keep accumulating text
+      // Initialize the final transcript reference with current transcript
+      finalTranscriptRef.current = transcript;
+      
       try {
         recognitionRef.current.start(); // Start listening
         toast({
@@ -166,7 +178,7 @@ export default function VoiceInput({ onVoiceInput, onClose }: VoiceInputProps) {
 
   const clearTranscript = () => {
     setTranscript("");
-    // Clear the transcript and start fresh
+    finalTranscriptRef.current = ""; // Reset the final transcript reference
     toast({
       title: "Transcript Cleared",
       description: "Voice input text has been cleared - ready for new input",
