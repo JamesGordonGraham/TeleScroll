@@ -225,6 +225,15 @@ Changelog:
   * Implemented marker navigation system with violet square markers
   * Fixed all React integration issues and established stable teleprompter foundation
   * Achieved professional broadcast-quality scrolling performance
+- July 22, 2025. Voice input enhancement and deduplication fix:
+  * Replaced Google Cloud Speech API with browser-native Web Speech API for real-time transcription
+  * Redesigned VoiceInput component with blue gradient header matching user design specifications
+  * Added large clickable microphone button for intuitive voice input activation
+  * Implemented proper modal centering over script editor area for better user experience
+  * Fixed critical text duplication issue with length-based tracking system preventing repetitive phrases
+  * Enhanced continuous voice capture maintaining text across speech pauses
+  * Added "Add to Script Editor" button with green gradient styling for clear user action
+  * Established reliable voice-to-text workflow with clean text accumulation and natural spacing
 ```
 
 ## User Preferences
