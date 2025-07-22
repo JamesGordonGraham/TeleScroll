@@ -53,8 +53,6 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
   const scrollSpeedRef = useRef<number>(scrollSpeed);
   const isPlayingRef = useRef<boolean>(isPlaying);
   const currentMarkerIndexRef = useRef<number>(currentMarkerIndex);
-  const fontSizeRef = useRef<number>(fontSize);
-  const isFlippedRef = useRef<boolean>(isFlipped);
 
   // Extract markers and clean content
   const { displayContent, navMarkers } = useMemo(() => {
@@ -87,10 +85,6 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
   useEffect(() => {
     currentMarkerIndexRef.current = currentMarkerIndex;
   }, [currentMarkerIndex]);
-
-  useEffect(() => {
-    fontSizeRef.current = fontSize;
-  }, [fontSize]);
 
   useEffect(() => {
     isFlippedRef.current = isFlipped;
@@ -210,19 +204,12 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       // Dynamic content height for boundary checking
       const scrollableHeight = Math.max(1, scrollRef.current.scrollHeight - scrollRef.current.clientHeight);
       
-      // Update scrollTop: increment by the scrollAmount
-      if (isFlippedRef.current) {
-        scrollRef.current.scrollTop -= scrollAmount;
-        if (scrollRef.current.scrollTop <= 0) {
-          scrollRef.current.scrollTop = 0;
-          setIsPlaying(false);
-        }
-      } else {
-        scrollRef.current.scrollTop += scrollAmount;
-        if (scrollRef.current.scrollTop >= scrollableHeight) {
-          scrollRef.current.scrollTop = scrollableHeight;
-          setIsPlaying(false);
-        }
+      // Update scrollTop: always scroll down regardless of flip state
+      // The flip only affects visual appearance, not scroll direction
+      scrollRef.current.scrollTop += scrollAmount;
+      if (scrollRef.current.scrollTop >= scrollableHeight) {
+        scrollRef.current.scrollTop = scrollableHeight;
+        setIsPlaying(false);
       }
     }, 50); // Fixed, high frequency (every 50ms) for perceived smoothness
   };
