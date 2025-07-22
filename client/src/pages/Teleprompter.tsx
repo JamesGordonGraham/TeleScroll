@@ -47,9 +47,9 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
-  const animationRef = useRef<number>();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const intervalRef = useRef<NodeJS.Timeout>();
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
-  const lastTimeRef = useRef<number>(0);
   const scrollSpeedRef = useRef<number>(scrollSpeed);
   const isPlayingRef = useRef<boolean>(isPlaying);
   const currentMarkerIndexRef = useRef<number>(currentMarkerIndex);
@@ -194,59 +194,44 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
   }, [isFullscreen]);
 
   const startScrolling = () => {
-    const container = containerRef.current;
-    const textElement = textRef.current;
-    if (!container || !textElement) return;
+    // Clear any existing interval to prevent multiple loops running simultaneously
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
     
-    lastTimeRef.current = performance.now();
-    
-    const scroll = (currentTime: number) => {
-      const container = containerRef.current;
-      const textElement = textRef.current;
-      if (!container || !textElement || !isPlayingRef.current) return;
+    // Set up the new setInterval and store its ID
+    intervalRef.current = setInterval(() => {
+      if (!scrollRef.current || !isPlayingRef.current) return;
       
-      const deltaTime = Math.min(currentTime - lastTimeRef.current, 32); // Cap at 32ms for stability
-      lastTimeRef.current = currentTime;
-      
-      // Dynamic content height adaptation
-      const totalHeight = textElement.scrollHeight;
-      const viewportHeight = container.clientHeight;
-      const scrollableHeight = Math.max(1, totalHeight - viewportHeight);
-      
-      // Smooth consistent speed control
+      // scrollAmount Calculation: small, fixed number of pixels per tick
       const currentSpeed = scrollSpeedRef.current; // Speed range 0.1 to 4.0
-      const basePixelsPerSecond = 100; // Consistent base speed
-      const scrollAmount = (basePixelsPerSecond * currentSpeed * deltaTime) / 1000;
+      const scrollAmount = currentSpeed * 0.5; // Base pixel increment linking speed to pixel movement
       
-      // Apply ultra-smooth scrolling with fractional precision
+      // Dynamic content height for boundary checking
+      const scrollableHeight = Math.max(1, scrollRef.current.scrollHeight - scrollRef.current.clientHeight);
+      
+      // Update scrollTop: increment by the scrollAmount
       if (isFlippedRef.current) {
-        const newScrollTop = container.scrollTop - scrollAmount;
-        if (newScrollTop <= 0) {
-          container.scrollTop = 0;
+        scrollRef.current.scrollTop -= scrollAmount;
+        if (scrollRef.current.scrollTop <= 0) {
+          scrollRef.current.scrollTop = 0;
           setIsPlaying(false);
-          return;
         }
-        container.scrollTop = newScrollTop;
       } else {
-        const newScrollTop = container.scrollTop + scrollAmount;
-        if (newScrollTop >= scrollableHeight) {
-          container.scrollTop = scrollableHeight;
+        scrollRef.current.scrollTop += scrollAmount;
+        if (scrollRef.current.scrollTop >= scrollableHeight) {
+          scrollRef.current.scrollTop = scrollableHeight;
           setIsPlaying(false);
-          return;
         }
-        container.scrollTop = newScrollTop;
       }
-      
-      animationRef.current = requestAnimationFrame(scroll);
-    };
-    
-    animationRef.current = requestAnimationFrame(scroll);
+    }, 50); // Fixed, high frequency (every 50ms) for perceived smoothness
   };
 
   const stopScrolling = () => {
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-      animationRef.current = undefined;
+    // Check if intervalRef exists and clear the interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = undefined; // Reset to null
     }
   };
 
@@ -267,7 +252,7 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
   const toggleFullscreen = () => {
     try {
       if (!document.fullscreenElement) {
-        containerRef.current?.requestFullscreen()?.catch((error) => {
+        scrollRef.current?.requestFullscreen()?.catch((error) => {
           console.error('Fullscreen request error:', error);
         });
         setIsFullscreen(true);
@@ -298,15 +283,15 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
   };
 
   const jumpToTop = () => {
-    if (containerRef.current) {
-      containerRef.current.scrollTop = 0;
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
       setCurrentMarkerIndex(-1);
     }
   };
 
   const jumpToBottom = () => {
-    if (containerRef.current) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
       setCurrentMarkerIndex(navMarkers.length);
     }
   };
@@ -328,13 +313,13 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
   };
 
   const scrollToMarker = (markerIndex: number) => {
-    if (!containerRef.current || !textRef.current || markerIndex < 0 || markerIndex >= navMarkers.length) {
+    if (!scrollRef.current || !textRef.current || markerIndex < 0 || markerIndex >= navMarkers.length) {
       return;
     }
 
     const marker = navMarkers[markerIndex];
     const textElement = textRef.current;
-    const container = containerRef.current;
+    const container = scrollRef.current;
     
     // Calculate approximate scroll position based on character position
     const textContent = textElement.textContent || '';
@@ -365,13 +350,12 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
     <div className="min-h-screen bg-black text-white relative">
       {/* Main Teleprompter Display */}
       <div
-        ref={containerRef}
+        ref={scrollRef}
         className={`teleprompter-container h-screen overflow-auto cursor-none ${isFlipped ? 'transform scale-x-[-1]' : ''}`}
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
-          scrollBehavior: 'auto',
-          willChange: 'scroll-position'
+          scrollBehavior: 'auto'
         }}
       >
         <div
@@ -452,8 +436,8 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
               <Button
                 onClick={() => {
                   setIsPlaying(false);
-                  if (containerRef.current) {
-                    containerRef.current.scrollTop = 0;
+                  if (scrollRef.current) {
+                    scrollRef.current.scrollTop = 0;
                   }
                 }}
                 size="sm"
