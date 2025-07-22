@@ -487,9 +487,9 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       {/* Settings Modal */}
       {showSettings && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowSettings(false)}>
-          <div className="bg-white rounded-xl p-8 max-w-5xl mx-4 shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-3xl font-bold text-black">⚙️ Teleprompter Settings</h3>
+          <div className="bg-white rounded-xl p-6 max-w-4xl mx-4 shadow-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-black">⚙️ Teleprompter Settings</h3>
               <Button
                 onClick={() => setShowSettings(false)}
                 variant="ghost"
@@ -500,15 +500,15 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Settings Controls */}
-              <div className="space-y-8">
-                <h4 className="text-3xl font-bold text-blue-700 border-b-2 border-blue-300 pb-3 mb-6">🎛️ Display Settings</h4>
+              <div className="space-y-6">
+                <h4 className="text-xl font-bold text-blue-700 border-b border-blue-300 pb-2 mb-4">🎛️ Display Settings</h4>
                 
                 {/* Speed Control */}
-                <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl">
-                  <label className="block text-xl font-bold text-gray-800 mb-4">
-                    📏 Scroll Speed: <span className="text-blue-600 text-2xl">{scrollSpeed.toFixed(1)}x</span>
+                <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                  <label className="block text-lg font-bold text-black mb-3">
+                    📏 Scroll Speed: <span className="text-blue-600">{scrollSpeed.toFixed(1)}x</span>
                   </label>
                   <Slider
                     value={[scrollSpeed]}
@@ -516,18 +516,18 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                     min={0.1}
                     max={4.0}
                     step={0.1}
-                    className="w-full mb-4"
+                    className="w-full mb-3"
                   />
-                  <div className="flex justify-between text-base font-medium text-gray-700">
-                    <span className="bg-white px-4 py-2 rounded-lg border">0.1x (Very Slow)</span>
-                    <span className="bg-white px-4 py-2 rounded-lg border">4.0x (Very Fast)</span>
+                  <div className="flex justify-between text-sm font-medium text-black">
+                    <span className="bg-white px-2 py-1 rounded border">0.1x (Very Slow)</span>
+                    <span className="bg-white px-2 py-1 rounded border">4.0x (Very Fast)</span>
                   </div>
                 </div>
 
                 {/* Font Size Control */}
-                <div className="bg-green-50 border border-green-200 p-6 rounded-xl">
-                  <label className="block text-xl font-bold text-gray-800 mb-4">
-                    🔤 Font Size: <span className="text-green-600 text-2xl">{fontSize}px</span>
+                <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+                  <label className="block text-lg font-bold text-black mb-3">
+                    🔤 Font Size: <span className="text-green-600">{fontSize}px</span>
                   </label>
                   <Slider
                     value={[fontSize]}
@@ -535,18 +535,18 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                     min={12}
                     max={72}
                     step={2}
-                    className="w-full mb-4"
+                    className="w-full mb-3"
                   />
-                  <div className="flex justify-between text-base font-medium text-gray-700">
-                    <span className="bg-white px-4 py-2 rounded-lg border">12px (Small)</span>
-                    <span className="bg-white px-4 py-2 rounded-lg border">72px (Large)</span>
+                  <div className="flex justify-between text-sm font-medium text-black">
+                    <span className="bg-white px-2 py-1 rounded border">12px (Small)</span>
+                    <span className="bg-white px-2 py-1 rounded border">72px (Large)</span>
                   </div>
                 </div>
 
                 {/* Text Width Control */}
-                <div className="bg-purple-50 border border-purple-200 p-6 rounded-xl">
-                  <label className="block text-xl font-bold text-gray-800 mb-4">
-                    📐 Text Width: <span className="text-purple-600 text-2xl">{textWidth}%</span>
+                <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
+                  <label className="block text-lg font-bold text-black mb-3">
+                    📐 Text Width: <span className="text-purple-600">{textWidth}%</span>
                   </label>
                   <Slider
                     value={[textWidth]}
@@ -554,11 +554,11 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                     min={40}
                     max={100}
                     step={5}
-                    className="w-full mb-4"
+                    className="w-full mb-3"
                   />
-                  <div className="flex justify-between text-base font-medium text-gray-700">
-                    <span className="bg-white px-4 py-2 rounded-lg border">40% (Narrow)</span>
-                    <span className="bg-white px-4 py-2 rounded-lg border">100% (Full Width)</span>
+                  <div className="flex justify-between text-sm font-medium text-black">
+                    <span className="bg-white px-2 py-1 rounded border">40% (Narrow)</span>
+                    <span className="bg-white px-2 py-1 rounded border">100% (Full Width)</span>
                   </div>
                 </div>
 
@@ -566,40 +566,39 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                 <Button 
                   onClick={resetToDefault}
                   variant="outline"
-                  size="lg"
-                  className="w-full text-lg py-4 border-2 border-gray-400 hover:bg-gray-50"
+                  className="w-full text-black border-2 border-gray-400 hover:bg-gray-50"
                 >
-                  <RotateCcw className="h-6 w-6 mr-3" />
+                  <RotateCcw className="h-4 w-4 mr-2" />
                   Reset to Defaults
                 </Button>
               </div>
 
               {/* Keyboard Shortcuts */}
               <div>
-                <h4 className="text-3xl font-bold text-blue-700 border-b-2 border-blue-300 pb-3 mb-8">⌨️ Keyboard Shortcuts</h4>
+                <h4 className="text-xl font-bold text-blue-700 border-b border-blue-300 pb-2 mb-4">⌨️ Keyboard Shortcuts</h4>
                 
-                <div className="space-y-8">
+                <div className="space-y-4">
                   {/* Navigation Shortcuts */}
-                  <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl">
-                    <h5 className="font-bold text-blue-800 mb-6 text-2xl">🧭 Navigation</h5>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-                        <span className="font-semibold text-lg">Go to Top:</span>
-                        <kbd className="bg-blue-200 px-4 py-3 rounded-lg font-mono font-bold text-blue-900 text-lg">H</kbd>
+                  <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                    <h5 className="font-bold text-blue-800 mb-3 text-lg">🧭 Navigation</h5>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-semibold text-black">Go to Top:</span>
+                        <kbd className="bg-blue-200 px-2 py-1 rounded font-mono font-bold text-blue-900">H</kbd>
                       </div>
-                      <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-                        <span className="font-semibold text-lg">Go to Bottom:</span>
-                        <kbd className="bg-blue-200 px-4 py-3 rounded-lg font-mono font-bold text-blue-900 text-lg">B</kbd>
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-semibold text-black">Go to Bottom:</span>
+                        <kbd className="bg-blue-200 px-2 py-1 rounded font-mono font-bold text-blue-900">B</kbd>
                       </div>
                       {navMarkers.length > 0 && (
                         <>
-                          <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-                            <span className="font-semibold text-lg">Next Marker:</span>
-                            <kbd className="bg-purple-200 px-4 py-3 rounded-lg font-mono font-bold text-purple-900 text-lg">N</kbd>
+                          <div className="flex justify-between items-center bg-white p-2 rounded">
+                            <span className="font-semibold text-black">Next Marker:</span>
+                            <kbd className="bg-purple-200 px-2 py-1 rounded font-mono font-bold text-purple-900">N</kbd>
                           </div>
-                          <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-                            <span className="font-semibold text-lg">Previous Marker:</span>
-                            <kbd className="bg-purple-200 px-4 py-3 rounded-lg font-mono font-bold text-purple-900 text-lg">P</kbd>
+                          <div className="flex justify-between items-center bg-white p-2 rounded">
+                            <span className="font-semibold text-black">Previous Marker:</span>
+                            <kbd className="bg-purple-200 px-2 py-1 rounded font-mono font-bold text-purple-900">P</kbd>
                           </div>
                         </>
                       )}
@@ -607,54 +606,54 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                   </div>
 
                   {/* Playback & Speed Shortcuts */}
-                  <div className="bg-green-50 border border-green-200 p-6 rounded-xl">
-                    <h5 className="font-bold text-green-800 mb-6 text-2xl">▶️ Playback & Speed</h5>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-                        <span className="font-semibold text-lg">Play/Pause:</span>
-                        <kbd className="bg-green-200 px-4 py-3 rounded-lg font-mono font-bold text-green-900 text-lg">Space</kbd>
+                  <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+                    <h5 className="font-bold text-green-800 mb-3 text-lg">▶️ Playback & Speed</h5>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-semibold text-black">Play/Pause:</span>
+                        <kbd className="bg-green-200 px-2 py-1 rounded font-mono font-bold text-green-900">Space</kbd>
                       </div>
-                      <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-                        <span className="font-semibold text-lg">Speed Up:</span>
-                        <kbd className="bg-green-200 px-4 py-3 rounded-lg font-mono font-bold text-green-900 text-lg">→</kbd>
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-semibold text-black">Speed Up:</span>
+                        <kbd className="bg-green-200 px-2 py-1 rounded font-mono font-bold text-green-900">→</kbd>
                       </div>
-                      <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-                        <span className="font-semibold text-lg">Slow Down:</span>
-                        <kbd className="bg-green-200 px-4 py-3 rounded-lg font-mono font-bold text-green-900 text-lg">←</kbd>
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-semibold text-black">Slow Down:</span>
+                        <kbd className="bg-green-200 px-2 py-1 rounded font-mono font-bold text-green-900">←</kbd>
                       </div>
-                      <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-                        <span className="font-semibold text-lg">Fine Speed +:</span>
-                        <kbd className="bg-orange-200 px-4 py-3 rounded-lg font-mono font-bold text-orange-900 text-lg">+</kbd>
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-semibold text-black">Fine Speed +:</span>
+                        <kbd className="bg-orange-200 px-2 py-1 rounded font-mono font-bold text-orange-900">+</kbd>
                       </div>
-                      <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-                        <span className="font-semibold text-lg">Fine Speed -:</span>
-                        <kbd className="bg-orange-200 px-4 py-3 rounded-lg font-mono font-bold text-orange-900 text-lg">-</kbd>
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-semibold text-black">Fine Speed -:</span>
+                        <kbd className="bg-orange-200 px-2 py-1 rounded font-mono font-bold text-orange-900">-</kbd>
                       </div>
                     </div>
                   </div>
 
                   {/* Additional Controls */}
-                  <div className="bg-gray-50 border border-gray-200 p-6 rounded-xl">
-                    <h5 className="font-bold text-gray-800 mb-6 text-2xl">🎛️ Other Controls</h5>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-                        <span className="font-semibold text-lg">Mirror Text:</span>
-                        <kbd className="bg-indigo-200 px-4 py-3 rounded-lg font-mono font-bold text-indigo-900 text-lg">M</kbd>
+                  <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg">
+                    <h5 className="font-bold text-gray-800 mb-3 text-lg">🎛️ Other Controls</h5>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-semibold text-black">Mirror Text:</span>
+                        <kbd className="bg-indigo-200 px-2 py-1 rounded font-mono font-bold text-indigo-900">M</kbd>
                       </div>
-                      <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-                        <span className="font-semibold text-lg">Fullscreen:</span>
-                        <kbd className="bg-indigo-200 px-4 py-3 rounded-lg font-mono font-bold text-indigo-900 text-lg">F</kbd>
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-semibold text-black">Fullscreen:</span>
+                        <kbd className="bg-indigo-200 px-2 py-1 rounded font-mono font-bold text-indigo-900">F</kbd>
                       </div>
-                      <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-                        <span className="font-semibold text-lg">Exit:</span>
-                        <kbd className="bg-red-200 px-4 py-3 rounded-lg font-mono font-bold text-red-900 text-lg">Esc</kbd>
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-semibold text-black">Exit:</span>
+                        <kbd className="bg-red-200 px-2 py-1 rounded font-mono font-bold text-red-900">Esc</kbd>
                       </div>
                     </div>
                   </div>
 
                   {/* Keyboard Support Info */}
-                  <div className="mt-8 p-6 bg-blue-100 border border-blue-300 rounded-xl">
-                    <p className="text-lg font-semibold text-blue-800 text-center">
+                  <div className="mt-4 p-3 bg-blue-100 border border-blue-300 rounded-lg">
+                    <p className="text-sm font-semibold text-blue-800 text-center">
                       ⌨️ Compatible with USB and Bluetooth keyboards<br/>
                       🎯 Perfect for hands-free operation
                     </p>
@@ -663,11 +662,10 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
               </div>
             </div>
 
-            <div className="flex gap-4 mt-10">
+            <div className="flex gap-3 mt-6">
               <Button 
                 onClick={() => setShowSettings(false)}
-                size="lg"
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xl py-4"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 ✅ Close Settings
               </Button>
