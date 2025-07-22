@@ -23,6 +23,7 @@ import VoiceInput from "@/components/VoiceInput";
 import { AIScriptAssistant } from "@/components/AIScriptAssistant";
 import { VideoRecorder } from "@/components/VideoRecorder";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
+import ScriptManager from "@/components/ScriptManager";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import Teleprompter from "./Teleprompter";
@@ -30,7 +31,7 @@ import logo from "@assets/Vibe prompting logo v1 18 jul 2025_1753096193955.png";
 
 interface HomeProps {
   content: string;
-  setContent: (content: string) => void;
+  setContent: (content: string | ((prev: string) => string)) => void;
 }
 
 export default function Home({ content, setContent }: HomeProps) {
@@ -116,7 +117,7 @@ export default function Home({ content, setContent }: HomeProps) {
 
   const handleVoiceInput = (text: string) => {
     // Append voice text to existing content with proper spacing
-    setContent((prev: string) => {
+    setContent(prev => {
       if (!prev.trim()) return text;
       return prev + (prev.endsWith('\n') ? '' : '\n\n') + text;
     });
@@ -314,7 +315,17 @@ export default function Home({ content, setContent }: HomeProps) {
           {/* Scripts Section */}
           {activeSection === "scripts" && (
             <div className="space-y-6">
+              {/* Saved Scripts */}
+              <ScriptManager onLoadScript={setContent} />
+              
+              {/* Script Editor */}
               <Card className="max-w-4xl mx-auto">
+                <CardHeader>
+                  <CardTitle>Script Editor</CardTitle>
+                  <CardDescription>
+                    Upload a file, cut and paste text, or begin your teleprompter session
+                  </CardDescription>
+                </CardHeader>
                 <CardContent>
                   <FileImport 
                     content={content} 
