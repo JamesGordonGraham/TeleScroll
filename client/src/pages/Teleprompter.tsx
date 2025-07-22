@@ -54,6 +54,8 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
   const scrollSpeedRef = useRef<number>(scrollSpeed);
   const isPlayingRef = useRef<boolean>(isPlaying);
   const currentMarkerIndexRef = useRef<number>(currentMarkerIndex);
+  const fontSizeRef = useRef<number>(fontSize);
+  const isFlippedRef = useRef<boolean>(isFlipped);
 
   // Extract markers and clean content
   const { displayContent, navMarkers } = useMemo(() => {
@@ -86,6 +88,14 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
   useEffect(() => {
     currentMarkerIndexRef.current = currentMarkerIndex;
   }, [currentMarkerIndex]);
+
+  useEffect(() => {
+    fontSizeRef.current = fontSize;
+  }, [fontSize]);
+
+  useEffect(() => {
+    isFlippedRef.current = isFlipped;
+  }, [isFlipped]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -208,11 +218,11 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       // Get text metrics for adaptive speed
       const textContent = textElement.textContent || '';
       const totalWords = textContent.split(/\s+/).length;
-      const totalLines = Math.ceil(totalHeight / (fontSize * 1.5)); // Estimate lines based on font size
+      const totalLines = Math.ceil(totalHeight / (fontSizeRef.current * 1.5)); // Estimate lines based on font size
       
       // Adaptive speed calculation - words per minute approach
       const baseWPM = 160; // Reading speed baseline
-      const wordsPerSecond = (baseWPM * scrollSpeed) / 60;
+      const wordsPerSecond = (baseWPM * scrollSpeedRef.current) / 60;
       const wordsPerFrame = (wordsPerSecond * deltaTime) / 1000;
       
       // Convert words to pixels based on content layout
@@ -221,7 +231,7 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       
       // Dynamic smoothing based on content density and speed
       const densityFactor = Math.min(2.0, totalLines / 30); // Adjust for text density
-      const speedFactor = Math.max(0.5, Math.min(2.0, scrollSpeed)); // Speed-based adjustment
+      const speedFactor = Math.max(0.5, Math.min(2.0, scrollSpeedRef.current)); // Speed-based adjustment
       const adaptiveSmoothing = 0.15 / (densityFactor * speedFactor); // Inverse relationship
       
       // Enhanced multi-layer smoothing
@@ -241,7 +251,7 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       const finalScrollAmount = Math.max(minMovement, Math.min(maxMovement, Math.abs(smoothedAmount)));
       
       // Apply scrolling with boundary checks
-      if (isFlipped) {
+      if (isFlippedRef.current) {
         container.scrollTop -= finalScrollAmount;
         if (container.scrollTop <= 0) {
           setIsPlaying(false);
