@@ -502,13 +502,13 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Settings Controls */}
-              <div className="space-y-6">
-                <h4 className="text-lg font-semibold text-blue-700">Display Settings</h4>
+              <div className="space-y-8">
+                <h4 className="text-2xl font-semibold text-blue-700 border-b border-blue-200 pb-2">Display Settings</h4>
                 
                 {/* Speed Control */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Scroll Speed: {scrollSpeed}x
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <label className="block text-lg font-semibold text-gray-800 mb-3">
+                    📏 Scroll Speed: <span className="text-blue-600">{scrollSpeed.toFixed(1)}x</span>
                   </label>
                   <Slider
                     value={[scrollSpeed]}
@@ -516,18 +516,18 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                     min={0.1}
                     max={4.0}
                     step={0.1}
-                    className="w-full"
+                    className="w-full mb-3"
                   />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>0.1x (Very Slow)</span>
-                    <span>4.0x (Very Fast)</span>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span className="bg-white px-2 py-1 rounded">0.1x (Very Slow)</span>
+                    <span className="bg-white px-2 py-1 rounded">4.0x (Very Fast)</span>
                   </div>
                 </div>
 
                 {/* Font Size Control */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Font Size: {fontSize}px
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <label className="block text-lg font-semibold text-gray-800 mb-3">
+                    🔤 Font Size: <span className="text-blue-600">{fontSize}px</span>
                   </label>
                   <Slider
                     value={[fontSize]}
@@ -535,18 +535,18 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                     min={12}
                     max={72}
                     step={2}
-                    className="w-full"
+                    className="w-full mb-3"
                   />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>12px (Small)</span>
-                    <span>72px (Large)</span>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span className="bg-white px-2 py-1 rounded">12px (Small)</span>
+                    <span className="bg-white px-2 py-1 rounded">72px (Large)</span>
                   </div>
                 </div>
 
                 {/* Text Width Control */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Text Width: {textWidth}%
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <label className="block text-lg font-semibold text-gray-800 mb-3">
+                    📐 Text Width: <span className="text-blue-600">{textWidth}%</span>
                   </label>
                   <Slider
                     value={[textWidth]}
@@ -554,11 +554,11 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                     min={40}
                     max={100}
                     step={5}
-                    className="w-full"
+                    className="w-full mb-3"
                   />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>40% (Narrow)</span>
-                    <span>100% (Full Width)</span>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span className="bg-white px-2 py-1 rounded">40% (Narrow)</span>
+                    <span className="bg-white px-2 py-1 rounded">100% (Full Width)</span>
                   </div>
                 </div>
 
@@ -575,30 +575,30 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
 
               {/* Keyboard Shortcuts */}
               <div>
-                <h4 className="text-lg font-semibold text-blue-700 mb-4">Keyboard Shortcuts</h4>
+                <h4 className="text-2xl font-semibold text-blue-700 border-b border-blue-200 pb-2 mb-6">⌨️ Keyboard Shortcuts</h4>
                 
                 <div className="space-y-6">
                   {/* Navigation Shortcuts */}
-                  <div>
-                    <h5 className="font-semibold text-gray-800 mb-3">Navigation</h5>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Go to Top:</span>
-                        <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">H</kbd>
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h5 className="font-bold text-blue-800 mb-4 text-lg">🧭 Navigation</h5>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-medium">Go to Top:</span>
+                        <kbd className="bg-blue-100 px-3 py-2 rounded font-mono font-bold text-blue-800">H</kbd>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Go to Bottom:</span>
-                        <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">B</kbd>
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-medium">Go to Bottom:</span>
+                        <kbd className="bg-blue-100 px-3 py-2 rounded font-mono font-bold text-blue-800">B</kbd>
                       </div>
                       {navMarkers.length > 0 && (
                         <>
-                          <div className="flex justify-between">
-                            <span>Next Marker:</span>
-                            <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">N</kbd>
+                          <div className="flex justify-between items-center bg-white p-2 rounded">
+                            <span className="font-medium">Next Marker:</span>
+                            <kbd className="bg-purple-100 px-3 py-2 rounded font-mono font-bold text-purple-800">N</kbd>
                           </div>
-                          <div className="flex justify-between">
-                            <span>Previous Marker:</span>
-                            <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">P</kbd>
+                          <div className="flex justify-between items-center bg-white p-2 rounded">
+                            <span className="font-medium">Previous Marker:</span>
+                            <kbd className="bg-purple-100 px-3 py-2 rounded font-mono font-bold text-purple-800">P</kbd>
                           </div>
                         </>
                       )}
@@ -606,47 +606,47 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                   </div>
 
                   {/* Playback & Speed Shortcuts */}
-                  <div>
-                    <h5 className="font-semibold text-gray-800 mb-3">Playback & Speed</h5>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Play/Pause:</span>
-                        <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">Space</kbd>
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <h5 className="font-bold text-green-800 mb-4 text-lg">▶️ Playback & Speed</h5>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-medium">Play/Pause:</span>
+                        <kbd className="bg-green-100 px-3 py-2 rounded font-mono font-bold text-green-800">Space</kbd>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Speed Up:</span>
-                        <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">→</kbd>
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-medium">Speed Up:</span>
+                        <kbd className="bg-green-100 px-3 py-2 rounded font-mono font-bold text-green-800">→</kbd>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Slow Down:</span>
-                        <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">←</kbd>
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-medium">Slow Down:</span>
+                        <kbd className="bg-green-100 px-3 py-2 rounded font-mono font-bold text-green-800">←</kbd>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Fine Speed +:</span>
-                        <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">+</kbd>
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-medium">Fine Speed +:</span>
+                        <kbd className="bg-orange-100 px-3 py-2 rounded font-mono font-bold text-orange-800">+</kbd>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Fine Speed -:</span>
-                        <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">-</kbd>
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-medium">Fine Speed -:</span>
+                        <kbd className="bg-orange-100 px-3 py-2 rounded font-mono font-bold text-orange-800">-</kbd>
                       </div>
                     </div>
                   </div>
 
                   {/* Additional Controls */}
-                  <div>
-                    <h5 className="font-semibold text-gray-800 mb-3">Other Controls</h5>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Mirror Text:</span>
-                        <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">M</kbd>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h5 className="font-bold text-gray-800 mb-4 text-lg">🎛️ Other Controls</h5>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-medium">Mirror Text:</span>
+                        <kbd className="bg-indigo-100 px-3 py-2 rounded font-mono font-bold text-indigo-800">M</kbd>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Fullscreen:</span>
-                        <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">F</kbd>
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-medium">Fullscreen:</span>
+                        <kbd className="bg-indigo-100 px-3 py-2 rounded font-mono font-bold text-indigo-800">F</kbd>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Exit:</span>
-                        <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">Esc</kbd>
+                      <div className="flex justify-between items-center bg-white p-2 rounded">
+                        <span className="font-medium">Exit:</span>
+                        <kbd className="bg-red-100 px-3 py-2 rounded font-mono font-bold text-red-800">Esc</kbd>
                       </div>
                     </div>
                   </div>

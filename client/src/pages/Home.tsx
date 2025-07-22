@@ -217,17 +217,7 @@ export default function Home({ content, setContent }: HomeProps) {
               Load Saved Scripts
             </button>
             
-            <button 
-              onClick={() => setActiveSection("settings")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                activeSection === "settings" 
-                  ? "bg-blue-100 text-blue-700 font-medium" 
-                  : "text-gray-700 hover:bg-blue-50"
-              }`}
-            >
-              <Settings className="h-5 w-5" />
-              Settings
-            </button>
+
 
             {/* Free Plan Usage under Settings */}
             {subscription?.tier === 'free' && (
@@ -370,14 +360,7 @@ export default function Home({ content, setContent }: HomeProps) {
                   <FileText className="h-5 w-5" />
                   <span>Load Saved Scripts</span>
                 </Button>
-                <Button 
-                  onClick={() => setActiveSection("settings")}
-                  variant="outline"
-                  className="flex items-center gap-2 p-4 h-auto text-black border-gray-300 hover:bg-gray-50"
-                >
-                  <Settings className="h-5 w-5" />
-                  <span>Settings</span>
-                </Button>
+
                 <Button 
                   onClick={() => setActiveSection("ai-assistant")}
                   variant="outline"
@@ -386,6 +369,10 @@ export default function Home({ content, setContent }: HomeProps) {
                   <Sparkles className="h-5 w-5" />
                   <span>AI Script Assistant</span>
                 </Button>
+              </div>
+              
+              {/* Additional row for Video Capture, Captions and Upgrade */}
+              <div className="grid grid-cols-2 gap-3">
                 <Button 
                   onClick={() => setActiveSection("video-capture")}
                   variant="outline"
@@ -394,10 +381,6 @@ export default function Home({ content, setContent }: HomeProps) {
                   <Video className="h-5 w-5" />
                   <span>Video Capture</span>
                 </Button>
-              </div>
-              
-              {/* Additional row for Captions and Upgrade */}
-              <div className="grid grid-cols-2 gap-3">
                 <Button 
                   onClick={() => setActiveSection("captions")}
                   variant="outline"
@@ -453,27 +436,7 @@ export default function Home({ content, setContent }: HomeProps) {
             </div>
           )}
 
-          {/* Settings Section */}
-          {activeSection === "settings" && (
-            <div className="space-y-6">
-              <div className="text-center">
-                <h2 className="text-3xl font-bold text-blue-700 mb-2">Settings</h2>
-                <p className="text-blue-600 mb-8">Configure your teleprompter preferences</p>
-              </div>
 
-              <Card className="max-w-2xl mx-auto">
-                <CardHeader>
-                  <CardTitle>Teleprompter Settings</CardTitle>
-                  <CardDescription>
-                    Customize font size, scroll speed, and display preferences
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">Settings panel will be displayed here with font size, scroll speed, text orientation, and other preferences.</p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
 
           {/* AI Assistant Section */}
           {activeSection === "ai-assistant" && (
