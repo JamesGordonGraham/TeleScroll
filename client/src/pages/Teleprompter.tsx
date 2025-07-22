@@ -47,10 +47,8 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
-  const animationRef = useRef<number>();
+  const scrollIntervalRef = useRef<NodeJS.Timeout>();
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
-  const lastTimeRef = useRef<number>(0);
-  const smoothScrollRef = useRef<number>(0);
   const scrollSpeedRef = useRef<number>(scrollSpeed);
   const isPlayingRef = useRef<boolean>(isPlaying);
   const currentMarkerIndexRef = useRef<number>(currentMarkerIndex);
@@ -199,71 +197,63 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
     const textElement = textRef.current;
     if (!container || !textElement) return;
     
-    lastTimeRef.current = performance.now();
+    // Stop any existing interval
+    if (scrollIntervalRef.current) {
+      clearInterval(scrollIntervalRef.current);
+    }
     
-    const scroll = (currentTime: number) => {
+    // Incremental scrolling with setInterval for ultra-smooth motion
+    scrollIntervalRef.current = setInterval(() => {
       const container = containerRef.current;
       const textElement = textRef.current;
-      if (!container || !textElement || !isPlayingRef.current) return;
+      if (!container || !textElement || !isPlayingRef.current) {
+        if (scrollIntervalRef.current) {
+          clearInterval(scrollIntervalRef.current);
+        }
+        return;
+      }
       
-      // Frame rate stabilization
-      const rawDeltaTime = currentTime - lastTimeRef.current;
-      const deltaTime = Math.min(Math.max(rawDeltaTime, 16), 50); // 16-50ms range
-      lastTimeRef.current = currentTime;
-      
-      // Simple content-aware calculation
+      // Content-aware calculation
       const totalHeight = textElement.scrollHeight;
       const viewportHeight = container.clientHeight;
       const scrollableHeight = Math.max(1, totalHeight - viewportHeight);
       
-      // Base speed calculation with font size adjustment and exponential scaling
-      const fontSizeFactor = Math.max(0.5, Math.min(2.0, fontSizeRef.current / 24)); // Normalize to 24px
-      const baseSpeed = 50; // Increased base pixels per second
-      const adjustedSpeed = baseSpeed / fontSizeFactor; // Slower for larger text
-      
-      // Exponential speed scaling for more dramatic increases at higher speeds
+      // Calculate scroll amount per interval
+      const fontSizeFactor = Math.max(0.5, Math.min(2.0, fontSizeRef.current / 24));
+      const basePixelsPerSecond = 40 / fontSizeFactor; // Adjust base speed for font size
       const speedMultiplier = Math.pow(scrollSpeedRef.current, 1.4); // Exponential scaling
-      const targetScrollAmount = (adjustedSpeed * speedMultiplier * deltaTime) / 1000;
       
-      // Simple smoothing
-      const smoothing = 0.15;
-      smoothScrollRef.current += (targetScrollAmount - smoothScrollRef.current) * smoothing;
+      // Convert to pixels per 50ms interval
+      const scrollAmount = (basePixelsPerSecond * speedMultiplier) / 20; // 20 intervals per second (50ms each)
       
-      const finalScrollAmount = Math.max(0.1, smoothScrollRef.current);
-      
-      // Apply scrolling
+      // Apply incremental scrolling
       if (isFlippedRef.current) {
-        container.scrollTop -= finalScrollAmount;
+        container.scrollTop -= scrollAmount;
         if (container.scrollTop <= 0) {
-          setIsPlaying(false);
           container.scrollTop = 0;
-          smoothScrollRef.current = 0;
-          return;
+          setIsPlaying(false);
+          if (scrollIntervalRef.current) {
+            clearInterval(scrollIntervalRef.current);
+          }
         }
       } else {
-        container.scrollTop += finalScrollAmount;
+        container.scrollTop += scrollAmount;
         if (container.scrollTop >= scrollableHeight) {
-          setIsPlaying(false);
           container.scrollTop = scrollableHeight;
-          smoothScrollRef.current = 0;
-          return;
+          setIsPlaying(false);
+          if (scrollIntervalRef.current) {
+            clearInterval(scrollIntervalRef.current);
+          }
         }
       }
-      
-      animationRef.current = requestAnimationFrame(scroll);
-    };
-    
-    animationRef.current = requestAnimationFrame(scroll);
+    }, 50); // 50ms interval for smooth, consistent movement
   };
 
   const stopScrolling = () => {
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-      animationRef.current = undefined;
+    if (scrollIntervalRef.current) {
+      clearInterval(scrollIntervalRef.current);
+      scrollIntervalRef.current = undefined;
     }
-    // Reset smooth scroll reference for clean restart
-    smoothScrollRef.current = 0;
-    lastTimeRef.current = 0;
   };
 
   const togglePlayPause = () => {
