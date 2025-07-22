@@ -202,7 +202,7 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       clearInterval(scrollIntervalRef.current);
     }
     
-    // Incremental scrolling with setInterval for ultra-smooth motion
+    // Fine-tuned pixel-by-pixel scrolling with smaller intervals
     scrollIntervalRef.current = setInterval(() => {
       const container = containerRef.current;
       const textElement = textRef.current;
@@ -213,20 +213,17 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
         return;
       }
       
-      // Content-aware calculation
+      // Dynamic content height adaptation
       const totalHeight = textElement.scrollHeight;
       const viewportHeight = container.clientHeight;
       const scrollableHeight = Math.max(1, totalHeight - viewportHeight);
       
-      // Calculate scroll amount per interval
-      const fontSizeFactor = Math.max(0.5, Math.min(2.0, fontSizeRef.current / 24));
-      const basePixelsPerSecond = 40 / fontSizeFactor; // Adjust base speed for font size
-      const speedMultiplier = Math.pow(scrollSpeedRef.current, 1.4); // Exponential scaling
+      // Precise speed control - currentSpeed directly influences scrollAmount
+      const currentSpeed = scrollSpeedRef.current; // Direct speed value (0.1 to 4.0)
+      const baseScrollAmount = 0.5; // Very small base increment for smoothness
+      const scrollAmount = baseScrollAmount * currentSpeed; // Direct multiplication
       
-      // Convert to pixels per 50ms interval
-      const scrollAmount = (basePixelsPerSecond * speedMultiplier) / 20; // 20 intervals per second (50ms each)
-      
-      // Apply incremental scrolling
+      // Apply pixel-by-pixel scrolling
       if (isFlippedRef.current) {
         container.scrollTop -= scrollAmount;
         if (container.scrollTop <= 0) {
@@ -246,7 +243,7 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
           }
         }
       }
-    }, 50); // 50ms interval for smooth, consistent movement
+    }, 20); // Smaller 20ms interval for ultra-smooth motion
   };
 
   const stopScrolling = () => {
@@ -375,7 +372,8 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
         className={`teleprompter-container h-screen overflow-auto cursor-none ${isFlipped ? 'transform scale-x-[-1]' : ''}`}
         style={{
           scrollbarWidth: 'none',
-          msOverflowStyle: 'none'
+          msOverflowStyle: 'none',
+          scrollBehavior: 'smooth'
         }}
       >
         <div
