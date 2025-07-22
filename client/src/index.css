@@ -37,6 +37,11 @@
   --glass-bg: rgba(255, 255, 255, 0.25);
   --glass-border: rgba(255, 255, 255, 0.18);
   --glass-backdrop: blur(20px);
+  
+  /* Blue slider colors */
+  --slider-blue-track: #3b82f6;
+  --slider-blue-range: #2563eb;
+  --slider-blue-thumb: #1d4ed8;
 }
 
 .dark {
@@ -63,6 +68,20 @@
   /* Dark mode glass morphism */
   --glass-bg: rgba(0, 0, 0, 0.4);
   --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+/* Blue slider styles */
+.slider-blue .slider-track {
+  background-color: var(--slider-blue-track);
+}
+
+.slider-blue .slider-range {
+  background-color: var(--slider-blue-range);
+}
+
+.slider-blue [role="slider"] {
+  background-color: var(--slider-blue-thumb);
+  border-color: var(--slider-blue-thumb);
 }
 
 @layer base {

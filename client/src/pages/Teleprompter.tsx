@@ -418,6 +418,54 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                 <span className="text-sm font-medium">{isPlaying ? 'Pause' : 'Play'}</span>
               </Button>
 
+              {/* Speed Slider */}
+              <div className="flex items-center space-x-2 px-3">
+                <span className="text-white text-xs font-medium">Speed</span>
+                <span className="text-white text-xs">{scrollSpeed.toFixed(1)}</span>
+                <div className="w-20">
+                  <Slider
+                    value={[scrollSpeed]}
+                    onValueChange={(value) => setScrollSpeed(value[0])}
+                    min={0.1}
+                    max={4.0}
+                    step={0.1}
+                    className="w-full slider-blue"
+                  />
+                </div>
+              </div>
+
+              {/* Text Size Slider */}
+              <div className="flex items-center space-x-2 px-3">
+                <span className="text-white text-xs font-medium">Size</span>
+                <span className="text-white text-xs">{fontSize}</span>
+                <div className="w-20">
+                  <Slider
+                    value={[fontSize]}
+                    onValueChange={(value) => setFontSize(value[0])}
+                    min={12}
+                    max={72}
+                    step={2}
+                    className="w-full slider-blue"
+                  />
+                </div>
+              </div>
+
+              {/* Text Width Slider */}
+              <div className="flex items-center space-x-2 px-3">
+                <span className="text-white text-xs font-medium">Width</span>
+                <span className="text-white text-xs">{textWidth}</span>
+                <div className="w-20">
+                  <Slider
+                    value={[textWidth]}
+                    onValueChange={(value) => setTextWidth(value[0])}
+                    min={40}
+                    max={100}
+                    step={5}
+                    className="w-full slider-blue"
+                  />
+                </div>
+              </div>
+
               {/* Stop Button */}
               <Button
                 onClick={() => {
