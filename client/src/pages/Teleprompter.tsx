@@ -184,51 +184,77 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
 
   const startScrolling = () => {
     const container = containerRef.current;
-    if (!container || !isPlaying) return;
+    const textElement = textRef.current;
+    if (!container || !textElement || !isPlaying) return;
     
     lastTimeRef.current = performance.now();
     
     const scroll = (currentTime: number) => {
-      if (!containerRef.current || !isPlaying) return;
+      if (!containerRef.current || !textRef.current || !isPlaying) return;
       
-      // Frame rate stabilization to eliminate micro-stutters
+      // Stable frame rate with capping
       const rawDeltaTime = currentTime - lastTimeRef.current;
-      const deltaTime = Math.min(Math.max(rawDeltaTime, 8), 50); // Clamp between 8ms (120fps) and 50ms (20fps)
+      const deltaTime = Math.min(Math.max(rawDeltaTime, 16), 50); // 60fps to 20fps range
       lastTimeRef.current = currentTime;
       
-      // Ultra-smooth scrolling with consistent frame-rate independent movement
-      const baseSpeed = 30; // Base speed in pixels per second
-      const linearSpeed = scrollSpeed; // Direct linear scaling (0.1 to 4.0)
-      const rawScrollAmount = (baseSpeed * linearSpeed * deltaTime) / 1000;
+      const container = containerRef.current;
+      const textElement = textRef.current;
       
-      // Dual-layer smoothing for elimination of micro-jerkiness
-      const primarySmoothing = 0.12; // Primary smoothing layer
-      const secondarySmoothing = 0.06; // Secondary smoothing layer
+      // Content-aware speed calculation
+      const totalHeight = textElement.scrollHeight;
+      const viewportHeight = container.clientHeight;
+      const scrollableHeight = Math.max(1, totalHeight - viewportHeight);
       
-      // First smoothing layer
-      smoothScrollRef.current += (rawScrollAmount - smoothScrollRef.current) * primarySmoothing;
+      // Get text metrics for adaptive speed
+      const textContent = textElement.textContent || '';
+      const totalWords = textContent.split(/\s+/).length;
+      const totalLines = Math.ceil(totalHeight / (fontSize * 1.5)); // Estimate lines based on font size
       
-      // Second smoothing layer for ultra-fine control
-      const tempSmooth = smoothScrollRef.current;
-      smoothScrollRef.current += (tempSmooth - smoothScrollRef.current) * secondarySmoothing;
+      // Adaptive speed calculation - words per minute approach
+      const baseWPM = 160; // Reading speed baseline
+      const wordsPerSecond = (baseWPM * scrollSpeed) / 60;
+      const wordsPerFrame = (wordsPerSecond * deltaTime) / 1000;
       
-      // Apply final smoothed scroll amount with enhanced sub-pixel precision
-      const finalScrollAmount = Math.max(0.01, smoothScrollRef.current);
+      // Convert words to pixels based on content layout
+      const pixelsPerWord = scrollableHeight / Math.max(1, totalWords);
+      const targetPixelsPerFrame = wordsPerFrame * pixelsPerWord;
       
+      // Dynamic smoothing based on content density and speed
+      const densityFactor = Math.min(2.0, totalLines / 30); // Adjust for text density
+      const speedFactor = Math.max(0.5, Math.min(2.0, scrollSpeed)); // Speed-based adjustment
+      const adaptiveSmoothing = 0.15 / (densityFactor * speedFactor); // Inverse relationship
+      
+      // Enhanced multi-layer smoothing
+      const layers = 6;
+      let smoothedAmount = targetPixelsPerFrame;
+      
+      for (let i = 0; i < layers; i++) {
+        const layerFactor = adaptiveSmoothing * (1 + i * 0.01);
+        smoothedAmount = smoothScrollRef.current + (smoothedAmount - smoothScrollRef.current) * layerFactor;
+      }
+      
+      smoothScrollRef.current = smoothedAmount;
+      
+      // Ensure minimum movement and prevent large jumps
+      const minMovement = 0.05;
+      const maxMovement = Math.max(2, scrollableHeight / 200); // Prevent jumps
+      const finalScrollAmount = Math.max(minMovement, Math.min(maxMovement, Math.abs(smoothedAmount)));
+      
+      // Apply scrolling with boundary checks
       if (isFlipped) {
         container.scrollTop -= finalScrollAmount;
         if (container.scrollTop <= 0) {
           setIsPlaying(false);
           container.scrollTop = 0;
-          smoothScrollRef.current = 0; // Reset smooth scroll reference
+          smoothScrollRef.current = 0;
           return;
         }
       } else {
         container.scrollTop += finalScrollAmount;
-        if (container.scrollTop >= container.scrollHeight - container.clientHeight) {
+        if (container.scrollTop >= scrollableHeight) {
           setIsPlaying(false);
-          container.scrollTop = container.scrollHeight - container.clientHeight;
-          smoothScrollRef.current = 0; // Reset smooth scroll reference
+          container.scrollTop = scrollableHeight;
+          smoothScrollRef.current = 0;
           return;
         }
       }
