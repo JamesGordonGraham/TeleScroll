@@ -202,7 +202,7 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       clearInterval(scrollIntervalRef.current);
     }
     
-    // Fine-tuned pixel-by-pixel scrolling with smaller intervals
+    // High-frequency smooth scrolling for professional teleprompter experience
     scrollIntervalRef.current = setInterval(() => {
       const container = containerRef.current;
       const textElement = textRef.current;
@@ -218,12 +218,12 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       const viewportHeight = container.clientHeight;
       const scrollableHeight = Math.max(1, totalHeight - viewportHeight);
       
-      // Precise speed control - currentSpeed directly influences scrollAmount
-      const currentSpeed = scrollSpeedRef.current; // Direct speed value (0.1 to 4.0)
-      const baseScrollAmount = 0.5; // Very small base increment for smoothness
-      const scrollAmount = baseScrollAmount * currentSpeed; // Direct multiplication
+      // Responsive speed control with larger base increment
+      const currentSpeed = scrollSpeedRef.current; // Speed range 0.1 to 4.0
+      const basePixelsPerInterval = 2.5; // Increased base increment for better speed
+      const scrollAmount = basePixelsPerInterval * currentSpeed; // Linear scaling
       
-      // Apply pixel-by-pixel scrolling
+      // Apply smooth pixel-by-pixel scrolling
       if (isFlippedRef.current) {
         container.scrollTop -= scrollAmount;
         if (container.scrollTop <= 0) {
@@ -243,7 +243,7 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
           }
         }
       }
-    }, 20); // Smaller 20ms interval for ultra-smooth motion
+    }, 16); // 60fps (16ms intervals) for ultra-smooth professional scrolling
   };
 
   const stopScrolling = () => {
@@ -373,7 +373,7 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
-          scrollBehavior: 'smooth'
+          scrollBehavior: 'auto'
         }}
       >
         <div
