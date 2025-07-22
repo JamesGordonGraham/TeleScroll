@@ -205,40 +205,36 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       const textElement = textRef.current;
       if (!container || !textElement || !isPlayingRef.current) return;
       
-      const deltaTime = currentTime - lastTimeRef.current;
+      const deltaTime = Math.min(currentTime - lastTimeRef.current, 32); // Cap at 32ms for stability
       lastTimeRef.current = currentTime;
-      
-      // Stable frame rate control
-      if (deltaTime < 16) {
-        animationRef.current = requestAnimationFrame(scroll);
-        return;
-      }
       
       // Dynamic content height adaptation
       const totalHeight = textElement.scrollHeight;
       const viewportHeight = container.clientHeight;
       const scrollableHeight = Math.max(1, totalHeight - viewportHeight);
       
-      // High-performance speed control with fast base speed
+      // Smooth consistent speed control
       const currentSpeed = scrollSpeedRef.current; // Speed range 0.1 to 4.0
-      const basePixelsPerSecond = 120; // Much faster base speed
+      const basePixelsPerSecond = 100; // Consistent base speed
       const scrollAmount = (basePixelsPerSecond * currentSpeed * deltaTime) / 1000;
       
-      // Apply smooth scrolling
+      // Apply ultra-smooth scrolling with fractional precision
       if (isFlippedRef.current) {
-        container.scrollTop -= scrollAmount;
-        if (container.scrollTop <= 0) {
+        const newScrollTop = container.scrollTop - scrollAmount;
+        if (newScrollTop <= 0) {
           container.scrollTop = 0;
           setIsPlaying(false);
           return;
         }
+        container.scrollTop = newScrollTop;
       } else {
-        container.scrollTop += scrollAmount;
-        if (container.scrollTop >= scrollableHeight) {
+        const newScrollTop = container.scrollTop + scrollAmount;
+        if (newScrollTop >= scrollableHeight) {
           container.scrollTop = scrollableHeight;
           setIsPlaying(false);
           return;
         }
+        container.scrollTop = newScrollTop;
       }
       
       animationRef.current = requestAnimationFrame(scroll);
@@ -374,7 +370,8 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
-          scrollBehavior: 'auto'
+          scrollBehavior: 'auto',
+          willChange: 'scroll-position'
         }}
       >
         <div
