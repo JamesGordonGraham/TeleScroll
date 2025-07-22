@@ -45,7 +45,7 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
   const [currentMarkerIndex, setCurrentMarkerIndex] = useState(-1);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
-  const containerRef = useRef<HTMLDivElement>(null);
+
   const textRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<NodeJS.Timeout>();
@@ -86,9 +86,7 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
     currentMarkerIndexRef.current = currentMarkerIndex;
   }, [currentMarkerIndex]);
 
-  useEffect(() => {
-    isFlippedRef.current = isFlipped;
-  }, [isFlipped]);
+
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -108,14 +106,14 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
           setIsFlipped(prev => !prev); 
           break;
         case 'h': 
-          if (containerRef.current) {
-            containerRef.current.scrollTop = 0;
+          if (scrollRef.current) {
+            scrollRef.current.scrollTop = 0;
             setCurrentMarkerIndex(-1);
           }
           break;
         case 'b': 
-          if (containerRef.current) {
-            containerRef.current.scrollTop = containerRef.current.scrollHeight;
+          if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
             setCurrentMarkerIndex(navMarkers.length);
           }
           break;
