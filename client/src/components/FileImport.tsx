@@ -3,10 +3,9 @@ import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { CloudUpload, FileText, Bookmark, Mic } from 'lucide-react';
+import { CloudUpload, Bookmark, Mic } from 'lucide-react';
 import { parseFile, validateFile } from '@/lib/file-parser';
 import { useToast } from '@/hooks/use-toast';
-import SavedScriptsModal from './SavedScriptsModal';
 
 interface FileImportProps {
   content: string;
@@ -18,7 +17,6 @@ interface FileImportProps {
 export function FileImport({ content, setContent, onStartTeleprompter, onVoiceInput }: FileImportProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [showSavedScripts, setShowSavedScripts] = useState(false);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -122,18 +120,6 @@ export function FileImport({ content, setContent, onStartTeleprompter, onVoiceIn
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-2xl font-semibold text-gray-700">Script Editor</h3>
             <div className="flex space-x-3">
-              {/* Load Saved Scripts Button */}
-              <Button
-                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-2 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowSavedScripts(true);
-                }}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Load Scripts
-              </Button>
-
               {/* Web Speech API Voice Input Button */}
               <Button
                 className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
@@ -206,13 +192,6 @@ export function FileImport({ content, setContent, onStartTeleprompter, onVoiceIn
           </div>
         </CardContent>
       </div>
-      
-      {/* Saved Scripts Modal */}
-      <SavedScriptsModal
-        isOpen={showSavedScripts}
-        onClose={() => setShowSavedScripts(false)}
-        onLoadScript={setContent}
-      />
     </div>
   );
 }

@@ -23,6 +23,7 @@ import VoiceInput from "@/components/VoiceInput";
 import { AIScriptAssistant } from "@/components/AIScriptAssistant";
 import { VideoRecorder } from "@/components/VideoRecorder";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
+import SavedScriptsModal from "@/components/SavedScriptsModal";
 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -43,6 +44,7 @@ export default function Home({ content, setContent }: HomeProps) {
   const [activeSection, setActiveSection] = useState("scripts");
   const [showTeleprompter, setShowTeleprompter] = useState(false);
   const [showVoiceInput, setShowVoiceInput] = useState(false);
+  const [showSavedScripts, setShowSavedScripts] = useState(false);
 
   const handleLogout = () => {
     window.location.href = "/api/logout";
@@ -212,6 +214,20 @@ export default function Home({ content, setContent }: HomeProps) {
               <FileText className="h-5 w-5" />
               Scripts
             </button>
+            
+            {/* Load Scripts Sub-button (only show when Scripts is active) */}
+            {activeSection === "scripts" && (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowSavedScripts(true);
+                }}
+                className="w-full flex items-center gap-3 px-8 py-2 text-sm text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors ml-2"
+              >
+                <FileText className="h-4 w-4" />
+                Load Saved Scripts
+              </button>
+            )}
             
             <button 
               onClick={() => setActiveSection("settings")}
@@ -475,6 +491,13 @@ export default function Home({ content, setContent }: HomeProps) {
       <VideoRecorder 
         isVisible={showVideoRecorder}
         onClose={() => setShowVideoRecorder(false)} 
+      />
+
+      {/* Saved Scripts Modal */}
+      <SavedScriptsModal
+        isOpen={showSavedScripts}
+        onClose={() => setShowSavedScripts(false)}
+        onLoadScript={setContent}
       />
     </div>
   );
