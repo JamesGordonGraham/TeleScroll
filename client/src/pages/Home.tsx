@@ -208,7 +208,7 @@ export default function Home({ content, setContent }: HomeProps) {
                 setActiveSection("scripts");
                 setShowSavedScripts(true);
               }}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-black hover:text-gray-800 hover:bg-gray-50"
             >
               <FileText className="h-5 w-5" />
               Load Saved Scripts
