@@ -1,0 +1,86 @@
+Here's the core logic:
+
+import React, { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Mic, MicOff, X, Volume2 } from "lucide-react";
+
+export default function VoiceInput({ onVoiceInput, onClose }) {
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [isSupported, setIsSupported] = useState(false);
+  const recognitionRef = useRef(null); // Ref to hold the SpeechRecognition instance
+
+  useEffect(() => {
+    // Check if SpeechRecognition API is available in the browser
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+      setIsSupported(true);
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition(); // Create a new instance
+
+      // Configure recognition properties
+      recognitionRef.current.continuous = true; // Keep listening even if user pauses
+      recognitionRef.current.interimResults = true; // Show results as they are being spoken
+      recognitionRef.current.lang = 'en-US'; // Set language
+
+      // Event handler for when speech is recognized
+      recognitionRef.current.onresult = (event) => {
+        let finalTranscript = '';
+        let interimTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          if (result.isFinal) {
+            finalTranscript += result[0].transcript; // Finalized speech
+          } else {
+            interimTranscript += result[0].transcript; // Interim (still being spoken) speech
+          }
+        }
+        setTranscript(finalTranscript + interimTranscript); // Update state with combined transcript
+      };
+
+      // Event handler for when listening stops
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+
+      // Event handler for errors
+      recognitionRef.current.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+      };
+    }
+
+    // Cleanup function: stop recognition when component unmounts
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []); // Empty dependency array means this effect runs once on mount
+
+  const startListening = () => {
+    if (recognitionRef.current && isSupported) {
+      setTranscript(""); // Clear previous transcript
+      setIsListening(true);
+      recognitionRef.current.start(); // Start listening
+    }
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop(); // Stop listening
+      setIsListening(false);
+    }
+  };
+
+  const handleAddToScript = () => {
+    if (transcript.trim()) {
+      onVoiceInput(transcript); // Pass the recognized text to the parent component
+      onClose(); // Close the modal
+    }
+  };
+
+  // ... rest of the component's JSX rendering logic ...
+}
