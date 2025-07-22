@@ -203,8 +203,8 @@ export default function Home({ content, setContent }: HomeProps) {
       </header>
 
       <div className="flex h-[calc(100vh-80px)]">
-        {/* Left Navigation Panel */}
-        <div className="w-64 bg-white/50 backdrop-blur-sm border-r border-white/20 p-4">
+        {/* Left Navigation Panel - Hidden on mobile, visible on desktop */}
+        <div className="hidden md:block w-64 bg-white/50 backdrop-blur-sm border-r border-white/20 p-4">
           <nav className="space-y-2">
             <button 
               onClick={() => {
@@ -312,13 +312,79 @@ export default function Home({ content, setContent }: HomeProps) {
           </nav>
         </div>
 
-        {/* Main Content Area */}
-        <div className="flex-1 p-6 overflow-auto">
+        {/* Main Content Area - Full width on mobile, flex-1 on desktop */}
+        <div className="flex-1 p-4 md:p-6 overflow-auto">
+          {/* Mobile Navigation - Only visible on mobile screens */}
+          <div className="md:hidden mb-4">
+            <div className="flex flex-wrap gap-2 justify-center">
+              <Button 
+                onClick={() => {
+                  setActiveSection("scripts");
+                  setShowSavedScripts(true);
+                }}
+                size="sm"
+                variant={activeSection === "scripts" ? "default" : "outline"}
+                className="flex items-center gap-2"
+              >
+                <FileText className="h-4 w-4" />
+                Scripts
+              </Button>
+              <Button 
+                onClick={() => setActiveSection("settings")}
+                size="sm"
+                variant={activeSection === "settings" ? "default" : "outline"}
+                className="flex items-center gap-2"
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+              </Button>
+              <Button 
+                onClick={() => setActiveSection("ai-assistant")}
+                size="sm"
+                variant={activeSection === "ai-assistant" ? "default" : "outline"}
+                className="flex items-center gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                AI
+              </Button>
+              <Button 
+                onClick={() => setActiveSection("upgrade")}
+                size="sm"
+                variant="outline"
+                className="flex items-center gap-2 bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-700"
+              >
+                <Crown className="h-4 w-4" />
+                Upgrade
+              </Button>
+            </div>
+            
+            {/* Mobile Free Plan Usage */}
+            {subscription?.tier === 'free' && (
+              <div className="mt-3 p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-3 w-3 text-amber-600" />
+                    <span className="text-xs font-medium text-amber-800">Free Plan Usage</span>
+                  </div>
+                  <span className="text-xs text-amber-700">
+                    {subscription.usage || 0}/{subscription.usageLimit || 60}min
+                  </span>
+                </div>
+                <Progress 
+                  value={((subscription.usage || 0) / (subscription.usageLimit || 60)) * 100} 
+                  className="mb-2 h-1"
+                />
+                <p className="text-xs text-amber-700">
+                  Upgrade to Pro for unlimited usage or Premium for AI features
+                </p>
+              </div>
+            )}
+          </div>
 
-          {/* Scripts Section */}
+          {/* Scripts Section - Central focus on mobile */}
           {activeSection === "scripts" && (
             <div className="space-y-6">
-              <Card className="max-w-4xl mx-auto">
+              <Card className="w-full max-w-4xl mx-auto">
                 <CardContent>
                   <FileImport 
                     content={content} 
@@ -356,8 +422,8 @@ export default function Home({ content, setContent }: HomeProps) {
                 />
               )}
 
-              {/* AI Assistant under script editor */}
-              <div className="max-w-4xl mx-auto">
+              {/* AI Assistant under script editor - Hidden on mobile to keep focus on script editor */}
+              <div className="hidden md:block max-w-4xl mx-auto">
                 <h3 className="text-xl font-semibold text-blue-700 mb-4">AI Script Assistant - get help in Writing new Scripts</h3>
                 <AIScriptAssistant onScriptGenerated={handleScriptGenerated} />
               </div>
