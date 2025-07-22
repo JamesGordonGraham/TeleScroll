@@ -96,6 +96,8 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
         case '+':
         case '=': setScrollSpeed(Math.min(4.0, Math.round((scrollSpeed + 0.1) * 10) / 10)); break;
         case '-': setScrollSpeed(Math.max(0.1, Math.round((scrollSpeed - 0.1) * 10) / 10)); break;
+        case 'arrowright': setScrollSpeed(Math.min(4.0, Math.round((scrollSpeed + 0.1) * 10) / 10)); break;
+        case 'arrowleft': setScrollSpeed(Math.max(0.1, Math.round((scrollSpeed - 0.1) * 10) / 10)); break;
       }
     };
 
@@ -482,67 +484,117 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                 <Maximize className="h-4 w-4 mr-1" />
                 <span className="text-sm font-medium">Fullscreen</span>
               </Button>
+
+              {/* Keyboard Shortcuts Button */}
+              <Button
+                onClick={() => setShowShortcuts(true)}
+                size="sm"
+                variant="ghost"
+                className="text-white hover:bg-white/10 px-3"
+              >
+                <Keyboard className="h-4 w-4 mr-1" />
+                <span className="text-sm font-medium">Shortcuts</span>
+              </Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Shortcuts Modal */}
+      {/* Keyboard Shortcuts Modal */}
       {showShortcuts && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowShortcuts(false)}>
-          <div className="bg-gray-900 rounded-lg p-6 max-w-md mx-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-xl font-bold mb-4">Keyboard Shortcuts</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Play/Pause:</span>
-                <span className="text-gray-400">Space</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Speed Up:</span>
-                <span className="text-gray-400">+ or =</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Speed Down:</span>
-                <span className="text-gray-400">-</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Fullscreen:</span>
-                <span className="text-gray-400">F</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Flip Text:</span>
-                <span className="text-gray-400">M</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Go to Top:</span>
-                <span className="text-gray-400">H</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Go to Bottom:</span>
-                <span className="text-gray-400">B</span>
-              </div>
-              {navMarkers.length > 0 && (
-                <>
+          <div className="bg-white rounded-xl p-6 max-w-lg mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-black">Keyboard Shortcuts</h3>
+              <Button
+                onClick={() => setShowShortcuts(false)}
+                variant="ghost"
+                size="sm"
+                className="text-gray-500 hover:text-black p-1"
+              >
+                ×
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-6 text-black">
+              {/* Navigation Shortcuts */}
+              <div>
+                <h4 className="font-semibold text-blue-700 mb-3">Navigation</h4>
+                <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span>Next Marker:</span>
-                    <span className="text-gray-400">N</span>
+                    <span>Go to Home:</span>
+                    <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">H</kbd>
                   </div>
                   <div className="flex justify-between">
-                    <span>Previous Marker:</span>
-                    <span className="text-gray-400">P</span>
+                    <span>Go to Bottom:</span>
+                    <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">B</kbd>
                   </div>
-                </>
-              )}
-              <div className="flex justify-between">
-                <span>Exit:</span>
-                <span className="text-gray-400">Escape</span>
+                  {navMarkers.length > 0 && (
+                    <>
+                      <div className="flex justify-between">
+                        <span>Next Marker:</span>
+                        <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">N</kbd>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Previous Marker:</span>
+                        <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">P</kbd>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Playback & Speed Shortcuts */}
+              <div>
+                <h4 className="font-semibold text-blue-700 mb-3">Playback & Speed</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Play/Pause:</span>
+                    <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">Space</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Increase Speed:</span>
+                    <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">→</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Decrease Speed:</span>
+                    <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">←</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Fullscreen:</span>
+                    <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">F</kbd>
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Additional Controls */}
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <h4 className="font-semibold text-blue-700 mb-3">Additional Controls</h4>
+              <div className="grid grid-cols-2 gap-4 text-sm text-black">
+                <div className="flex justify-between">
+                  <span>Flip Text:</span>
+                  <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">M</kbd>
+                </div>
+                <div className="flex justify-between">
+                  <span>Exit:</span>
+                  <kbd className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">Esc</kbd>
+                </div>
+              </div>
+            </div>
+
+            {/* Keyboard Support Info */}
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <p className="text-sm text-gray-600 text-center">
+                ⌨️ Works with both USB and Bluetooth keyboards
+              </p>
+            </div>
+
             <Button 
               onClick={() => setShowShortcuts(false)}
-              className="w-full mt-4 bg-blue-600 hover:bg-blue-700"
+              className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white"
             >
-              Close
+              Got it!
             </Button>
           </div>
         </div>
