@@ -266,6 +266,15 @@ Changelog:
   * Updated all keyboard shortcuts to use scrollRef for consistent scroll control
   * Achieved proper separation between visual mirror effect and scrolling functionality
   * User confirmed mirror button works correctly without affecting scroll direction
+- July 22, 2025. Settings interface improvements and floating dock sliders restoration:
+  * Completely removed settings button and section from front page for cleaner mobile layout
+  * Fixed mobile navigation buttons grid layout (2x2 instead of single column)
+  * Enhanced teleprompter settings popup readability with larger text, better contrast, and compact sizing
+  * Changed all text labels from white to black for proper visibility on light backgrounds
+  * Reduced modal size to fit viewport without scrolling (max-w-4xl, reduced padding)
+  * Restored missing Speed, Size, and Width sliders to floating dock with blue color scheme
+  * Added live value displays for all sliders and consistent blue styling
+  * User confirmed settings popup readability and floating dock sliders working well
 ```
 
 ## User Preferences
