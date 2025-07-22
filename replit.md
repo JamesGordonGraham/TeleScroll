@@ -259,6 +259,13 @@ Changelog:
   * Achieved dynamic content adaptation through browser's native rendering engine handling font/width changes
   * Implemented proper start/stop logic with interval clearing to prevent multiple loops
   * User confirmed smooth scrolling performance - teleprompter now ready for professional use
+- July 22, 2025. Mirror button functionality corrected:
+  * Fixed mirror button to only affect visual text display (CSS transform: scaleX(-1))
+  * Removed scrolling direction reversal - scrolling always goes down regardless of flip state
+  * Cleaned up unused refs (isFlippedRef, fontSizeRef, containerRef) causing JavaScript errors
+  * Updated all keyboard shortcuts to use scrollRef for consistent scroll control
+  * Achieved proper separation between visual mirror effect and scrolling functionality
+  * User confirmed mirror button works correctly without affecting scroll direction
 ```
 
 ## User Preferences
