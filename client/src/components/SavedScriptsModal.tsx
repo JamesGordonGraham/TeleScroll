@@ -112,49 +112,49 @@ export default function SavedScriptsModal({ isOpen, onClose, onLoadScript }: Sav
               </p>
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
               {scripts.map((script: Script) => (
-                <Card key={script.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-base font-medium line-clamp-2">
-                        {script.title}
-                      </CardTitle>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteScript(script.id, script.title)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1 h-auto shrink-0"
-                        disabled={deleteScriptMutation.isPending}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                <div key={script.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-5 w-5 text-blue-600 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-gray-900 truncate">
+                          {script.title}
+                        </h3>
+                        <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {formatDate(script.createdAt)}
+                          </div>
+                          <span>{script.content.length} characters</span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                          {getPreview(script.content, 120)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <Calendar className="h-3 w-3" />
-                      {formatDate(script.createdAt)}
-                    </div>
-                  </CardHeader>
+                  </div>
                   
-                  <CardContent className="pt-0">
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-4 min-h-[4rem]">
-                      {getPreview(script.content)}
-                    </p>
-                    
-                    <div className="flex items-center justify-between">
-                      <Badge variant="secondary" className="text-xs">
-                        {script.content.length} chars
-                      </Badge>
-                      <Button
-                        onClick={() => handleLoadScript(script)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                        size="sm"
-                      >
-                        Load Script
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                  <div className="flex items-center gap-2 ml-4">
+                    <Button
+                      onClick={() => handleLoadScript(script)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      size="sm"
+                    >
+                      Load
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteScript(script.id, script.title)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      disabled={deleteScriptMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               ))}
             </div>
           )}
