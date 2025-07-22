@@ -37,7 +37,7 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [scrollSpeed, setScrollSpeed] = useState(5);
+  const [scrollSpeed, setScrollSpeed] = useState(1.0);
   const [fontSize, setFontSize] = useState(24);
   const [textWidth, setTextWidth] = useState(80);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -94,8 +94,8 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
           }
           break;
         case '+':
-        case '=': setScrollSpeed(Math.min(10, scrollSpeed + 1)); break;
-        case '-': setScrollSpeed(Math.max(1, scrollSpeed - 1)); break;
+        case '=': setScrollSpeed(Math.min(4.0, Math.round((scrollSpeed + 0.1) * 10) / 10)); break;
+        case '-': setScrollSpeed(Math.max(0.1, Math.round((scrollSpeed - 0.1) * 10) / 10)); break;
       }
     };
 
@@ -141,21 +141,14 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       const deltaTime = Math.min(currentTime - lastTimeRef.current, 100); // Cap at 100ms
       lastTimeRef.current = currentTime;
       
-      // Ultra-smooth scrolling with refined speed curve
-      const baseSpeed = 20; // Much slower base speed - 20 pixels per second at speed level 1
-      const speedCurve = Math.pow(scrollSpeed, 1.8); // Exponential curve for better control
-      const targetScrollAmount = (baseSpeed * speedCurve * deltaTime) / 1000;
+      // Ultra-smooth scrolling with linear speed scaling for better readability
+      const baseSpeed = 25; // Base speed in pixels per second
+      const linearSpeed = scrollSpeed; // Direct linear scaling (0.1 to 4.0)
+      const targetScrollAmount = (baseSpeed * linearSpeed * deltaTime) / 1000;
       
-      // Enhanced multi-layer smoothing for ultra-smooth animation
-      const smoothingFactors = [0.15, 0.12, 0.10, 0.08, 0.06, 0.05, 0.04, 0.03, 0.025, 0.02, 0.015, 0.01];
-      let currentAmount = targetScrollAmount;
-      
-      // Apply progressive smoothing layers
-      smoothingFactors.forEach((factor, index) => {
-        const weight = 1 - (index * 0.08); // Decreasing weight for each layer
-        smoothScrollRef.current += (currentAmount - smoothScrollRef.current) * factor * weight;
-        currentAmount = smoothScrollRef.current;
-      });
+      // Simplified but highly effective smoothing for maximum readability
+      const smoothingFactor = 0.08; // Single smooth factor for consistency
+      smoothScrollRef.current += (targetScrollAmount - smoothScrollRef.current) * smoothingFactor;
       
       // Apply final smoothed scroll amount with sub-pixel precision
       const finalScrollAmount = Math.max(0.1, smoothScrollRef.current);
@@ -199,7 +192,7 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
   };
 
   const resetToDefault = () => {
-    setScrollSpeed(5);
+    setScrollSpeed(1.0);
     setFontSize(24);
     setTextWidth(80);
     toast({
@@ -404,14 +397,14 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
 
               {/* Speed Control */}
               <div className="flex items-center gap-3">
-                <span className="text-white text-sm font-medium">Speed {scrollSpeed}</span>
+                <span className="text-white text-sm font-medium">Speed {scrollSpeed.toFixed(1)}</span>
                 <div className="w-24">
                   <Slider
                     value={[scrollSpeed]}
                     onValueChange={(value) => setScrollSpeed(value[0])}
-                    min={1}
-                    max={10}
-                    step={1}
+                    min={0.1}
+                    max={4.0}
+                    step={0.1}
                     className="slider-white"
                   />
                 </div>
