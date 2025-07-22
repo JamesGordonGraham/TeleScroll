@@ -314,119 +314,142 @@ export default function Home({ content, setContent }: HomeProps) {
 
         {/* Main Content Area - Full width on mobile, flex-1 on desktop */}
         <div className="flex-1 p-4 md:p-6 overflow-auto">
-          {/* Mobile Navigation - Only visible on mobile screens */}
-          <div className="md:hidden mb-4">
-            <div className="flex flex-wrap gap-2 justify-center">
-              <Button 
-                onClick={() => {
-                  setActiveSection("scripts");
-                  setShowSavedScripts(true);
-                }}
-                size="sm"
-                variant={activeSection === "scripts" ? "default" : "outline"}
-                className="flex items-center gap-2"
-              >
-                <FileText className="h-4 w-4" />
-                Scripts
-              </Button>
-              <Button 
-                onClick={() => setActiveSection("settings")}
-                size="sm"
-                variant={activeSection === "settings" ? "default" : "outline"}
-                className="flex items-center gap-2"
-              >
-                <Settings className="h-4 w-4" />
-                Settings
-              </Button>
-              <Button 
-                onClick={() => setActiveSection("ai-assistant")}
-                size="sm"
-                variant={activeSection === "ai-assistant" ? "default" : "outline"}
-                className="flex items-center gap-2"
-              >
-                <Sparkles className="h-4 w-4" />
-                AI
-              </Button>
-              <Button 
-                onClick={() => setActiveSection("upgrade")}
-                size="sm"
-                variant="outline"
-                className="flex items-center gap-2 bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-700"
-              >
-                <Crown className="h-4 w-4" />
-                Upgrade
-              </Button>
-            </div>
-            
-            {/* Mobile Free Plan Usage */}
-            {subscription?.tier === 'free' && (
-              <div className="mt-3 p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-3 w-3 text-amber-600" />
-                    <span className="text-xs font-medium text-amber-800">Free Plan Usage</span>
-                  </div>
-                  <span className="text-xs text-amber-700">
-                    {subscription.usage || 0}/{subscription.usageLimit || 60}min
-                  </span>
-                </div>
-                <Progress 
-                  value={((subscription.usage || 0) / (subscription.usageLimit || 60)) * 100} 
-                  className="mb-2 h-1"
+
+          {/* Scripts Section - Always show script editor, mobile navigation below */}
+          <div className="space-y-6">
+            {/* Central Script Editor */}
+            <Card className="w-full max-w-4xl mx-auto">
+              <CardContent>
+                <FileImport 
+                  content={content} 
+                  setContent={setContent} 
+                  onStartTeleprompter={handleStartTeleprompter}
+                  onVoiceInput={() => setShowVoiceInput(true)}
                 />
-                <p className="text-xs text-amber-700">
-                  Upgrade to Pro for unlimited usage or Premium for AI features
-                </p>
-              </div>
+                
+                <div className="mt-6 flex gap-3 justify-end">
+                  <Button 
+                    onClick={clearContent}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    disabled={!content}
+                  >
+                    Clear
+                  </Button>
+                  <Button 
+                    onClick={handleSaveScript}
+                    variant="outline"
+                    className="flex items-center gap-2 border-blue-500 text-blue-600 hover:bg-blue-50"
+                    disabled={!content}
+                  >
+                    Save Script
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Voice Input Modal */}
+            {showVoiceInput && (
+              <VoiceInput 
+                onVoiceInput={handleVoiceInput}
+                onClose={() => setShowVoiceInput(false)}
+              />
             )}
+
+            {/* Mobile Navigation Buttons - Below Script Editor on Mobile */}
+            <div className="md:hidden space-y-4 max-w-4xl mx-auto">
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  onClick={() => {
+                    setActiveSection("scripts");
+                    setShowSavedScripts(true);
+                  }}
+                  variant="outline"
+                  className="flex items-center gap-2 p-4 h-auto text-black border-gray-300 hover:bg-gray-50"
+                >
+                  <FileText className="h-5 w-5" />
+                  <span>Load Saved Scripts</span>
+                </Button>
+                <Button 
+                  onClick={() => setActiveSection("settings")}
+                  variant="outline"
+                  className="flex items-center gap-2 p-4 h-auto text-black border-gray-300 hover:bg-gray-50"
+                >
+                  <Settings className="h-5 w-5" />
+                  <span>Settings</span>
+                </Button>
+                <Button 
+                  onClick={() => setActiveSection("ai-assistant")}
+                  variant="outline"
+                  className="flex items-center gap-2 p-4 h-auto text-black border-gray-300 hover:bg-gray-50"
+                >
+                  <Sparkles className="h-5 w-5" />
+                  <span>AI Script Assistant</span>
+                </Button>
+                <Button 
+                  onClick={() => setActiveSection("video-capture")}
+                  variant="outline"
+                  className="flex items-center gap-2 p-4 h-auto text-black border-gray-300 hover:bg-gray-50"
+                >
+                  <Video className="h-5 w-5" />
+                  <span>Video Capture</span>
+                </Button>
+              </div>
+              
+              {/* Additional row for Captions and Upgrade */}
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  onClick={() => setActiveSection("captions")}
+                  variant="outline"
+                  className="flex items-center gap-2 p-4 h-auto text-black border-gray-300 hover:bg-gray-50"
+                >
+                  <Type className="h-5 w-5" />
+                  <span>Captions</span>
+                </Button>
+                <Button 
+                  onClick={() => setActiveSection("upgrade")}
+                  variant="outline"
+                  className="flex items-center gap-2 p-4 h-auto bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-700 border-orange-300 hover:from-yellow-200 hover:to-orange-200"
+                >
+                  <Crown className="h-5 w-5" />
+                  <span>Upgrade</span>
+                </Button>
+              </div>
+
+              {/* Mobile Free Plan Usage */}
+              {subscription?.tier === 'free' && (
+                <div className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-3 w-3 text-amber-600" />
+                      <span className="text-xs font-medium text-amber-800">Free Plan Usage</span>
+                    </div>
+                    <span className="text-xs text-amber-700">
+                      {subscription.usage || 0}/{subscription.usageLimit || 60}min
+                    </span>
+                  </div>
+                  <Progress 
+                    value={((subscription.usage || 0) / (subscription.usageLimit || 60)) * 100} 
+                    className="mb-2 h-1"
+                  />
+                  <p className="text-xs text-amber-700">
+                    Upgrade to Pro for unlimited usage or Premium for AI features
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Desktop AI Assistant - Hidden on mobile */}
+            <div className="hidden md:block max-w-4xl mx-auto">
+              <h3 className="text-xl font-semibold text-blue-700 mb-4">AI Script Assistant - get help in Writing new Scripts</h3>
+              <AIScriptAssistant onScriptGenerated={handleScriptGenerated} />
+            </div>
           </div>
 
-          {/* Scripts Section - Central focus on mobile */}
+          {/* Other Sections - Only show when not on mobile or when specifically selected */}
           {activeSection === "scripts" && (
-            <div className="space-y-6">
-              <Card className="w-full max-w-4xl mx-auto">
-                <CardContent>
-                  <FileImport 
-                    content={content} 
-                    setContent={setContent} 
-                    onStartTeleprompter={handleStartTeleprompter}
-                    onVoiceInput={() => setShowVoiceInput(true)}
-                  />
-                  
-                  <div className="mt-6 flex gap-3 justify-end">
-                    <Button 
-                      onClick={clearContent}
-                      variant="outline"
-                      className="flex items-center gap-2"
-                      disabled={!content}
-                    >
-                      Clear
-                    </Button>
-                    <Button 
-                      onClick={handleSaveScript}
-                      variant="outline"
-                      className="flex items-center gap-2 border-blue-500 text-blue-600 hover:bg-blue-50"
-                      disabled={!content}
-                    >
-                      Save Script
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Voice Input Modal */}
-              {showVoiceInput && (
-                <VoiceInput 
-                  onVoiceInput={handleVoiceInput}
-                  onClose={() => setShowVoiceInput(false)}
-                />
-              )}
-
-              {/* AI Assistant under script editor - Hidden on mobile to keep focus on script editor */}
-              <div className="hidden md:block max-w-4xl mx-auto">
-                <h3 className="text-xl font-semibold text-blue-700 mb-4">AI Script Assistant - get help in Writing new Scripts</h3>
-                <AIScriptAssistant onScriptGenerated={handleScriptGenerated} />
-              </div>
+            <div className="hidden">
+              {/* This is now handled above */}
             </div>
           )}
 
