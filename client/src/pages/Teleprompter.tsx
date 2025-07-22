@@ -434,51 +434,7 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                 <span className="text-sm font-medium">Stop</span>
               </Button>
 
-              {/* Speed Control */}
-              <div className="flex items-center gap-3">
-                <span className="text-white text-sm font-medium">Speed {scrollSpeed.toFixed(1)}</span>
-                <div className="w-24">
-                  <Slider
-                    value={[scrollSpeed]}
-                    onValueChange={(value) => setScrollSpeed(value[0])}
-                    min={0.1}
-                    max={4.0}
-                    step={0.1}
-                    className="slider-white"
-                  />
-                </div>
-              </div>
 
-              {/* Font Size Control */}
-              <div className="flex items-center gap-3">
-                <span className="text-white text-sm font-medium">Size {fontSize}</span>
-                <div className="w-24">
-                  <Slider
-                    value={[fontSize]}
-                    onValueChange={(value) => setFontSize(value[0])}
-                    min={12}
-                    max={72}
-                    step={2}
-                    className="slider-white"
-                  />
-                </div>
-              </div>
-
-              {/* Text Width Control */}
-              <div className="flex items-center gap-3">
-                <FlipHorizontal className="h-4 w-4 text-white" />
-                <span className="text-white text-sm font-medium">Width {textWidth}</span>
-                <div className="w-24">
-                  <Slider
-                    value={[textWidth]}
-                    onValueChange={(value) => setTextWidth(value[0])}
-                    min={40}
-                    max={100}
-                    step={5}
-                    className="slider-white"
-                  />
-                </div>
-              </div>
 
               {/* Mirror Text Button */}
               <Button
