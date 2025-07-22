@@ -203,8 +203,8 @@ export default function Home({ content, setContent }: HomeProps) {
       </header>
 
       <div className="flex h-[calc(100vh-80px)]">
-        {/* Left Navigation Panel - Hidden on mobile, visible on desktop */}
-        <div className="hidden md:block w-64 bg-white/50 backdrop-blur-sm border-r border-white/20 p-4">
+        {/* Left Navigation Panel - Hidden on mobile/tablet, visible on desktop */}
+        <div className="hidden lg:block w-64 bg-white/50 backdrop-blur-sm border-r border-white/20 p-4">
           <nav className="space-y-2">
             <button 
               onClick={() => {
@@ -312,8 +312,8 @@ export default function Home({ content, setContent }: HomeProps) {
           </nav>
         </div>
 
-        {/* Main Content Area - Full width on mobile, flex-1 on desktop */}
-        <div className="flex-1 p-4 md:p-6 overflow-auto">
+        {/* Main Content Area - Full width on mobile/tablet, flex-1 on desktop */}
+        <div className="flex-1 p-4 lg:p-6 overflow-auto">
 
           {/* Scripts Section - Always show script editor, mobile navigation below */}
           <div className="space-y-6">
@@ -356,8 +356,8 @@ export default function Home({ content, setContent }: HomeProps) {
               />
             )}
 
-            {/* Mobile Navigation Buttons - Below Script Editor on Mobile */}
-            <div className="md:hidden space-y-4 max-w-4xl mx-auto">
+            {/* Mobile Navigation Buttons - Below Script Editor on Mobile/Tablet */}
+            <div className="lg:hidden space-y-4 max-w-4xl mx-auto">
               <div className="grid grid-cols-2 gap-3">
                 <Button 
                   onClick={() => {
@@ -439,8 +439,8 @@ export default function Home({ content, setContent }: HomeProps) {
               )}
             </div>
 
-            {/* Desktop AI Assistant - Hidden on mobile */}
-            <div className="hidden md:block max-w-4xl mx-auto">
+            {/* Desktop AI Assistant - Hidden on mobile/tablet */}
+            <div className="hidden lg:block max-w-4xl mx-auto">
               <h3 className="text-xl font-semibold text-blue-700 mb-4">AI Script Assistant - get help in Writing new Scripts</h3>
               <AIScriptAssistant onScriptGenerated={handleScriptGenerated} />
             </div>
