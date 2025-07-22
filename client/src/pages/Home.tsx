@@ -346,12 +346,10 @@ export default function Home({ content, setContent }: HomeProps) {
 
               {/* Voice Input Modal */}
               {showVoiceInput && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                  <VoiceInput 
-                    onVoiceInput={handleVoiceInput}
-                    onClose={() => setShowVoiceInput(false)}
-                  />
-                </div>
+                <VoiceInput 
+                  onVoiceInput={handleVoiceInput}
+                  onClose={() => setShowVoiceInput(false)}
+                />
               )}
 
               {/* AI Assistant under script editor */}
