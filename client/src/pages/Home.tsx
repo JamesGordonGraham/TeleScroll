@@ -23,7 +23,7 @@ import VoiceInput from "@/components/VoiceInput";
 import { AIScriptAssistant } from "@/components/AIScriptAssistant";
 import { VideoRecorder } from "@/components/VideoRecorder";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
-import ScriptManager from "@/components/ScriptManager";
+
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import Teleprompter from "./Teleprompter";
@@ -315,17 +315,7 @@ export default function Home({ content, setContent }: HomeProps) {
           {/* Scripts Section */}
           {activeSection === "scripts" && (
             <div className="space-y-6">
-              {/* Saved Scripts */}
-              <ScriptManager onLoadScript={setContent} />
-              
-              {/* Script Editor */}
               <Card className="max-w-4xl mx-auto">
-                <CardHeader>
-                  <CardTitle>Script Editor</CardTitle>
-                  <CardDescription>
-                    Upload a file, cut and paste text, or begin your teleprompter session
-                  </CardDescription>
-                </CardHeader>
                 <CardContent>
                   <FileImport 
                     content={content} 
