@@ -138,20 +138,29 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
     const scroll = (currentTime: number) => {
       if (!containerRef.current || !isPlaying) return;
       
-      const deltaTime = Math.min(currentTime - lastTimeRef.current, 100); // Cap at 100ms
+      // Frame rate stabilization to eliminate micro-stutters
+      const rawDeltaTime = currentTime - lastTimeRef.current;
+      const deltaTime = Math.min(Math.max(rawDeltaTime, 8), 50); // Clamp between 8ms (120fps) and 50ms (20fps)
       lastTimeRef.current = currentTime;
       
-      // Ultra-smooth scrolling with linear speed scaling for better readability
-      const baseSpeed = 25; // Base speed in pixels per second
+      // Ultra-smooth scrolling with consistent frame-rate independent movement
+      const baseSpeed = 30; // Base speed in pixels per second
       const linearSpeed = scrollSpeed; // Direct linear scaling (0.1 to 4.0)
-      const targetScrollAmount = (baseSpeed * linearSpeed * deltaTime) / 1000;
+      const rawScrollAmount = (baseSpeed * linearSpeed * deltaTime) / 1000;
       
-      // Simplified but highly effective smoothing for maximum readability
-      const smoothingFactor = 0.08; // Single smooth factor for consistency
-      smoothScrollRef.current += (targetScrollAmount - smoothScrollRef.current) * smoothingFactor;
+      // Dual-layer smoothing for elimination of micro-jerkiness
+      const primarySmoothing = 0.12; // Primary smoothing layer
+      const secondarySmoothing = 0.06; // Secondary smoothing layer
       
-      // Apply final smoothed scroll amount with sub-pixel precision
-      const finalScrollAmount = Math.max(0.1, smoothScrollRef.current);
+      // First smoothing layer
+      smoothScrollRef.current += (rawScrollAmount - smoothScrollRef.current) * primarySmoothing;
+      
+      // Second smoothing layer for ultra-fine control
+      const tempSmooth = smoothScrollRef.current;
+      smoothScrollRef.current += (tempSmooth - smoothScrollRef.current) * secondarySmoothing;
+      
+      // Apply final smoothed scroll amount with enhanced sub-pixel precision
+      const finalScrollAmount = Math.max(0.01, smoothScrollRef.current);
       
       if (isFlipped) {
         container.scrollTop -= finalScrollAmount;
