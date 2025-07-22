@@ -26,7 +26,7 @@ import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import SavedScriptsModal from "@/components/SavedScriptsModal";
 
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import Teleprompter from "./Teleprompter";
 import logo from "@assets/Vibe prompting logo v1 18 jul 2025_1753096193955.png";
 
@@ -71,6 +71,9 @@ export default function Home({ content, setContent }: HomeProps) {
         title: `Script ${new Date().toLocaleDateString()}`,
         content: content,
       });
+      
+      // Invalidate scripts cache to refresh the SavedScriptsModal
+      queryClient.invalidateQueries({ queryKey: ["/api/scripts"] });
       
       toast({
         title: "Script saved",
