@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
@@ -51,6 +51,9 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
   const lastTimeRef = useRef<number>(0);
   const smoothScrollRef = useRef<number>(0);
+  const scrollSpeedRef = useRef<number>(scrollSpeed);
+  const isPlayingRef = useRef<boolean>(isPlaying);
+  const currentMarkerIndexRef = useRef<number>(currentMarkerIndex);
 
   // Extract markers and clean content
   const { displayContent, navMarkers } = useMemo(() => {
@@ -71,6 +74,19 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
     return { displayContent: cleanContent, navMarkers: markers };
   }, [content]);
 
+  // Update refs when state changes
+  useEffect(() => {
+    scrollSpeedRef.current = scrollSpeed;
+  }, [scrollSpeed]);
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+
+  useEffect(() => {
+    currentMarkerIndexRef.current = currentMarkerIndex;
+  }, [currentMarkerIndex]);
+
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) {
@@ -79,31 +95,66 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       
       e.preventDefault();
       switch (e.key.toLowerCase()) {
-        case ' ': togglePlayPause(); break;
-        case 'f': toggleFullscreen(); break;
-        case 'm': toggleFlip(); break;
-        case 'h': jumpToTop(); break;
-        case 'b': jumpToBottom(); break;
-        case 'n': jumpToNextMarker(); break;
-        case 'p': jumpToPrevMarker(); break;
+        case ' ': 
+          setIsPlaying(!isPlayingRef.current); 
+          break;
+        case 'f': 
+          toggleFullscreen(); 
+          break;
+        case 'm': 
+          setIsFlipped(prev => !prev); 
+          break;
+        case 'h': 
+          if (containerRef.current) {
+            containerRef.current.scrollTop = 0;
+            setCurrentMarkerIndex(-1);
+          }
+          break;
+        case 'b': 
+          if (containerRef.current) {
+            containerRef.current.scrollTop = containerRef.current.scrollHeight;
+            setCurrentMarkerIndex(navMarkers.length);
+          }
+          break;
+        case 'n': 
+          if (navMarkers.length === 0) break;
+          const nextIndex = Math.min(currentMarkerIndexRef.current + 1, navMarkers.length - 1);
+          setCurrentMarkerIndex(nextIndex);
+          scrollToMarker(nextIndex);
+          break;
+        case 'p': 
+          if (navMarkers.length === 0) break;
+          const prevIndex = Math.max(currentMarkerIndexRef.current - 1, 0);
+          setCurrentMarkerIndex(prevIndex);
+          scrollToMarker(prevIndex);
+          break;
         case 'escape': 
           if (document.fullscreenElement) {
-            exitFullscreen();
+            document.exitFullscreen();
+            setIsFullscreen(false);
           } else {
             onExit();
           }
           break;
         case '+':
-        case '=': setScrollSpeed(Math.min(4.0, Math.round((scrollSpeed + 0.1) * 10) / 10)); break;
-        case '-': setScrollSpeed(Math.max(0.1, Math.round((scrollSpeed - 0.1) * 10) / 10)); break;
-        case 'arrowright': setScrollSpeed(Math.min(4.0, Math.round((scrollSpeed + 0.1) * 10) / 10)); break;
-        case 'arrowleft': setScrollSpeed(Math.max(0.1, Math.round((scrollSpeed - 0.1) * 10) / 10)); break;
+        case '=': 
+          setScrollSpeed(Math.min(4.0, Math.round((scrollSpeedRef.current + 0.1) * 10) / 10)); 
+          break;
+        case '-': 
+          setScrollSpeed(Math.max(0.1, Math.round((scrollSpeedRef.current - 0.1) * 10) / 10)); 
+          break;
+        case 'arrowright': 
+          setScrollSpeed(Math.min(4.0, Math.round((scrollSpeedRef.current + 0.1) * 10) / 10)); 
+          break;
+        case 'arrowleft': 
+          setScrollSpeed(Math.max(0.1, Math.round((scrollSpeedRef.current - 0.1) * 10) / 10)); 
+          break;
       }
     };
 
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [currentMarkerIndex, navMarkers]);
+  }, []);
 
   useEffect(() => {
     if (isPlaying) {
