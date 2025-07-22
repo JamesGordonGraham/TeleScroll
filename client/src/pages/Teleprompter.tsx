@@ -140,7 +140,9 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
           break;
         case 'escape': 
           if (document.fullscreenElement) {
-            document.exitFullscreen();
+            document.exitFullscreen()?.catch((error) => {
+              console.error('Exit fullscreen error:', error);
+            });
             setIsFullscreen(false);
           } else {
             onExit();
@@ -278,13 +280,17 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
     });
   };
 
-  const toggleFullscreen = async () => {
+  const toggleFullscreen = () => {
     try {
       if (!document.fullscreenElement) {
-        await containerRef.current?.requestFullscreen();
+        containerRef.current?.requestFullscreen()?.catch((error) => {
+          console.error('Fullscreen request error:', error);
+        });
         setIsFullscreen(true);
       } else {
-        await document.exitFullscreen();
+        document.exitFullscreen()?.catch((error) => {
+          console.error('Exit fullscreen error:', error);
+        });
         setIsFullscreen(false);
       }
     } catch (error) {
