@@ -204,30 +204,15 @@ export default function Home({ content, setContent }: HomeProps) {
         <div className="w-64 bg-white/50 backdrop-blur-sm border-r border-white/20 p-4">
           <nav className="space-y-2">
             <button 
-              onClick={() => setActiveSection("scripts")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                activeSection === "scripts" 
-                  ? "bg-blue-100 text-blue-700 font-medium" 
-                  : "text-gray-700 hover:bg-blue-50"
-              }`}
+              onClick={() => {
+                setActiveSection("scripts");
+                setShowSavedScripts(true);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-purple-600 hover:text-purple-700 hover:bg-purple-50"
             >
               <FileText className="h-5 w-5" />
-              Scripts
+              Load Saved Scripts
             </button>
-            
-            {/* Load Scripts Sub-button (only show when Scripts is active) */}
-            {activeSection === "scripts" && (
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowSavedScripts(true);
-                }}
-                className="w-full flex items-center gap-3 px-8 py-2 text-sm text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors ml-2"
-              >
-                <FileText className="h-4 w-4" />
-                Load Saved Scripts
-              </button>
-            )}
             
             <button 
               onClick={() => setActiveSection("settings")}
