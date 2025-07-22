@@ -47,8 +47,9 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
-  const scrollIntervalRef = useRef<NodeJS.Timeout>();
+  const animationRef = useRef<number>();
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
+  const lastTimeRef = useRef<number>(0);
   const scrollSpeedRef = useRef<number>(scrollSpeed);
   const isPlayingRef = useRef<boolean>(isPlaying);
   const currentMarkerIndexRef = useRef<number>(currentMarkerIndex);
@@ -197,19 +198,19 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
     const textElement = textRef.current;
     if (!container || !textElement) return;
     
-    // Stop any existing interval
-    if (scrollIntervalRef.current) {
-      clearInterval(scrollIntervalRef.current);
-    }
+    lastTimeRef.current = performance.now();
     
-    // High-frequency smooth scrolling for professional teleprompter experience
-    scrollIntervalRef.current = setInterval(() => {
+    const scroll = (currentTime: number) => {
       const container = containerRef.current;
       const textElement = textRef.current;
-      if (!container || !textElement || !isPlayingRef.current) {
-        if (scrollIntervalRef.current) {
-          clearInterval(scrollIntervalRef.current);
-        }
+      if (!container || !textElement || !isPlayingRef.current) return;
+      
+      const deltaTime = currentTime - lastTimeRef.current;
+      lastTimeRef.current = currentTime;
+      
+      // Stable frame rate control
+      if (deltaTime < 16) {
+        animationRef.current = requestAnimationFrame(scroll);
         return;
       }
       
@@ -218,38 +219,38 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       const viewportHeight = container.clientHeight;
       const scrollableHeight = Math.max(1, totalHeight - viewportHeight);
       
-      // Responsive speed control with larger base increment
+      // High-performance speed control with fast base speed
       const currentSpeed = scrollSpeedRef.current; // Speed range 0.1 to 4.0
-      const basePixelsPerInterval = 2.5; // Increased base increment for better speed
-      const scrollAmount = basePixelsPerInterval * currentSpeed; // Linear scaling
+      const basePixelsPerSecond = 120; // Much faster base speed
+      const scrollAmount = (basePixelsPerSecond * currentSpeed * deltaTime) / 1000;
       
-      // Apply smooth pixel-by-pixel scrolling
+      // Apply smooth scrolling
       if (isFlippedRef.current) {
         container.scrollTop -= scrollAmount;
         if (container.scrollTop <= 0) {
           container.scrollTop = 0;
           setIsPlaying(false);
-          if (scrollIntervalRef.current) {
-            clearInterval(scrollIntervalRef.current);
-          }
+          return;
         }
       } else {
         container.scrollTop += scrollAmount;
         if (container.scrollTop >= scrollableHeight) {
           container.scrollTop = scrollableHeight;
           setIsPlaying(false);
-          if (scrollIntervalRef.current) {
-            clearInterval(scrollIntervalRef.current);
-          }
+          return;
         }
       }
-    }, 16); // 60fps (16ms intervals) for ultra-smooth professional scrolling
+      
+      animationRef.current = requestAnimationFrame(scroll);
+    };
+    
+    animationRef.current = requestAnimationFrame(scroll);
   };
 
   const stopScrolling = () => {
-    if (scrollIntervalRef.current) {
-      clearInterval(scrollIntervalRef.current);
-      scrollIntervalRef.current = undefined;
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = undefined;
     }
   };
 
