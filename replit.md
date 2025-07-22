@@ -234,6 +234,15 @@ Changelog:
   * Enhanced continuous voice capture maintaining text across speech pauses
   * Added "Add to Script Editor" button with green gradient styling for clear user action
   * Established reliable voice-to-text workflow with clean text accumulation and natural spacing
+- July 22, 2025. Teleprompter performance optimization and keyboard shortcuts:
+  * Added comprehensive keyboard shortcuts popup to floating dock with hotkeys (H, B, N, P, arrows)
+  * Fixed "Maximum call stack size exceeded" error by implementing refs-based state access
+  * Enhanced scrolling algorithm with content-aware speed adjustment for different text sizes and widths
+  * Implemented exponential speed scaling for dramatic increases at higher speeds (1.2x+ feels significantly faster)
+  * Resolved all circular dependency issues preventing teleprompter scrolling functionality
+  * Added proper error handling for fullscreen API promises to eliminate unhandled rejections
+  * Achieved smooth scrolling performance across all text width configurations (40% to 100%)
+  * Optimized font size awareness in scrolling calculations for consistent reading experience
 ```
 
 ## User Preferences
