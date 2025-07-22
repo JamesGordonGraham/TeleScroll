@@ -173,7 +173,7 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       stopScrolling();
     }
     return () => stopScrolling();
-  }, [isPlaying, scrollSpeed, isFlipped]);
+  }, [isPlaying]);
 
   useEffect(() => {
     if (isFullscreen) {
@@ -195,62 +195,38 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
   const startScrolling = () => {
     const container = containerRef.current;
     const textElement = textRef.current;
-    if (!container || !textElement || !isPlaying) return;
+    if (!container || !textElement) return;
     
     lastTimeRef.current = performance.now();
     
     const scroll = (currentTime: number) => {
-      if (!containerRef.current || !textRef.current || !isPlaying) return;
-      
-      // Stable frame rate with capping
-      const rawDeltaTime = currentTime - lastTimeRef.current;
-      const deltaTime = Math.min(Math.max(rawDeltaTime, 16), 50); // 60fps to 20fps range
-      lastTimeRef.current = currentTime;
-      
       const container = containerRef.current;
       const textElement = textRef.current;
+      if (!container || !textElement || !isPlayingRef.current) return;
       
-      // Content-aware speed calculation
+      // Frame rate stabilization
+      const rawDeltaTime = currentTime - lastTimeRef.current;
+      const deltaTime = Math.min(Math.max(rawDeltaTime, 16), 50); // 16-50ms range
+      lastTimeRef.current = currentTime;
+      
+      // Simple content-aware calculation
       const totalHeight = textElement.scrollHeight;
       const viewportHeight = container.clientHeight;
       const scrollableHeight = Math.max(1, totalHeight - viewportHeight);
       
-      // Get text metrics for adaptive speed
-      const textContent = textElement.textContent || '';
-      const totalWords = textContent.split(/\s+/).length;
-      const totalLines = Math.ceil(totalHeight / (fontSizeRef.current * 1.5)); // Estimate lines based on font size
+      // Base speed calculation with font size adjustment
+      const fontSizeFactor = Math.max(0.5, Math.min(2.0, fontSizeRef.current / 24)); // Normalize to 24px
+      const baseSpeed = 40; // Base pixels per second
+      const adjustedSpeed = baseSpeed / fontSizeFactor; // Slower for larger text
+      const targetScrollAmount = (adjustedSpeed * scrollSpeedRef.current * deltaTime) / 1000;
       
-      // Adaptive speed calculation - words per minute approach
-      const baseWPM = 160; // Reading speed baseline
-      const wordsPerSecond = (baseWPM * scrollSpeedRef.current) / 60;
-      const wordsPerFrame = (wordsPerSecond * deltaTime) / 1000;
+      // Simple smoothing
+      const smoothing = 0.15;
+      smoothScrollRef.current += (targetScrollAmount - smoothScrollRef.current) * smoothing;
       
-      // Convert words to pixels based on content layout
-      const pixelsPerWord = scrollableHeight / Math.max(1, totalWords);
-      const targetPixelsPerFrame = wordsPerFrame * pixelsPerWord;
+      const finalScrollAmount = Math.max(0.1, smoothScrollRef.current);
       
-      // Dynamic smoothing based on content density and speed
-      const densityFactor = Math.min(2.0, totalLines / 30); // Adjust for text density
-      const speedFactor = Math.max(0.5, Math.min(2.0, scrollSpeedRef.current)); // Speed-based adjustment
-      const adaptiveSmoothing = 0.15 / (densityFactor * speedFactor); // Inverse relationship
-      
-      // Enhanced multi-layer smoothing
-      const layers = 6;
-      let smoothedAmount = targetPixelsPerFrame;
-      
-      for (let i = 0; i < layers; i++) {
-        const layerFactor = adaptiveSmoothing * (1 + i * 0.01);
-        smoothedAmount = smoothScrollRef.current + (smoothedAmount - smoothScrollRef.current) * layerFactor;
-      }
-      
-      smoothScrollRef.current = smoothedAmount;
-      
-      // Ensure minimum movement and prevent large jumps
-      const minMovement = 0.05;
-      const maxMovement = Math.max(2, scrollableHeight / 200); // Prevent jumps
-      const finalScrollAmount = Math.max(minMovement, Math.min(maxMovement, Math.abs(smoothedAmount)));
-      
-      // Apply scrolling with boundary checks
+      // Apply scrolling
       if (isFlippedRef.current) {
         container.scrollTop -= finalScrollAmount;
         if (container.scrollTop <= 0) {
