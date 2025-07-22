@@ -229,6 +229,28 @@ export default function Home({ content, setContent }: HomeProps) {
               Settings
             </button>
 
+            {/* Free Plan Usage under Settings */}
+            {subscription?.tier === 'free' && (
+              <div className="mx-2 mt-2 p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-3 w-3 text-amber-600" />
+                    <span className="text-xs font-medium text-amber-800">Free Plan Usage</span>
+                  </div>
+                  <span className="text-xs text-amber-700">
+                    {subscription.usage || 0}/{subscription.usageLimit || 60}min
+                  </span>
+                </div>
+                <Progress 
+                  value={((subscription.usage || 0) / (subscription.usageLimit || 60)) * 100} 
+                  className="mb-2 h-1"
+                />
+                <p className="text-xs text-amber-700">
+                  Upgrade to Pro for unlimited usage or Premium for AI features
+                </p>
+              </div>
+            )}
+
             <div className="pt-2 border-t border-gray-200">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-2">
                 Premium Features
@@ -292,29 +314,6 @@ export default function Home({ content, setContent }: HomeProps) {
 
         {/* Main Content Area */}
         <div className="flex-1 p-6 overflow-auto">
-          {/* Usage Progress (Free tier) */}
-          {subscription?.tier === 'free' && (
-            <Card className="mb-6 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-amber-600" />
-                    <span className="text-sm font-medium text-amber-800">Free Plan Usage</span>
-                  </div>
-                  <span className="text-sm text-amber-700">
-                    {subscription.usage || 0} / {subscription.usageLimit || 60} minutes
-                  </span>
-                </div>
-                <Progress 
-                  value={((subscription.usage || 0) / (subscription.usageLimit || 60)) * 100} 
-                  className="mb-3"
-                />
-                <p className="text-xs text-amber-700">
-                  Upgrade to Pro for unlimited usage or Premium for AI features
-                </p>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Scripts Section */}
           {activeSection === "scripts" && (
