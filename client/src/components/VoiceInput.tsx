@@ -13,6 +13,7 @@ export default function VoiceInput({ onVoiceInput, onClose }: VoiceInputProps) {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [isSupported, setIsSupported] = useState(false);
+  const [shouldContinueListening, setShouldContinueListening] = useState(false);
   const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
 
@@ -44,16 +45,32 @@ export default function VoiceInput({ onVoiceInput, onClose }: VoiceInputProps) {
           }
         }
 
-        // Update transcript with clean real-time display to avoid duplication
-        setTranscript(() => {
-          const fullTranscript = (finalTranscript + ' ' + interimTranscript).trim();
-          return fullTranscript;
+        // Update transcript - preserve existing text and add new content
+        setTranscript(prev => {
+          // Add new final transcript to existing content
+          if (finalTranscript) {
+            const newContent = prev + (prev ? ' ' : '') + finalTranscript;
+            return newContent + (interimTranscript ? ' ' + interimTranscript : '');
+          } else {
+            // Just show interim results after existing content
+            return prev + (prev && interimTranscript ? ' ' : '') + interimTranscript;
+          }
         });
       };
 
-      // Event handler for when listening stops
+      // Event handler for when listening stops - auto-restart to maintain continuous listening
       recognitionRef.current.onend = () => {
         setIsListening(false);
+        // Auto-restart after a brief delay to maintain continuous listening
+        setTimeout(() => {
+          if (recognitionRef.current && shouldContinueListening) {
+            try {
+              recognitionRef.current.start();
+            } catch (error) {
+              console.log('Auto-restart failed:', error);
+            }
+          }
+        }, 100);
       };
 
       // Event handler for errors
@@ -93,7 +110,8 @@ export default function VoiceInput({ onVoiceInput, onClose }: VoiceInputProps) {
 
   const startListening = () => {
     if (recognitionRef.current && isSupported) {
-      setTranscript(""); // Clear previous transcript
+      setShouldContinueListening(true); // Enable continuous listening
+      // Don't clear transcript on restart - keep accumulating text
       try {
         recognitionRef.current.start(); // Start listening
         toast({
@@ -119,6 +137,7 @@ export default function VoiceInput({ onVoiceInput, onClose }: VoiceInputProps) {
 
   const stopListening = () => {
     if (recognitionRef.current) {
+      setShouldContinueListening(false); // Disable continuous listening
       recognitionRef.current.stop(); // Stop listening
       setIsListening(false);
       toast({
@@ -147,9 +166,10 @@ export default function VoiceInput({ onVoiceInput, onClose }: VoiceInputProps) {
 
   const clearTranscript = () => {
     setTranscript("");
+    // Clear the transcript and start fresh
     toast({
       title: "Transcript Cleared",
-      description: "Voice input text has been cleared",
+      description: "Voice input text has been cleared - ready for new input",
     });
   };
 
@@ -238,7 +258,7 @@ export default function VoiceInput({ onVoiceInput, onClose }: VoiceInputProps) {
               </div>
               <p className="mt-3 text-sm font-medium">
                 {isListening ? (
-                  <span className="text-red-600">🔴 Not Listening</span>
+                  <span className="text-red-600">🔴 Listening</span>
                 ) : (
                   <span className="text-gray-600">Ready</span>
                 )}
