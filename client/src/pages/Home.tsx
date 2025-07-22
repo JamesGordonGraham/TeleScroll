@@ -19,6 +19,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { FileImport } from "@/components/FileImport";
+import VoiceInput from "@/components/VoiceInput";
 import { AIScriptAssistant } from "@/components/AIScriptAssistant";
 import { VideoRecorder } from "@/components/VideoRecorder";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
@@ -40,6 +41,7 @@ export default function Home({ content, setContent }: HomeProps) {
   const [showVideoRecorder, setShowVideoRecorder] = useState(false);
   const [activeSection, setActiveSection] = useState("scripts");
   const [showTeleprompter, setShowTeleprompter] = useState(false);
+  const [showVoiceInput, setShowVoiceInput] = useState(false);
 
   const handleLogout = () => {
     window.location.href = "/api/logout";
@@ -110,6 +112,18 @@ export default function Home({ content, setContent }: HomeProps) {
 
   const handleExitTeleprompter = () => {
     setShowTeleprompter(false);
+  };
+
+  const handleVoiceInput = (text: string) => {
+    // Append voice text to existing content with proper spacing
+    setContent((prev: string) => {
+      if (!prev.trim()) return text;
+      return prev + (prev.endsWith('\n') ? '' : '\n\n') + text;
+    });
+    toast({
+      title: "Voice Text Added",
+      description: "Your speech has been converted to text and added to the script.",
+    });
   };
 
   if (showTeleprompter) {
@@ -306,6 +320,7 @@ export default function Home({ content, setContent }: HomeProps) {
                     content={content} 
                     setContent={setContent} 
                     onStartTeleprompter={handleStartTeleprompter}
+                    onVoiceInput={() => setShowVoiceInput(true)}
                   />
                   
                   <div className="mt-6 flex gap-3 justify-end">
@@ -328,6 +343,16 @@ export default function Home({ content, setContent }: HomeProps) {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Voice Input Modal */}
+              {showVoiceInput && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                  <VoiceInput 
+                    onVoiceInput={handleVoiceInput}
+                    onClose={() => setShowVoiceInput(false)}
+                  />
+                </div>
+              )}
 
               {/* AI Assistant under script editor */}
               <div className="max-w-4xl mx-auto">

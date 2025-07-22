@@ -3,147 +3,23 @@ import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { CloudUpload, FileText, Bookmark, Mic, MicOff } from 'lucide-react';
+import { CloudUpload, FileText, Bookmark, Mic } from 'lucide-react';
 import { parseFile, validateFile } from '@/lib/file-parser';
 import { useToast } from '@/hooks/use-toast';
-import { useGoogleVoiceInput } from '@/hooks/use-google-voice-input';
 
 interface FileImportProps {
   content: string;
   setContent: (content: string) => void;
   onStartTeleprompter?: () => void;
+  onVoiceInput?: () => void;
 }
 
-export function FileImport({ content, setContent, onStartTeleprompter }: FileImportProps) {
+export function FileImport({ content, setContent, onStartTeleprompter, onVoiceInput }: FileImportProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Google Voice input functionality
-  const [lastCursorPosition, setLastCursorPosition] = useState(0);
-  const [isTranscribing, setIsTranscribing] = useState(false);
-  const [lastInterimText, setLastInterimText] = useState('');
-  const [accumulatedText, setAccumulatedText] = useState('');
-  
-  const { isListening, isSupported, startListening, stopListening } = useGoogleVoiceInput({
-    onResult: (text, isFinal) => {
-      console.log('Google Voice result received:', text, 'isFinal:', isFinal);
-      
-      if (text.trim()) {
-        const cursorPosition = lastCursorPosition;
-        
-        if (isFinal) {
-          // Final transcription - clean up and add final text
-          let baseContent = content;
-          
-          // If we have accumulated text showing, replace it with the final text
-          if (accumulatedText && baseContent.includes(accumulatedText)) {
-            baseContent = baseContent.replace(accumulatedText, '');
-          }
-          
-          const finalBeforeText = baseContent.slice(0, cursorPosition);
-          const finalAfterText = baseContent.slice(cursorPosition);
-          const finalSeparator = finalBeforeText.length > 0 && !finalBeforeText.endsWith(' ') && !finalBeforeText.endsWith('\n') ? ' ' : '';
-          const newContent = finalBeforeText + finalSeparator + text + ' ' + finalAfterText;
-          
-          setContent(newContent);
-          setAccumulatedText('');
-          setLastInterimText('');
-          setIsTranscribing(false);
-          
-          // Update cursor position for next insertion
-          const newPosition = cursorPosition + finalSeparator.length + text.length + 1;
-          setLastCursorPosition(newPosition);
-          
-          // Focus textarea and set cursor position
-          const textarea = textareaRef.current;
-          if (textarea) {
-            setTimeout(() => {
-              textarea.focus();
-              textarea.setSelectionRange(newPosition, newPosition);
-            }, 100);
-          }
-
-          toast({
-            title: "Voice input complete",
-            description: `Added: "${text.slice(0, 50)}${text.length > 50 ? '...' : ''}"`,
-          });
-        } else {
-          // Interim transcription - show progressive updates
-          setIsTranscribing(true);
-          
-          let baseContent = content;
-          
-          // Remove previous accumulated text
-          if (accumulatedText) {
-            const accumulatedStart = baseContent.lastIndexOf(accumulatedText);
-            if (accumulatedStart !== -1) {
-              baseContent = baseContent.slice(0, accumulatedStart) + baseContent.slice(accumulatedStart + accumulatedText.length);
-            }
-          }
-          
-          // Add new interim text
-          const beforeText = baseContent.slice(0, cursorPosition);
-          const afterText = baseContent.slice(cursorPosition);
-          const separator = beforeText.length > 0 && !beforeText.endsWith(' ') && !beforeText.endsWith('\n') ? ' ' : '';
-          const newAccumulatedText = separator + text;
-          const interimContent = beforeText + newAccumulatedText + afterText;
-          
-          setContent(interimContent);
-          setAccumulatedText(newAccumulatedText);
-          
-          console.log('Interim transcription:', text);
-        }
-      }
-    },
-    onError: (error) => {
-      console.error('Google Voice input error:', error);
-      toast({
-        title: "Voice input error",
-        description: error,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleVoiceToggle = () => {
-    if (isListening) {
-      stopListening();
-      setIsTranscribing(false);
-      toast({
-        title: "Voice recording stopped",
-        description: "Processing final transcription...",
-      });
-    } else {
-      if (!isSupported) {
-        toast({
-          title: "Voice input not supported",
-          description: "Your browser doesn't support voice recording",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Get current cursor position before starting
-      const textarea = textareaRef.current;
-      if (textarea) {
-        setLastCursorPosition(textarea.selectionStart);
-      }
-      
-      // Reset states
-      setLastInterimText('');
-      setAccumulatedText('');
-      setIsTranscribing(false);
-      
-      startListening();
-      toast({
-        title: "Voice recording started",
-        description: "Speak clearly - text will appear as you speak (up to 30 seconds)!",
-      });
-    }
-  };
 
   const handleFileUpload = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
@@ -182,7 +58,7 @@ export function FileImport({ content, setContent, onStartTeleprompter }: FileImp
     } finally {
       setIsUploading(false);
     }
-  }, [toast, setContent]);
+  }, [content, setContent, toast]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: handleFileUpload,
@@ -194,7 +70,6 @@ export function FileImport({ content, setContent, onStartTeleprompter }: FileImp
       'application/msword': ['.doc'],
       'application/rtf': ['.rtf'],
       'text/rtf': ['.rtf'],
-
       'text/html': ['.html', '.htm'],
       'text/markdown': ['.md'],
     },
@@ -202,8 +77,6 @@ export function FileImport({ content, setContent, onStartTeleprompter }: FileImp
     disabled: isUploading,
     noClick: true, // We'll handle clicks manually for better UX
   });
-
-  // Clear functionality is now handled by parent component
 
   const handleAddMarker = () => {
     const textarea = textareaRef.current;
@@ -247,21 +120,16 @@ export function FileImport({ content, setContent, onStartTeleprompter }: FileImp
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-2xl font-semibold text-gray-700">Script Editor</h3>
             <div className="flex space-x-3">
-              {/* Google Speech API Voice Input Button */}
+              {/* Web Speech API Voice Input Button */}
               <Button
-                className={`${
-                  isListening 
-                    ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700' 
-                    : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
-                } text-white px-4 py-2 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300`}
+                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleVoiceToggle();
+                  onVoiceInput?.();
                 }}
-                disabled={!isSupported}
               >
-                {isListening ? <MicOff className="h-4 w-4 mr-2" /> : <Mic className="h-4 w-4 mr-2" />}
-                {isListening ? 'Stop Voice' : 'Voice Input'}
+                <Mic className="h-4 w-4 mr-2" />
+                Voice Input
               </Button>
 
               <Button
@@ -291,20 +159,15 @@ export function FileImport({ content, setContent, onStartTeleprompter }: FileImp
                 className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-4 py-2 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
                 onClick={(e) => {
                   e.stopPropagation();
-                  // Call parent component's teleprompter function
-                  if (content && onStartTeleprompter) {
-                    onStartTeleprompter();
-                  }
+                  onStartTeleprompter?.();
                 }}
                 disabled={!content}
               >
                 Run Teleprompter
               </Button>
-
-
-
             </div>
           </div>
+          
           <div className="relative">
             <Textarea
               ref={textareaRef}
@@ -320,38 +183,12 @@ export function FileImport({ content, setContent, onStartTeleprompter }: FileImp
                   });
                 }, 100);
               }}
-              onFocus={() => {
-                // Update cursor position when textarea is focused
-                const textarea = textareaRef.current;
-                if (textarea && !isListening) {
-                  setLastCursorPosition(textarea.selectionStart);
-                }
+              placeholder={isDragActive ? "Drop your file here..." : "Type your script here, drag and drop a file, or use the buttons above to import content"}
+              className="min-h-[400px] w-full bg-white/80 backdrop-blur-sm text-lg leading-relaxed p-6 resize-none rounded-2xl border-2 border-white/50 shadow-inner"
+              style={{
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
               }}
-              onClick={() => {
-                // Update cursor position when clicking in textarea
-                const textarea = textareaRef.current;
-                if (textarea && !isListening) {
-                  setTimeout(() => {
-                    setLastCursorPosition(textarea.selectionStart);
-                  }, 10);
-                }
-              }}
-              onKeyUp={() => {
-                // Update cursor position when navigating with keyboard
-                const textarea = textareaRef.current;
-                if (textarea && !isListening) {
-                  setLastCursorPosition(textarea.selectionStart);
-                }
-              }}
-              placeholder="Type or paste your script here... (You can also drag & drop .txt, .doc, .docx, .rtf, .html, .htm, .md files)"
-              className="h-[600px] resize-none rounded-2xl border-gray-200 focus:border-purple-400 focus:ring-purple-400 text-lg leading-relaxed bg-gray-50/50"
-              style={{ aspectRatio: '1/1.414' }}
             />
-            {isListening && (
-              <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold animate-pulse">
-                🎤 {isTranscribing ? 'Transcribing...' : 'Recording...'} (Real-time)
-              </div>
-            )}
           </div>
         </CardContent>
       </div>
