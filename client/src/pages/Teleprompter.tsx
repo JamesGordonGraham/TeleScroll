@@ -214,11 +214,14 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
       const viewportHeight = container.clientHeight;
       const scrollableHeight = Math.max(1, totalHeight - viewportHeight);
       
-      // Base speed calculation with font size adjustment
+      // Base speed calculation with font size adjustment and exponential scaling
       const fontSizeFactor = Math.max(0.5, Math.min(2.0, fontSizeRef.current / 24)); // Normalize to 24px
-      const baseSpeed = 40; // Base pixels per second
+      const baseSpeed = 50; // Increased base pixels per second
       const adjustedSpeed = baseSpeed / fontSizeFactor; // Slower for larger text
-      const targetScrollAmount = (adjustedSpeed * scrollSpeedRef.current * deltaTime) / 1000;
+      
+      // Exponential speed scaling for more dramatic increases at higher speeds
+      const speedMultiplier = Math.pow(scrollSpeedRef.current, 1.4); // Exponential scaling
+      const targetScrollAmount = (adjustedSpeed * speedMultiplier * deltaTime) / 1000;
       
       // Simple smoothing
       const smoothing = 0.15;
