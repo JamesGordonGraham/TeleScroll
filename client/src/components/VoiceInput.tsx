@@ -44,18 +44,10 @@ export default function VoiceInput({ onVoiceInput, onClose }: VoiceInputProps) {
           }
         }
 
-        // Update transcript with smooth real-time display
-        setTranscript(prev => {
-          // Keep existing final text and add new final + interim text
-          const existingFinal = prev.split(' ').filter(word => word.trim()).join(' ');
-          const newFinal = finalTranscript.trim();
-          const newInterim = interimTranscript.trim();
-          
-          if (newFinal) {
-            return existingFinal + (existingFinal ? ' ' : '') + newFinal + (newInterim ? ' ' + newInterim : '');
-          } else {
-            return existingFinal + (existingFinal && newInterim ? ' ' : '') + newInterim;
-          }
+        // Update transcript with clean real-time display to avoid duplication
+        setTranscript(() => {
+          const fullTranscript = (finalTranscript + ' ' + interimTranscript).trim();
+          return fullTranscript;
         });
       };
 
@@ -163,12 +155,48 @@ export default function VoiceInput({ onVoiceInput, onClose }: VoiceInputProps) {
 
   if (!isSupported) {
     return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <Card className="w-full max-w-md mx-auto bg-white shadow-xl">
+          {/* Blue Header */}
+          <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4 rounded-t-lg">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center">
+                <MicOff className="h-5 w-5 text-white mr-2" />
+                <h3 className="text-lg font-semibold text-white">Voice Input</h3>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="text-white hover:bg-white/20"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <CardContent className="p-6 text-center">
+            <div className="w-20 h-20 mx-auto bg-gray-300 rounded-full flex items-center justify-center mb-4">
+              <MicOff className="h-8 w-8 text-gray-600" />
+            </div>
+            <h4 className="text-lg font-semibold mb-2">Voice Input Not Supported</h4>
+            <p className="text-gray-600 mb-4">
+              Your browser doesn't support voice input. Please use Chrome, Edge, or Safari.
+            </p>
+            <Button onClick={onClose} className="bg-blue-500 hover:bg-blue-600">Close</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <Card className="w-full max-w-md mx-auto bg-white shadow-xl">
-        {/* Blue Header */}
+        {/* Blue Header like in the screenshot */}
         <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4 rounded-t-lg">
           <div className="flex justify-between items-center">
             <div className="flex items-center">
-              <MicOff className="h-5 w-5 text-white mr-2" />
+              <Mic className="h-5 w-5 text-white mr-2" />
               <h3 className="text-lg font-semibold text-white">Voice Input</h3>
             </div>
             <Button
@@ -181,39 +209,6 @@ export default function VoiceInput({ onVoiceInput, onClose }: VoiceInputProps) {
             </Button>
           </div>
         </div>
-        <CardContent className="p-6 text-center">
-          <div className="w-20 h-20 mx-auto bg-gray-300 rounded-full flex items-center justify-center mb-4">
-            <MicOff className="h-8 w-8 text-gray-600" />
-          </div>
-          <h4 className="text-lg font-semibold mb-2">Voice Input Not Supported</h4>
-          <p className="text-gray-600 mb-4">
-            Your browser doesn't support voice input. Please use Chrome, Edge, or Safari.
-          </p>
-          <Button onClick={onClose} className="bg-blue-500 hover:bg-blue-600">Close</Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="w-full max-w-md mx-auto bg-white shadow-xl">
-      {/* Blue Header like in the screenshot */}
-      <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4 rounded-t-lg">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center">
-            <Mic className="h-5 w-5 text-white mr-2" />
-            <h3 className="text-lg font-semibold text-white">Voice Input</h3>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="text-white hover:bg-white/20"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
 
       <CardContent className="p-6">
         {!isListening && !transcript ? (
@@ -311,5 +306,6 @@ export default function VoiceInput({ onVoiceInput, onClose }: VoiceInputProps) {
         )}
       </CardContent>
     </Card>
+    </div>
   );
 }
