@@ -288,6 +288,13 @@ Changelog:
   * Button highlights when transparent background is active
   * Streamlined floating dock controls for essential teleprompter functions
   * User confirmed layout change working correctly
+- July 23, 2025. Premium features restructuring:
+  * Removed 'Video Capture' and 'Captions' from premium feature list
+  * Added 'Improve Existing Script' and 'Voice Input' as new premium features
+  * Updated SubscriptionPlans component to reflect new premium offerings
+  * Updated Home page navigation to show new premium sections
+  * Created detailed feature pages for script improvement and voice input functionality
+  * User confirmed premium features update working well
 ```
 
 ## User Preferences
