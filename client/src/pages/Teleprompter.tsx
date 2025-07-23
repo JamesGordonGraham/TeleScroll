@@ -467,20 +467,6 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                 </div>
               </div>
 
-              {/* Background Toggle */}
-              <div className="flex items-center space-x-2 px-3">
-                <span className="text-white text-xs font-medium">BG</span>
-                <div className="flex items-center space-x-1">
-                  <span className="text-white text-xs">■</span>
-                  <Switch
-                    checked={isTransparentBackground}
-                    onCheckedChange={setIsTransparentBackground}
-                    className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-600"
-                  />
-                  <span className="text-white text-xs">◯</span>
-                </div>
-              </div>
-
               {/* Stop Button */}
               <Button
                 onClick={() => {
@@ -497,8 +483,6 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                 <span className="text-sm font-medium">Stop</span>
               </Button>
 
-
-
               {/* Mirror Text Button */}
               <Button
                 onClick={toggleFlip}
@@ -510,15 +494,15 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                 <span className="text-sm font-medium">Mirror</span>
               </Button>
 
-              {/* Record Button */}
+              {/* Background Toggle Button */}
               <Button
-                onClick={() => setIsRecording(!isRecording)}
+                onClick={() => setIsTransparentBackground(!isTransparentBackground)}
                 size="sm"
                 variant="ghost"
-                className="text-white hover:bg-white/10 px-3"
+                className={`text-white hover:bg-white/10 px-3 ${isTransparentBackground ? 'bg-white/20' : ''}`}
               >
-                <Video className="h-4 w-4 mr-1" />
-                <span className="text-sm font-medium">Record</span>
+                <span className="text-sm font-medium mr-1">{isTransparentBackground ? '◯' : '■'}</span>
+                <span className="text-sm font-medium">Background</span>
               </Button>
 
               {/* Fullscreen Button */}
