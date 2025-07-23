@@ -250,19 +250,6 @@ export default function Home({ content, setContent }: HomeProps) {
         {/* Left Navigation Panel - Only visible on very large screens (1200px+) */}
         <div className="hidden xl:block w-64 bg-white/50 backdrop-blur-sm border-r border-white/20 p-4">
           <nav className="space-y-2">
-            <button 
-              onClick={() => {
-                setActiveSection("scripts");
-                setShowSavedScripts(true);
-              }}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-black hover:text-gray-800 hover:bg-gray-50"
-            >
-              <FileText className="h-5 w-5" />
-              Load Saved Scripts
-            </button>
-            
-
-
             {/* Free Plan Usage under Settings */}
             {subscription?.tier === 'free' && (
               <div className="mx-2 mt-2 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg">
@@ -361,23 +348,34 @@ export default function Home({ content, setContent }: HomeProps) {
                   onVoiceInput={() => setShowVoiceInput(true)}
                 />
                 
-                <div className="mt-6 flex gap-3 justify-end">
+                <div className="mt-6 flex gap-3 justify-between">
                   <Button 
-                    onClick={clearContent}
+                    onClick={() => setShowSavedScripts(true)}
                     variant="outline"
                     className="flex items-center gap-2"
-                    disabled={!content}
                   >
-                    Clear
+                    <FileText className="h-4 w-4" />
+                    Load Saved Scripts
                   </Button>
-                  <Button 
-                    onClick={handleSaveScript}
-                    variant="outline"
-                    className="flex items-center gap-2 border-blue-500 text-blue-600 hover:bg-blue-50"
-                    disabled={!content}
-                  >
-                    Save Script
-                  </Button>
+                  
+                  <div className="flex gap-3">
+                    <Button 
+                      onClick={clearContent}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                      disabled={!content}
+                    >
+                      Clear
+                    </Button>
+                    <Button 
+                      onClick={handleSaveScript}
+                      variant="outline"
+                      className="flex items-center gap-2 border-blue-500 text-blue-600 hover:bg-blue-50"
+                      disabled={!content}
+                    >
+                      Save Script
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -395,24 +393,21 @@ export default function Home({ content, setContent }: HomeProps) {
             <div className="xl:hidden space-y-4 max-w-4xl mx-auto">
               <div className="grid grid-cols-2 gap-3">
                 <Button 
-                  onClick={() => {
-                    setActiveSection("scripts");
-                    setShowSavedScripts(true);
-                  }}
-                  variant="outline"
-                  className="flex items-center gap-2 p-4 h-auto text-black border-gray-300 hover:bg-gray-50"
-                >
-                  <FileText className="h-5 w-5" />
-                  <span>Load Saved Scripts</span>
-                </Button>
-
-                <Button 
                   onClick={() => setActiveSection("ai-assistant")}
                   variant="outline"
                   className="flex items-center gap-2 p-4 h-auto text-black border-gray-300 hover:bg-gray-50"
                 >
                   <Sparkles className="h-5 w-5" />
                   <span>AI Script Assistant</span>
+                </Button>
+                
+                <Button 
+                  onClick={() => setActiveSection("improve-script")}
+                  variant="outline"
+                  className="flex items-center gap-2 p-4 h-auto text-black border-gray-300 hover:bg-gray-50"
+                >
+                  <Edit className="h-5 w-5" />
+                  <span>Improve Script</span>
                 </Button>
               </div>
               
