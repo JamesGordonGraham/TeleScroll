@@ -282,6 +282,12 @@ Changelog:
   * Blue switch styling matching existing control theme
   * Perfect for green screen/chroma key video production workflows
   * User confirmed background toggle functionality working correctly
+- July 23, 2025. Floating dock layout optimization:
+  * Replaced record button with background toggle button in floating dock
+  * Background toggle shows current state (■ for black, ◯ for transparent)
+  * Button highlights when transparent background is active
+  * Streamlined floating dock controls for essential teleprompter functions
+  * User confirmed layout change working correctly
 ```
 
 ## User Preferences
