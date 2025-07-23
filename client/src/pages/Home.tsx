@@ -223,13 +223,13 @@ export default function Home({ content, setContent }: HomeProps) {
 
             {/* Free Plan Usage under Settings */}
             {subscription?.tier === 'free' && (
-              <div className="mx-2 mt-2 p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
+              <div className="mx-2 mt-2 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <Clock className="h-3 w-3 text-amber-600" />
-                    <span className="text-xs font-medium text-amber-800">Free Plan Usage</span>
+                    <Clock className="h-3 w-3 text-blue-600" />
+                    <span className="text-xs font-medium text-blue-800">Free Plan Usage</span>
                   </div>
-                  <span className="text-xs text-amber-700">
+                  <span className="text-xs text-blue-700">
                     {subscription.usage || 0}/{subscription.usageLimit || 60}min
                   </span>
                 </div>
@@ -237,7 +237,7 @@ export default function Home({ content, setContent }: HomeProps) {
                   value={((subscription.usage || 0) / (subscription.usageLimit || 60)) * 100} 
                   className="mb-2 h-1"
                 />
-                <p className="text-xs text-amber-700">
+                <p className="text-xs text-blue-700">
                   Upgrade to Pro for unlimited usage or Premium for AI features
                 </p>
               </div>
