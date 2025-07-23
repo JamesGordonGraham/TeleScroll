@@ -14,7 +14,9 @@ import {
   Clock,
   Zap,
   Star,
-  Type
+  Type,
+  Edit,
+  Mic
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -262,30 +264,30 @@ export default function Home({ content, setContent }: HomeProps) {
               </button>
               
               <button 
-                onClick={() => setActiveSection("video-capture")}
+                onClick={() => setActiveSection("improve-script")}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                  activeSection === "video-capture" 
-                    ? "bg-red-100 text-red-700 font-medium" 
-                    : "text-gray-700 hover:bg-red-50"
+                  activeSection === "improve-script" 
+                    ? "bg-blue-100 text-blue-700 font-medium" 
+                    : "text-gray-700 hover:bg-blue-50"
                 }`}
               >
-                <Video className="h-5 w-5" />
-                Video Capture
-                <Badge variant="secondary" className="ml-auto bg-red-100 text-red-700 text-xs">
+                <Edit className="h-5 w-5" />
+                Improve Existing Script
+                <Badge variant="secondary" className="ml-auto bg-blue-100 text-blue-700 text-xs">
                   Premium
                 </Badge>
               </button>
               
               <button 
-                onClick={() => setActiveSection("captions")}
+                onClick={() => setActiveSection("voice-input")}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                  activeSection === "captions" 
+                  activeSection === "voice-input" 
                     ? "bg-green-100 text-green-700 font-medium" 
                     : "text-gray-700 hover:bg-green-50"
                 }`}
               >
-                <Type className="h-5 w-5" />
-                Captions
+                <Mic className="h-5 w-5" />
+                Voice Input
                 <Badge variant="secondary" className="ml-auto bg-green-100 text-green-700 text-xs">
                   Premium
                 </Badge>
@@ -449,65 +451,89 @@ export default function Home({ content, setContent }: HomeProps) {
             </div>
           )}
 
-          {/* Video Capture Section */}
-          {activeSection === "video-capture" && (
+          {/* Improve Script Section */}
+          {activeSection === "improve-script" && (
             <div className="space-y-6">
               <div className="text-center">
-                <h2 className="text-3xl font-bold text-blue-700 mb-2">Video Capture</h2>
-                <p className="text-blue-600 mb-8">Record yourself presenting with optional transparent background</p>
+                <h2 className="text-3xl font-bold text-blue-700 mb-2">Improve Existing Script</h2>
+                <p className="text-blue-600 mb-8">Enhance your scripts with AI-powered suggestions and improvements</p>
               </div>
               
               <Card className="max-w-2xl mx-auto">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Video className="h-5 w-5 text-red-600" />
-                    Video Recording
-                    <Badge variant="secondary" className="bg-red-100 text-red-700">
+                    <Edit className="h-5 w-5 text-blue-600" />
+                    Script Enhancement
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-700">
                       <Crown className="h-3 w-3 mr-1" />
                       Premium
                     </Badge>
                   </CardTitle>
                   <CardDescription>
-                    Record yourself presenting with optional transparent background
+                    Improve clarity, flow, and impact of your existing scripts
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
+                  <p className="text-gray-600 mb-4">
+                    Paste your script above and our AI will provide suggestions to improve:
+                  </p>
+                  <ul className="text-sm text-gray-600 space-y-1 mb-4">
+                    <li>• Clarity and readability</li>
+                    <li>• Flow and pacing</li>
+                    <li>• Word choice and impact</li>
+                    <li>• Structure and organization</li>
+                  </ul>
                   <Button 
-                    onClick={() => setShowVideoRecorder(true)}
-                    className="w-full bg-gradient-to-r from-red-600 to-purple-600 hover:from-red-700 hover:to-purple-700"
+                    disabled={!content}
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   >
-                    <Video className="h-4 w-4 mr-2" />
-                    Open Video Recorder
+                    <Edit className="h-4 w-4 mr-2" />
+                    Improve Script
                   </Button>
                 </CardContent>
               </Card>
             </div>
           )}
 
-          {/* Captions Section */}
-          {activeSection === "captions" && (
+          {/* Voice Input Section */}
+          {activeSection === "voice-input" && (
             <div className="space-y-6">
               <div className="text-center">
-                <h2 className="text-3xl font-bold text-blue-700 mb-2">AI Captions</h2>
-                <p className="text-blue-600 mb-8">Generate automatic captions for your presentations</p>
+                <h2 className="text-3xl font-bold text-blue-700 mb-2">Voice Input</h2>
+                <p className="text-blue-600 mb-8">Convert your speech to text with real-time voice recognition</p>
               </div>
               
               <Card className="max-w-2xl mx-auto">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Type className="h-5 w-5 text-green-600" />
-                    AI Caption Generation
+                    <Mic className="h-5 w-5 text-green-600" />
+                    Speech-to-Text
                     <Badge variant="secondary" className="bg-green-100 text-green-700">
                       <Crown className="h-3 w-3 mr-1" />
                       Premium
                     </Badge>
                   </CardTitle>
                   <CardDescription>
-                    Automatically generate captions and subtitles for your content
+                    Speak naturally and convert your voice to text instantly
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600">AI-powered caption generation feature coming soon for Premium subscribers.</p>
+                  <p className="text-gray-600 mb-4">
+                    Features include:
+                  </p>
+                  <ul className="text-sm text-gray-600 space-y-1 mb-4">
+                    <li>• Real-time speech recognition</li>
+                    <li>• Automatic punctuation</li>
+                    <li>• Continuous voice capture</li>
+                    <li>• High accuracy transcription</li>
+                  </ul>
+                  <Button 
+                    onClick={() => setShowVoiceInput(true)}
+                    className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                  >
+                    <Mic className="h-4 w-4 mr-2" />
+                    Start Voice Input
+                  </Button>
                 </CardContent>
               </Card>
             </div>

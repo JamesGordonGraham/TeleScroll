@@ -60,8 +60,8 @@ const plans: SubscriptionPlan[] = [
     features: [
       "Everything in Pro",
       "AI Script Assistant",
-      "Video recording with transparent background",
-      "AI-generated captions",
+      "Improve Existing Script",
+      "Voice Input",
       "Script generation (news, speeches, etc.)",
       "Script improvement suggestions"
     ],
