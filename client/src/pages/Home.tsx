@@ -325,9 +325,9 @@ export default function Home({ content, setContent }: HomeProps) {
 
             <button 
               onClick={() => setActiveSection("upgrade")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-700 hover:from-yellow-200 hover:to-orange-200 font-medium mt-4`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors bg-gradient-to-r from-orange-400 to-orange-500 text-white hover:from-orange-500 hover:to-orange-600 font-medium mt-4`}
             >
-              <Crown className="h-5 w-5" />
+              <Crown className="h-5 w-5 text-white" />
               Upgrade to Premium
             </button>
           </nav>
