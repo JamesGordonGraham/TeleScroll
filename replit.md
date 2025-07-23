@@ -295,6 +295,12 @@ Changelog:
   * Updated Home page navigation to show new premium sections
   * Created detailed feature pages for script improvement and voice input functionality
   * User confirmed premium features update working well
+- July 23, 2025. Free Plan Usage card styling update:
+  * Changed background from amber/orange gradient to light blue gradient (from-blue-50 to-cyan-50)
+  * Updated border color from amber to blue (border-blue-200)
+  * Changed all text colors from amber/orange tones to blue color scheme
+  * Updated clock icon color from amber to blue for consistency
+  * User confirmed the light blue gradient styling looks nice
 ```
 
 ## User Preferences
