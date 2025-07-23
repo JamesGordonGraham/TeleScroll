@@ -301,6 +301,20 @@ Changelog:
   * Changed all text colors from amber/orange tones to blue color scheme
   * Updated clock icon color from amber to blue for consistency
   * User confirmed the light blue gradient styling looks nice
+- July 23, 2025. Complete 60-minute trial system implementation:
+  * Backend: Updated feature gating to allow all premium features during first 60 minutes
+  * Created trial expired popup with Pro/Premium upgrade options
+  * Added usage tracking endpoints for teleprompter sessions
+  * Updated error messages to show trial expiration with upgrade options
+  * Frontend: Integrated trial expired popup throughout the app (AI Assistant, Voice Input, Teleprompter)
+  * Auto-detection of trial expiration to show upgrade popup
+  * Connected all premium features to trial system with proper error handling
+- July 23, 2025. UI layout optimization - Load Saved Scripts button relocation:
+  * Moved 'Load Saved Scripts' button from left sidebar to Script Editor area
+  * Button now positioned at bottom of Script Editor next to Clear and Save Script buttons
+  * Removed duplicate button from left navigation panel
+  * Updated mobile navigation layout for better organization
+  * User confirmed the new layout looks good
 ```
 
 ## User Preferences
