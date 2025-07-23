@@ -275,6 +275,13 @@ Changelog:
   * Restored missing Speed, Size, and Width sliders to floating dock with blue color scheme
   * Added live value displays for all sliders and consistent blue styling
   * User confirmed settings popup readability and floating dock sliders working well
+- July 23, 2025. Background toggle switch implementation:
+  * Added toggle switch to floating dock for background control (black ■ / transparent ◯)
+  * Implemented instant switching between solid black and transparent backgrounds
+  * Added consistent background toggle to settings popup with visual indicators
+  * Blue switch styling matching existing control theme
+  * Perfect for green screen/chroma key video production workflows
+  * User confirmed background toggle functionality working correctly
 ```
 
 ## User Preferences
