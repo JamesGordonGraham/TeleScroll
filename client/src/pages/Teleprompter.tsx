@@ -45,6 +45,7 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
   const [currentMarkerIndex, setCurrentMarkerIndex] = useState(-1);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [isTransparentBackground, setIsTransparentBackground] = useState(false);
 
 
   const textRef = useRef<HTMLDivElement>(null);
@@ -333,7 +334,7 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white relative">
+    <div className={`min-h-screen text-white relative ${isTransparentBackground ? 'bg-transparent' : 'bg-black'}`}>
       {/* Main Teleprompter Display */}
       <div
         ref={scrollRef}
@@ -463,6 +464,20 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                     step={5}
                     className="w-full slider-blue"
                   />
+                </div>
+              </div>
+
+              {/* Background Toggle */}
+              <div className="flex items-center space-x-2 px-3">
+                <span className="text-white text-xs font-medium">BG</span>
+                <div className="flex items-center space-x-1">
+                  <span className="text-white text-xs">■</span>
+                  <Switch
+                    checked={isTransparentBackground}
+                    onCheckedChange={setIsTransparentBackground}
+                    className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-600"
+                  />
+                  <span className="text-white text-xs">◯</span>
                 </div>
               </div>
 
@@ -607,6 +622,24 @@ export default function Teleprompter({ content, onExit }: TeleprompterProps) {
                   <div className="flex justify-between text-sm font-medium text-black">
                     <span className="bg-white px-2 py-1 rounded border">40% (Narrow)</span>
                     <span className="bg-white px-2 py-1 rounded border">100% (Full Width)</span>
+                  </div>
+                </div>
+
+                {/* Background Toggle */}
+                <div className="bg-indigo-50 border border-indigo-200 p-4 rounded-lg">
+                  <label className="block text-lg font-bold text-black mb-3">
+                    🖼️ Background: <span className="text-indigo-600">{isTransparentBackground ? 'Transparent' : 'Black'}</span>
+                  </label>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-black text-sm">Black ■</span>
+                      <Switch
+                        checked={isTransparentBackground}
+                        onCheckedChange={setIsTransparentBackground}
+                        className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-600"
+                      />
+                      <span className="text-black text-sm">◯ Transparent</span>
+                    </div>
                   </div>
                 </div>
 
