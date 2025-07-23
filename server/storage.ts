@@ -266,10 +266,10 @@ export class DatabaseStorage implements IStorage {
       return feature === 'voice_input';
     }
 
-    // Free users are limited to 1 hour total usage
+    // Free users get to try ALL premium features during their first 60 minutes
     if (user.subscriptionTier === 'free') {
       const totalUsage = await this.getUserUsage(userId);
-      return totalUsage < 60; // 60 minutes limit
+      return totalUsage < 60; // 60 minutes grace period for all features
     }
 
     return false;

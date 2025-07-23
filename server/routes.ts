@@ -214,10 +214,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const canUse = await storage.canUseFeature(userId, 'ai_assistant');
       
       if (!canUse) {
-        return res.status(403).json({ 
-          error: 'AI Script Assistant requires Premium subscription',
-          upgrade: true 
-        });
+        const totalUsage = await storage.getUserUsage(userId);
+        if (totalUsage >= 60) {
+          return res.status(403).json({ 
+            error: 'You\'ve reached the 60-minute trial limit. Upgrade to Pro for unlimited usage or Premium for AI script assistance and voice input features.',
+            upgrade: true,
+            trialExpired: true
+          });
+        } else {
+          return res.status(403).json({ 
+            error: 'AI Script Assistant requires Premium subscription',
+            upgrade: true 
+          });
+        }
       }
 
       const { scriptType, topic, duration, tone, audience, keyPoints, additionalInstructions } = req.body;
@@ -257,10 +266,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const canUse = await storage.canUseFeature(userId, 'ai_assistant');
       
       if (!canUse) {
-        return res.status(403).json({ 
-          error: 'AI Script Assistant requires Premium subscription',
-          upgrade: true 
-        });
+        const totalUsage = await storage.getUserUsage(userId);
+        if (totalUsage >= 60) {
+          return res.status(403).json({ 
+            error: 'You\'ve reached the 60-minute trial limit. Upgrade to Pro for unlimited usage or Premium for AI script assistance and voice input features.',
+            upgrade: true,
+            trialExpired: true
+          });
+        } else {
+          return res.status(403).json({ 
+            error: 'AI Script Assistant requires Premium subscription',
+            upgrade: true 
+          });
+        }
       }
 
       const { content, instructions } = req.body;
@@ -275,6 +293,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Script improvement error:', error);
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Start teleprompter session (log usage)
+  app.post("/api/teleprompter/start", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Check if user can use teleprompter
+      const canUse = await storage.canUseFeature(userId, 'teleprompter');
+      if (!canUse) {
+        const totalUsage = await storage.getUserUsage(userId);
+        if (totalUsage >= 60) {
+          return res.status(403).json({ 
+            error: 'You\'ve reached the 60-minute trial limit. Upgrade to Pro for unlimited usage or Premium for AI script assistance and voice input features.',
+            upgrade: true,
+            trialExpired: true
+          });
+        }
+      }
+
+      res.json({ success: true, message: "Teleprompter session started" });
+    } catch (error) {
+      console.error('Error starting teleprompter session:', error);
+      res.status(500).json({ error: 'Failed to start teleprompter session' });
+    }
+  });
+
+  // Log teleprompter usage time
+  app.post("/api/teleprompter/log-usage", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { duration } = req.body; // duration in seconds
+      
+      if (!duration || duration < 0) {
+        return res.status(400).json({ error: 'Invalid duration' });
+      }
+
+      await storage.logUsage({
+        userId,
+        feature: 'teleprompter',
+        duration: Math.floor(duration)
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error logging teleprompter usage:', error);
+      res.status(500).json({ error: 'Failed to log usage' });
     }
   });
 
@@ -454,12 +520,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
-      // Check if user can use voice input (Free users have 1 hour limit, Pro/Premium unlimited)
+      // Check if user can use voice input (Free users have 1 hour grace period, then upgrade required)
       const canUse = await storage.canUseFeature(userId, 'voice_input');
       if (!canUse) {
         return res.status(403).json({ 
-          message: "You've reached the 1-hour limit for the Free plan. Upgrade to Pro for unlimited voice input.",
-          upgrade: true
+          message: "You've reached the 60-minute trial limit. Upgrade to Pro for unlimited usage or Premium for AI script assistance and voice input features.",
+          upgrade: true,
+          trialExpired: true
         });
       }
 

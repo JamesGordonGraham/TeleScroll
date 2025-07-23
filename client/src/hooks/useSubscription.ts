@@ -50,6 +50,7 @@ export function useSubscription() {
       if (subscription.tier === 'premium') return true;
       if (subscription.tier === 'pro' && feature === 'voice_input') return true;
       if (subscription.tier === 'free') {
+        // Free users can try all features during their 60-minute grace period
         return (subscription.usage || 0) < (subscription.usageLimit || 60);
       }
       
@@ -58,11 +59,17 @@ export function useSubscription() {
     needsUpgrade: (feature: string) => {
       if (!subscription) return true;
       
-      if (feature === 'ai_assistant' && subscription.tier !== 'premium') return true;
-      if (feature === 'video_recording' && subscription.tier !== 'premium') return true;
+      // Free users who have exceeded their trial time need to upgrade
       if (subscription.tier === 'free' && (subscription.usage || 0) >= (subscription.usageLimit || 60)) return true;
       
+      // Pro users need Premium for AI features
+      if (feature === 'ai_assistant' && subscription.tier !== 'premium') return true;
+      
       return false;
+    },
+    isTrialExpired: () => {
+      if (!subscription) return false;
+      return subscription.tier === 'free' && (subscription.usage || 0) >= (subscription.usageLimit || 60);
     }
   };
 }

@@ -26,6 +26,7 @@ import { AIScriptAssistant } from "@/components/AIScriptAssistant";
 import { VideoRecorder } from "@/components/VideoRecorder";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import SavedScriptsModal from "@/components/SavedScriptsModal";
+import TrialExpiredPopup from "@/components/TrialExpiredPopup";
 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -39,11 +40,19 @@ interface HomeProps {
 
 export default function Home({ content, setContent }: HomeProps) {
   const { user } = useAuth();
-  const { subscription, isLoading: subscriptionLoading } = useSubscription();
+  const { subscription, isLoading: subscriptionLoading, createSubscription } = useSubscription();
   const { toast } = useToast();
   
   const [showVideoRecorder, setShowVideoRecorder] = useState(false);
+  const [showTrialExpired, setShowTrialExpired] = useState(false);
   const [activeSection, setActiveSection] = useState("scripts");
+
+  // Auto-show trial expired popup when user hits limit
+  useEffect(() => {
+    if (subscription?.tier === 'free' && (subscription.usage || 0) >= (subscription.usageLimit || 60)) {
+      setShowTrialExpired(true);
+    }
+  }, [subscription]);
   const [showTeleprompter, setShowTeleprompter] = useState(false);
   const [showVoiceInput, setShowVoiceInput] = useState(false);
   const [showSavedScripts, setShowSavedScripts] = useState(false);
@@ -106,7 +115,23 @@ export default function Home({ content, setContent }: HomeProps) {
     }
   };
 
-  const handleStartTeleprompter = () => {
+  // Handle trial expired popup
+  const handleTrialExpiredUpgrade = async (plan: 'pro' | 'premium') => {
+    const priceId = plan === 'pro' ? 'price_pro' : 'price_premium';
+    try {
+      await createSubscription.mutateAsync(priceId);
+      setShowTrialExpired(false);
+    } catch (error) {
+      console.error('Upgrade failed:', error);
+    }
+  };
+
+  // Function to show trial expired popup when APIs return trial expired flag
+  const handleTrialExpired = () => {
+    setShowTrialExpired(true);
+  };
+
+  const handleStartTeleprompter = async () => {
     if (!content.trim()) {
       toast({
         title: "No Content",
@@ -115,7 +140,24 @@ export default function Home({ content, setContent }: HomeProps) {
       });
       return;
     }
-    setShowTeleprompter(true);
+
+    try {
+      // Check if user can start teleprompter (trial limit check)
+      const response = await apiRequest("POST", "/api/teleprompter/start");
+      if (response.ok) {
+        setShowTeleprompter(true);
+      }
+    } catch (error: any) {
+      if (error.message.includes("60-minute trial limit")) {
+        handleTrialExpired();
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to start teleprompter. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   const handleExitTeleprompter = () => {
@@ -345,6 +387,7 @@ export default function Home({ content, setContent }: HomeProps) {
               <VoiceInput 
                 onVoiceInput={handleVoiceInput}
                 onClose={() => setShowVoiceInput(false)}
+                onTrialExpired={handleTrialExpired}
               />
             )}
 
@@ -427,7 +470,7 @@ export default function Home({ content, setContent }: HomeProps) {
             {/* Desktop AI Assistant - Hidden on mobile/tablet */}
             <div className="hidden xl:block max-w-4xl mx-auto">
               <h3 className="text-xl font-semibold text-blue-700 mb-4">AI Script Assistant - get help in Writing new Scripts</h3>
-              <AIScriptAssistant onScriptGenerated={handleScriptGenerated} />
+              <AIScriptAssistant onScriptGenerated={handleScriptGenerated} onTrialExpired={handleTrialExpired} />
             </div>
           </div>
 
@@ -447,7 +490,7 @@ export default function Home({ content, setContent }: HomeProps) {
                 <h2 className="text-3xl font-bold text-blue-700 mb-2">AI Script Assistant</h2>
                 <p className="text-blue-600 mb-8">Generate professional scripts for any occasion with AI</p>
               </div>
-              <AIScriptAssistant onScriptGenerated={handleScriptGenerated} />
+              <AIScriptAssistant onScriptGenerated={handleScriptGenerated} onTrialExpired={handleTrialExpired} />
             </div>
           )}
 
@@ -563,6 +606,13 @@ export default function Home({ content, setContent }: HomeProps) {
         isOpen={showSavedScripts}
         onClose={() => setShowSavedScripts(false)}
         onLoadScript={setContent}
+      />
+
+      {/* Trial Expired Popup */}
+      <TrialExpiredPopup
+        isOpen={showTrialExpired}
+        onClose={() => setShowTrialExpired(false)}
+        onUpgrade={handleTrialExpiredUpgrade}
       />
     </div>
   );

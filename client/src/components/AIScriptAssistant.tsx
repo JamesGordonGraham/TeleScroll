@@ -52,9 +52,10 @@ const audiences = [
 
 interface AIScriptAssistantProps {
   onScriptGenerated: (script: string) => void;
+  onTrialExpired?: () => void;
 }
 
-export function AIScriptAssistant({ onScriptGenerated }: AIScriptAssistantProps) {
+export function AIScriptAssistant({ onScriptGenerated, onTrialExpired }: AIScriptAssistantProps) {
   const { toast } = useToast();
   const { canUseFeature, needsUpgrade } = useSubscription();
   
@@ -90,7 +91,10 @@ export function AIScriptAssistant({ onScriptGenerated }: AIScriptAssistantProps)
       });
     },
     onError: (error: any) => {
-      if (error.message.includes("upgrade")) {
+      if (error.message.includes("60-minute trial limit")) {
+        // Handle trial expired
+        onTrialExpired?.();
+      } else if (error.message.includes("upgrade")) {
         toast({
           title: "Premium Feature",
           description: "AI Script Assistant requires Premium subscription. Upgrade to access this feature!",
@@ -120,7 +124,10 @@ export function AIScriptAssistant({ onScriptGenerated }: AIScriptAssistantProps)
       setImproveForm({ content: "", instructions: "" });
     },
     onError: (error: any) => {
-      if (error.message.includes("upgrade")) {
+      if (error.message.includes("60-minute trial limit")) {
+        // Handle trial expired
+        onTrialExpired?.();
+      } else if (error.message.includes("upgrade")) {
         toast({
           title: "Premium Feature",
           description: "AI Script Assistant requires Premium subscription. Upgrade to access this feature!",

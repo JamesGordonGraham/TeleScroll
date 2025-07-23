@@ -7,9 +7,10 @@ import { useToast } from "@/hooks/use-toast";
 interface VoiceInputProps {
   onVoiceInput: (text: string) => void;
   onClose: () => void;
+  onTrialExpired?: () => void;
 }
 
-export default function VoiceInput({ onVoiceInput, onClose }: VoiceInputProps) {
+export default function VoiceInput({ onVoiceInput, onClose, onTrialExpired }: VoiceInputProps) {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [isSupported, setIsSupported] = useState(false);
